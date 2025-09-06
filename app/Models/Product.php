@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\CartItem;
+use App\Models\Category;
+use App\Models\OrderItem;
+use App\Models\ProductImage;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+class Product extends Model
+{
+    use HasFactory;
+
+    protected $guarded = [];
+
+    public function images(): HasMany {
+        return $this->hasMany(ProductImage::class);
+    }
+
+    public function categories(): BelongsToMany {
+        return $this->belongsToMany(Category::class, 'category_product');
+    }
+
+    public function cartItems(): HasMany {
+        return $this->hasMany(CartItem::class);
+    }
+
+    public function orderItems(): HasMany {
+        return $this->hasMany(OrderItem::class);
+    }
+}
