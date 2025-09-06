@@ -194,20 +194,10 @@
               <p class="card-description">Gambar</p>
 
               <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                   <div class="form-group row">
-                    <label class="col-sm-3 col-form-label">Gambar Utama</label>
-                    <div class="col-sm-9">
-                      <input type="file" name="image" accept="image/*" class="form-control-file" />
-                      @error('image') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="form-group row">
-                    <label class="col-sm-3 col-form-label">Galeri</label>
-                    <div class="col-sm-9">
+                    <label class="col-sm-2 col-form-label">Gambar Produk</label>
+                    <div class="col-sm-10">
                       <input type="file" name="images[]" id="images-input" accept="image/*" multiple class="form-control-file" />
                       <small class="form-text text-muted">Bisa unggah banyak gambar. Maksimal disarankan 10.</small>
                       @error('images') <small class="text-danger">{{ $message }}</small> @enderror
