@@ -17,10 +17,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('sku')->nullable();
-
             $table->text('short_description')->nullable();
             $table->text('description')->nullable();
-
             $table->decimal('price', 12, 2);
             $table->decimal('sale_price', 12, 2)->nullable();
             $table->integer('stock')->default(0);
@@ -28,14 +26,11 @@ return new class extends Migration
             $table->decimal('length', 8, 2)->nullable();
             $table->decimal('width', 8, 2)->nullable();
             $table->decimal('height', 8, 2)->nullable();
-
             $table->boolean('is_featured')->default(false);
             $table->boolean('status')->default(true);
-
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
             $table->string('tags')->nullable();
-
             $table->timestamps();
         });
     }
