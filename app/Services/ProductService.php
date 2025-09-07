@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductImage;
+use App\Models\Brand;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,7 @@ class ProductService
             $query->where('price', '<=', $filters['max_price']);
         }
 
-        if (!empty($filters['status'])) {
+        if (isset($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 
@@ -91,7 +92,7 @@ class ProductService
 
             foreach ($product->images as $img) {
                 if ($img->path) {
-                    Storage::delete($img->path);
+                    Storage::disk('public')->delete($img->path);
                 }
                 $img->delete();
             }
@@ -149,9 +150,9 @@ class ProductService
     {
         $product = Product::findOrFail($productId);
 
-        $created = collect();
+        $created = new Collection();
         foreach ($files as $file) {
-            $path = $file->store('products');
+            $path = $file->store('products', 'public');
             $created->push(
                 $product->images()->create(['path' => $path])
             );
@@ -172,7 +173,7 @@ class ProductService
         $image = $product->images()->whereKey($imageId)->firstOrFail();
 
         if ($image->path) {
-            Storage::delete($image->path);
+            Storage::disk('public')->delete($image->path);
         }
 
         return (bool) $image->delete();
@@ -185,7 +186,7 @@ class ProductService
 
             foreach ($product->images as $img) {
                 if ($img->path) {
-                    Storage::delete($img->path);
+                    Storage::disk('public')->delete($img->path);
                 }
                 $img->delete();
             }
@@ -197,6 +198,11 @@ class ProductService
     public function getAllCategories(): Collection
     {
         return Category::withCount('products')->orderBy('name')->get();
+    }
+
+    public function getAllBrands(): Collection
+    {
+        return Brand::orderBy('name')->get();
     }
 
     public function getCategoryById(int $id): ?Category

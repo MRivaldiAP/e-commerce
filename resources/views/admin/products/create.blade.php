@@ -5,7 +5,7 @@
 <!--
   Catatan:
   - Ini adalah tampilan "Tambah Produk" menggunakan template halaman yang sudah disediakan.
-  - Sesuaikan route name (products.store) dengan routing controller/service kamu.
+  - Sesuaikan route name (admin.products.store) dengan routing controller/service kamu.
   - Controller harus mengirimkan: $categories (id,name), $brands (id,name) -- sesuaikan nama jika berbeda.
   - Controller yang menangani POST harus memanggil fungsi Product service (misalnya ProductService::createFromRequest atau sejenisnya) dan menangani upload gambar.
 -->
@@ -194,20 +194,10 @@
               <p class="card-description">Gambar</p>
 
               <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                   <div class="form-group row">
-                    <label class="col-sm-3 col-form-label">Gambar Utama</label>
-                    <div class="col-sm-9">
-                      <input type="file" name="image" accept="image/*" class="form-control-file" />
-                      @error('image') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="form-group row">
-                    <label class="col-sm-3 col-form-label">Galeri</label>
-                    <div class="col-sm-9">
+                    <label class="col-sm-2 col-form-label">Gambar Produk</label>
+                    <div class="col-sm-10">
                       <input type="file" name="images[]" id="images-input" accept="image/*" multiple class="form-control-file" />
                       <small class="form-text text-muted">Bisa unggah banyak gambar. Maksimal disarankan 10.</small>
                       @error('images') <small class="text-danger">{{ $message }}</small> @enderror
@@ -219,6 +209,7 @@
               </div>
 
               <p class="card-description">Deskripsi & SEO</p>
+              <p class="text-muted small mb-3">Isian di bawah membantu mesin pencari memahami produk Anda.</p>
 
               <div class="row">
                 <div class="col-md-12">
@@ -249,6 +240,7 @@
                     <label class="col-sm-3 col-form-label">Judul Meta</label>
                     <div class="col-sm-9">
                       <input type="text" name="meta_title" class="form-control" value="{{ old('meta_title') }}" />
+                      <small class="form-text text-muted">Judul singkat yang muncul di hasil pencarian. Contoh: "Sepatu Lari Pria Terbaik".</small>
                     </div>
                   </div>
                 </div>
@@ -258,6 +250,7 @@
                     <label class="col-sm-3 col-form-label">Deskripsi Meta</label>
                     <div class="col-sm-9">
                       <input type="text" name="meta_description" class="form-control" value="{{ old('meta_description') }}" />
+                      <small class="form-text text-muted">Deskripsi singkat (maks. 160 karakter) untuk hasil pencarian. Contoh: "Sepatu lari ringan dan nyaman untuk segala medan."</small>
                     </div>
                   </div>
                 </div>
@@ -317,18 +310,18 @@
       });
     }
 
-    // preview gambar
+    // preview dan hapus gambar
     const imagesInput = document.getElementById('images-input');
     const imagesPreview = document.getElementById('images-preview');
+    const dataTransfer = new DataTransfer();
+
     function clearChildren(el){ while(el.firstChild) el.removeChild(el.firstChild); }
 
-    if(imagesInput && imagesPreview){
-      imagesInput.addEventListener('change', function(){
-        clearChildren(imagesPreview);
-        const files = Array.from(this.files).slice(0, 10); // batasi preview 10
-        files.forEach(file => {
-          if(!file.type.startsWith('image/')) return;
-          const reader = new FileReader();
+    function refreshPreview(){
+      clearChildren(imagesPreview);
+      Array.from(dataTransfer.files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(ev){
           const wrapper = document.createElement('div');
           wrapper.style.width = '80px';
           wrapper.style.height = '80px';
@@ -336,20 +329,51 @@
           wrapper.style.marginBottom = '8px';
           wrapper.style.position = 'relative';
 
-          reader.onload = function(ev){
-            const img = document.createElement('img');
-            img.src = ev.target.result;
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.objectFit = 'cover';
-            img.style.border = '1px solid #ddd';
-            img.style.borderRadius = '4px';
+          const img = document.createElement('img');
+          img.src = ev.target.result;
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'cover';
+          img.style.border = '1px solid #ddd';
+          img.style.borderRadius = '4px';
 
-            wrapper.appendChild(img);
-            imagesPreview.appendChild(wrapper);
-          }
-          reader.readAsDataURL(file);
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.innerHTML = '&times;';
+          removeBtn.style.position = 'absolute';
+          removeBtn.style.top = '2px';
+          removeBtn.style.right = '2px';
+          removeBtn.style.width = '20px';
+          removeBtn.style.height = '20px';
+          removeBtn.style.border = 'none';
+          removeBtn.style.borderRadius = '50%';
+          removeBtn.style.background = 'rgba(0,0,0,0.6)';
+          removeBtn.style.color = '#fff';
+          removeBtn.style.lineHeight = '18px';
+          removeBtn.style.cursor = 'pointer';
+          removeBtn.addEventListener('click', function(){
+            dataTransfer.items.remove(index);
+            imagesInput.files = dataTransfer.files;
+            refreshPreview();
+          });
+
+          wrapper.appendChild(img);
+          wrapper.appendChild(removeBtn);
+          imagesPreview.appendChild(wrapper);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if(imagesInput && imagesPreview){
+      imagesInput.addEventListener('change', function(){
+        Array.from(this.files).forEach(file => {
+          if(!file.type.startsWith('image/')) return;
+          if(dataTransfer.files.length >= 10) return; // batasi 10 gambar
+          dataTransfer.items.add(file);
         });
+        imagesInput.files = dataTransfer.files;
+        refreshPreview();
       });
     }
   })();

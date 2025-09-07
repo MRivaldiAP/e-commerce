@@ -31,7 +31,8 @@ class ProductController extends Controller
     public function create()
     {
         $categories = $this->service->getAllCategories();
-        return view('admin.products.create', compact('categories'));
+        $brands = $this->service->getAllBrands();
+        return view('admin.products.create', compact('categories', 'brands'));
     }
 
     public function store(StoreProductRequest $request)
@@ -46,11 +47,11 @@ class ProductController extends Controller
                 $this->service->addImages($product->id, $files);
             }
 
-            return redirect()->route('admin.products.edit', $product->id)
-                ->with('success', 'Product created successfully.');
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Produk berhasil dibuat.');
         } catch (\Throwable $e) {
             Log::error('Create product failed: '.$e->getMessage());
-            return back()->withInput()->with('error', 'Create product failed.');
+            return back()->withInput()->with('error', 'Gagal membuat produk.');
         }
     }
 
@@ -58,11 +59,12 @@ class ProductController extends Controller
     {
         $product = $this->service->getProductById($id);
         if (! $product) {
-            return redirect()->route('admin.products.index')->with('error', 'Product not found.');
+            return redirect()->route('admin.products.index')->with('error', 'Produk tidak ditemukan.');
         }
 
         $categories = $this->service->getAllCategories();
-        return view('admin.products.edit', compact('product', 'categories'));
+        $brands = $this->service->getAllBrands();
+        return view('admin.products.edit', compact('product', 'categories', 'brands'));
     }
 
     public function update(UpdateProductRequest $request, $id)
@@ -78,10 +80,10 @@ class ProductController extends Controller
             }
 
             return redirect()->route('admin.products.edit', $product->id)
-                ->with('success', 'Product updated successfully.');
+                ->with('success', 'Produk berhasil diperbarui.');
         } catch (\Throwable $e) {
             Log::error('Update product failed: '.$e->getMessage());
-            return back()->withInput()->with('error', 'Update product failed.');
+            return back()->withInput()->with('error', 'Gagal memperbarui produk.');
         }
     }
 
@@ -89,10 +91,10 @@ class ProductController extends Controller
     {
         try {
             $this->service->deleteProduct($id);
-            return redirect()->route('admin.products.index')->with('success', 'Product deleted.');
+            return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus.');
         } catch (\Throwable $e) {
             Log::error('Delete product failed: '.$e->getMessage());
-            return redirect()->route('admin.products.index')->with('error', 'Delete product failed.');
+            return redirect()->route('admin.products.index')->with('error', 'Gagal menghapus produk.');
         }
     }
 
@@ -106,10 +108,10 @@ class ProductController extends Controller
         try {
             $files = $request->file('images');
             $this->service->addImages($id, $files);
-            return back()->with('success', 'Images uploaded.');
+            return back()->with('success', 'Gambar berhasil diunggah.');
         } catch (\Throwable $e) {
             Log::error('Upload images failed: '.$e->getMessage());
-            return back()->with('error', 'Upload images failed.');
+            return back()->with('error', 'Gagal mengunggah gambar.');
         }
     }
 
@@ -117,10 +119,10 @@ class ProductController extends Controller
     {
         try {
             $this->service->removeImage($productId, $imageId);
-            return back()->with('success', 'Image removed.');
+            return back()->with('success', 'Gambar berhasil dihapus.');
         } catch (\Throwable $e) {
             Log::error('Remove image failed: '.$e->getMessage());
-            return back()->with('error', 'Remove image failed.');
+            return back()->with('error', 'Gagal menghapus gambar.');
         }
     }
 
@@ -133,10 +135,10 @@ class ProductController extends Controller
 
         try {
             $this->service->updateStock($id, (int) $data['quantity'], $data['mode'] ?? 'set');
-            return back()->with('success', 'Stock updated.');
+            return back()->with('success', 'Stok berhasil diperbarui.');
         } catch (\Throwable $e) {
             Log::error('Update stock failed: '.$e->getMessage());
-            return back()->with('error', 'Update stock failed.');
+            return back()->with('error', 'Gagal memperbarui stok.');
         }
     }
 
@@ -149,10 +151,10 @@ class ProductController extends Controller
 
         try {
             $this->service->syncCategories($id, $data['category_ids'] ?? []);
-            return back()->with('success', 'Categories synced.');
+            return back()->with('success', 'Kategori berhasil disinkron.');
         } catch (\Throwable $e) {
             Log::error('Sync categories failed: '.$e->getMessage());
-            return back()->with('error', 'Sync categories failed.');
+            return back()->with('error', 'Gagal menyinkronkan kategori.');
         }
     }
 
@@ -160,7 +162,7 @@ class ProductController extends Controller
     {
         $product = $this->service->getProductById($id);
         if (! $product) {
-            return redirect()->route('admin.products.index')->with('error', 'Product not found.');
+            return redirect()->route('admin.products.index')->with('error', 'Produk tidak ditemukan.');
         }
 
         return view('admin.products.show', compact('product'));

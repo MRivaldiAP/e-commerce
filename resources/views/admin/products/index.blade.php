@@ -61,9 +61,8 @@
                 <div class="col-md-2 mb-2">
                   <select name="status" class="form-control">
                     <option value="">Semua Status</option>
-                    <option value="draft" {{ request('status')=='draft' ? 'selected' : '' }}>Draft</option>
-                    <option value="published" {{ request('status')=='published' ? 'selected' : '' }}>Publikasi</option>
-                    <option value="archived" {{ request('status')=='archived' ? 'selected' : '' }}>Arsip</option>
+                    <option value="1" {{ request('status')==='1' ? 'selected' : '' }}>Aktif</option>
+                    <option value="0" {{ request('status')==='0' ? 'selected' : '' }}>Nonaktif</option>
                   </select>
                 </div>
 
@@ -107,10 +106,16 @@
                       <td><input type="checkbox" class="row-checkbox" value="{{ $product->id }}"></td>
 
                       <td>
-                        @php $thumb = optional($product->images->first())->path; @endphp
+                        @php
+                          $images = $product->images;
+                          $thumb = optional($images->first())->path;
+                          $tooltip = '<div style="display:flex">' .
+                            $images->map(fn($img) => "<img src='".Storage::url($img->path)."' style='width:70px;height:50px;object-fit:cover;margin-right:4px;'>")->implode('') .
+                            '</div>';
+                        @endphp
                         @if($thumb)
                           <!-- Jika produk punya gambar -->
-                          <img src="{{ Storage::url($thumb) }}" alt="thumb" style="width:60px;height:45px;object-fit:cover;border-radius:4px">
+                          <img src="{{ Storage::url($thumb) }}" alt="thumb" style="width:60px;height:45px;object-fit:cover;border-radius:4px" data-toggle="tooltip" data-html="true" title="{!! $tooltip !!}">
                         @else
                           <!-- Jika tidak ada gambar -->
                           <div style="width:60px;height:45px;background:#f1f1f1;display:flex;align-items:center;justify-content:center;color:#aaa;border-radius:4px">-</div>
@@ -136,32 +141,25 @@
                       </td>
 
                       <td>
-                        @php
-                          $status = $product->status ?? 'draft';
-                        @endphp
-                        @if($status === 'published')
-                          <label class="badge badge-success">Publikasi</label>
-                        @elseif($status === 'draft')
-                          <label class="badge badge-secondary">Draft</label>
-                        @elseif($status === 'archived')
-                          <label class="badge badge-warning">Arsip</label>
+                        @if($product->status)
+                          <label class="badge badge-success">Aktif</label>
                         @else
-                          <label class="badge badge-info">{{ ucfirst($status) }}</label>
+                          <label class="badge badge-secondary">Nonaktif</label>
                         @endif
                       </td>
 
                       <td>{{ $product->created_at?->format('Y-m-d') }}</td>
 
                       <td>
-                        <!-- Tombol aksi -->
-                        <a href="{{ route('admin.products.show', $product->id) }}" class="btn btn-sm btn-outline-primary" title="Lihat">Lihat</a>
-                        <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-sm btn-primary" title="Edit">Edit</a>
-
-                        <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Hapus produk ini?');">
-                          @csrf
-                          @method('DELETE')
-                          <button class="btn btn-sm btn-danger">Hapus</button>
-                        </form>
+                        <div class="d-flex flex-nowrap overflow-auto" style="gap:4px;">
+                          <a href="{{ route('admin.products.show', $product->id) }}" class="btn btn-sm btn-outline-primary" title="Lihat"><i class="mdi mdi-eye"></i></a>
+                          <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-sm btn-primary" title="Edit"><i class="mdi mdi-pencil"></i></a>
+                          <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" class="m-0" onsubmit="return confirm('Hapus produk ini?');">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-sm btn-danger" title="Hapus"><i class="mdi mdi-delete"></i></button>
+                          </form>
+                        </div>
                       </td>
                     </tr>
                   @empty
@@ -190,8 +188,12 @@
   </div>
 </div>
 
-@push('scripts')
+@section('script')
 <script>
+  $(function(){
+    $('[data-toggle="tooltip"]').tooltip({html:true});
+  });
+
   document.addEventListener('DOMContentLoaded', function () {
     const selectAll = document.getElementById('select-all'); // Checkbox pilih semua
     const checkboxes = document.querySelectorAll('.row-checkbox'); // Checkbox tiap baris
@@ -220,7 +222,7 @@
     });
   });
 </script>
-@endpush
+@endsection
 
 @endsection
 
