@@ -31,7 +31,8 @@ class ProductController extends Controller
     public function create()
     {
         $categories = $this->service->getAllCategories();
-        return view('admin.products.create', compact('categories'));
+        $brands = $this->service->getAllBrands();
+        return view('admin.products.create', compact('categories', 'brands'));
     }
 
     public function store(StoreProductRequest $request)
@@ -62,7 +63,8 @@ class ProductController extends Controller
         }
 
         $categories = $this->service->getAllCategories();
-        return view('admin.products.edit', compact('product', 'categories'));
+        $brands = $this->service->getAllBrands();
+        return view('admin.products.edit', compact('product', 'categories', 'brands'));
     }
 
     public function update(UpdateProductRequest $request, $id)
