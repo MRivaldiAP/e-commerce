@@ -307,18 +307,18 @@
       });
     }
 
-    // preview gambar
+    // preview dan hapus gambar
     const imagesInput = document.getElementById('images-input');
     const imagesPreview = document.getElementById('images-preview');
+    const dataTransfer = new DataTransfer();
+
     function clearChildren(el){ while(el.firstChild) el.removeChild(el.firstChild); }
 
-    if(imagesInput && imagesPreview){
-      imagesInput.addEventListener('change', function(){
-        clearChildren(imagesPreview);
-        const files = Array.from(this.files).slice(0, 10); // batasi preview 10
-        files.forEach(file => {
-          if(!file.type.startsWith('image/')) return;
-          const reader = new FileReader();
+    function refreshPreview(){
+      clearChildren(imagesPreview);
+      Array.from(dataTransfer.files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(ev){
           const wrapper = document.createElement('div');
           wrapper.style.width = '80px';
           wrapper.style.height = '80px';
@@ -326,20 +326,51 @@
           wrapper.style.marginBottom = '8px';
           wrapper.style.position = 'relative';
 
-          reader.onload = function(ev){
-            const img = document.createElement('img');
-            img.src = ev.target.result;
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.objectFit = 'cover';
-            img.style.border = '1px solid #ddd';
-            img.style.borderRadius = '4px';
+          const img = document.createElement('img');
+          img.src = ev.target.result;
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'cover';
+          img.style.border = '1px solid #ddd';
+          img.style.borderRadius = '4px';
 
-            wrapper.appendChild(img);
-            imagesPreview.appendChild(wrapper);
-          }
-          reader.readAsDataURL(file);
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.innerHTML = '&times;';
+          removeBtn.style.position = 'absolute';
+          removeBtn.style.top = '2px';
+          removeBtn.style.right = '2px';
+          removeBtn.style.width = '20px';
+          removeBtn.style.height = '20px';
+          removeBtn.style.border = 'none';
+          removeBtn.style.borderRadius = '50%';
+          removeBtn.style.background = 'rgba(0,0,0,0.6)';
+          removeBtn.style.color = '#fff';
+          removeBtn.style.lineHeight = '18px';
+          removeBtn.style.cursor = 'pointer';
+          removeBtn.addEventListener('click', function(){
+            dataTransfer.items.remove(index);
+            imagesInput.files = dataTransfer.files;
+            refreshPreview();
+          });
+
+          wrapper.appendChild(img);
+          wrapper.appendChild(removeBtn);
+          imagesPreview.appendChild(wrapper);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if(imagesInput && imagesPreview){
+      imagesInput.addEventListener('change', function(){
+        Array.from(this.files).forEach(file => {
+          if(!file.type.startsWith('image/')) return;
+          if(dataTransfer.files.length >= 10) return; // batasi 10 gambar
+          dataTransfer.items.add(file);
         });
+        imagesInput.files = dataTransfer.files;
+        refreshPreview();
       });
     }
   })();
