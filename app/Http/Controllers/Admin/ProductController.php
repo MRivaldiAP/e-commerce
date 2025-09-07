@@ -46,7 +46,7 @@ class ProductController extends Controller
             if (!empty($files)) {
                 $this->service->addImages($product->id, $files);
             }
-          
+      
             return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dibuat.');
         } catch (\Throwable $e) {
             Log::error('Create product failed: '.$e->getMessage());

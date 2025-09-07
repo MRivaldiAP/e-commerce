@@ -150,7 +150,7 @@ class ProductService
     {
         $product = Product::findOrFail($productId);
 
-        $created = collect();
+        $created = new Collection();
         foreach ($files as $file) {
             $path = $file->store('products');
             $created->push(
