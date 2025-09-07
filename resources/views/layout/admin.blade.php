@@ -50,38 +50,59 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/products')}}">
+            <a class="nav-link" data-toggle="collapse" href="#product-menu" aria-expanded="false" aria-controls="product-menu">
               <i class="mdi mdi-basket menu-icon"></i>
               <span class="menu-title">Products</span>
-              <span class="badge badge-pill badge-info">{{ $productCount }}</span>
+              <i class="menu-arrow"></i>
             </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/categories')}}">
-              <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-              <span class="menu-title">Categories</span>
-              <span class="badge badge-pill badge-info">{{ $categoryCount }}</span>
-            </a>
+            <div class="collapse" id="product-menu">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item">
+                  <a class="nav-link" href="{{url('/admin/products')}}">All Products</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{url('/admin/categories')}}">Categories</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Brands</a>
+                </li>
+              </ul>
+            </div>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/order')}}">
               <i class="mdi mdi-receipt menu-icon"></i>
               <span class="menu-title">Orders</span>
-              <span class="badge badge-pill badge-info">{{ $orderCount }}</span>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">
               <i class="mdi mdi-account-multiple menu-icon"></i>
               <span class="menu-title">Users</span>
-              <span class="badge badge-pill badge-info">{{ $userCount }}</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">
-              <i class="mdi mdi-tag-multiple menu-icon"></i>
-              <span class="menu-title">Brands</span>
-              <span class="badge badge-pill badge-info">{{ $brandCount }}</span>
+            <a class="nav-link" href="{{url('/admin/payments')}}">
+              <i class="mdi mdi-credit-card menu-icon"></i>
+              <span class="menu-title">Payments</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url('/admin/shipping')}}">
+              <i class="mdi mdi-truck menu-icon"></i>
+              <span class="menu-title">Shipping</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url('/admin/seo')}}">
+              <i class="mdi mdi-web menu-icon"></i>
+              <span class="menu-title">SEO</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url('/admin/google-ads')}}">
+              <i class="mdi mdi-google menu-icon"></i>
+              <span class="menu-title">Google Ads</span>
             </a>
           </li>
           <li class="nav-item sidebar-actions">
