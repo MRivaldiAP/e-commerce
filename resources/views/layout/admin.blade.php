@@ -23,7 +23,7 @@
         $brandCount = \App\Models\Brand::count();
     @endphp
     <div class="container-scroller">
-      <nav class="sidebar sidebar-offcanvas" id="sidebar">
+      <nav class="sidebar sidebar-offcanvas" id="sidebar" style="overflow-y: auto;">
         <div class="text-center sidebar-brand-wrapper d-flex align-items-center">
           <a class="sidebar-brand brand-logo" href="index.html"><img src="{{asset('AdminPage/assets/images/logo.svg')}}" alt="logo" /></a>
           <a class="sidebar-brand brand-logo-mini pl-4 pt-3" href="index.html"><img src="{{asset('AdminPage/assets/images/logo-mini.svg')}}" alt="logo" /></a>
@@ -43,28 +43,29 @@
               <span class="badge badge-danger text-white ml-3 rounded">3</span>
             </a>
           </li>
+          <li class="nav-item nav-category">Menu Utama</li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/')}}">
               <i class="mdi mdi-home menu-icon"></i>
-              <span class="menu-title">Dashboard</span>
+              <span class="menu-title">Dasbor</span>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" data-toggle="collapse" href="#product-menu" aria-expanded="false" aria-controls="product-menu">
               <i class="mdi mdi-basket menu-icon"></i>
-              <span class="menu-title">Products</span>
+              <span class="menu-title">Produk</span>
               <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="product-menu">
               <ul class="nav flex-column sub-menu">
                 <li class="nav-item">
-                  <a class="nav-link" href="{{url('/admin/products')}}">All Products</a>
+                  <a class="nav-link" href="{{url('/admin/products')}}">Semua Produk</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{{url('/admin/categories')}}">Categories</a>
+                  <a class="nav-link" href="{{url('/admin/categories')}}">Kategori</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Brands</a>
+                  <a class="nav-link" href="#">Merek</a>
                 </li>
               </ul>
             </div>
@@ -72,27 +73,29 @@
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/order')}}">
               <i class="mdi mdi-receipt menu-icon"></i>
-              <span class="menu-title">Orders</span>
+              <span class="menu-title">Pesanan</span>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">
               <i class="mdi mdi-account-multiple menu-icon"></i>
-              <span class="menu-title">Users</span>
+              <span class="menu-title">Pengguna</span>
             </a>
           </li>
+          <li class="nav-item nav-category">Pembayaran & Pengiriman</li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/payments')}}">
               <i class="mdi mdi-credit-card menu-icon"></i>
-              <span class="menu-title">Payments</span>
+              <span class="menu-title">Pembayaran</span>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/shipping')}}">
               <i class="mdi mdi-truck menu-icon"></i>
-              <span class="menu-title">Shipping</span>
+              <span class="menu-title">Pengiriman</span>
             </a>
           </li>
+          <li class="nav-item nav-category">Alat Marketing</li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/seo')}}">
               <i class="mdi mdi-web menu-icon"></i>
@@ -102,17 +105,17 @@
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/google-ads')}}">
               <i class="mdi mdi-google menu-icon"></i>
-              <span class="menu-title">Google Ads</span>
+              <span class="menu-title">Iklan Google</span>
             </a>
           </li>
           <li class="nav-item sidebar-actions">
             <div class="nav-link">
               <div class="mt-4">
                 <div class="border-none">
-                  <p class="text-black">Notification</p>
+                  <p class="text-black">Notifikasi</p>
                 </div>
                 <ul class="mt-4 pl-0">
-                  <li>Sign Out</li>
+                  <li>Keluar</li>
                 </ul>
               </div>
             </div>
