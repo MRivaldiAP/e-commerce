@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('sku')->nullable();
-
             $table->text('short_description')->nullable();
+
             $table->text('description')->nullable();
 
             $table->decimal('price', 12, 2);
@@ -34,6 +34,7 @@ return new class extends Migration
 
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
+
             $table->string('tags')->nullable();
 
             $table->timestamps();
