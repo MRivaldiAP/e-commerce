@@ -32,9 +32,7 @@ return new class extends Migration
 
             $table->boolean('is_featured')->default(false);
             $table->boolean('status')->default(true);
-
-            $table->string('meta_title')->nullable();
-            $table->text('meta_description')->nullable();
+            
             $table->string('tags')->nullable();
 
             $table->timestamps();
