@@ -5,7 +5,7 @@
 <!--
   Catatan:
   - Ini adalah tampilan "Tambah Produk" menggunakan template halaman yang sudah disediakan.
-  - Sesuaikan route name (products.store) dengan routing controller/service kamu.
+  - Sesuaikan route name (admin.products.store) dengan routing controller/service kamu.
   - Controller harus mengirimkan: $categories (id,name), $brands (id,name) -- sesuaikan nama jika berbeda.
   - Controller yang menangani POST harus memanggil fungsi Product service (misalnya ProductService::createFromRequest atau sejenisnya) dan menangani upload gambar.
 -->
@@ -209,6 +209,7 @@
               </div>
 
               <p class="card-description">Deskripsi & SEO</p>
+              <p class="text-muted small mb-3">Isian di bawah membantu mesin pencari memahami produk Anda.</p>
 
               <div class="row">
                 <div class="col-md-12">
@@ -239,6 +240,7 @@
                     <label class="col-sm-3 col-form-label">Judul Meta</label>
                     <div class="col-sm-9">
                       <input type="text" name="meta_title" class="form-control" value="{{ old('meta_title') }}" />
+                      <small class="form-text text-muted">Judul singkat yang muncul di hasil pencarian. Contoh: "Sepatu Lari Pria Terbaik".</small>
                     </div>
                   </div>
                 </div>
@@ -248,6 +250,7 @@
                     <label class="col-sm-3 col-form-label">Deskripsi Meta</label>
                     <div class="col-sm-9">
                       <input type="text" name="meta_description" class="form-control" value="{{ old('meta_description') }}" />
+                      <small class="form-text text-muted">Deskripsi singkat (maks. 160 karakter) untuk hasil pencarian. Contoh: "Sepatu lari ringan dan nyaman untuk segala medan."</small>
                     </div>
                   </div>
                 </div>
