@@ -36,61 +36,79 @@
               <span class="badge badge-danger text-white ml-3 rounded">3</span>
             </a>
           </li>
+          <li class="nav-item nav-category">Menu Utama</li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/')}}">
               <i class="mdi mdi-home menu-icon"></i>
-              <span class="menu-title">Dashboard</span>
+              <span class="menu-title">Dasbor</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/products')}}">
+            <a class="nav-link" data-toggle="collapse" href="#product-menu" aria-expanded="false" aria-controls="product-menu">
               <i class="mdi mdi-basket menu-icon"></i>
               <span class="menu-title">Produk</span>
+              <i class="menu-arrow"></i>
             </a>
+            <div class="collapse" id="product-menu">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item">
+                  <a class="nav-link" href="{{url('/admin/products')}}">Semua Produk</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{url('/admin/categories')}}">Kategori</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Merek</a>
+                </li>
+              </ul>
+            </div>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/order')}}">
-              <i class="mdi mdi-currency-usd menu-icon"></i>
+              <i class="mdi mdi-receipt menu-icon"></i>
               <span class="menu-title">Pesanan</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="pages/forms/basic_elements.html">
-              <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-              <span class="menu-title">Forms</span>
+            <a class="nav-link" href="#">
+              <i class="mdi mdi-account-multiple menu-icon"></i>
+              <span class="menu-title">Pengguna</span>
+            </a>
+          </li>
+          <li class="nav-item nav-category">Pembayaran & Pengiriman</li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url('/admin/payments')}}">
+              <i class="mdi mdi-credit-card menu-icon"></i>
+              <span class="menu-title">Pembayaran</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="pages/charts/chartjs.html">
-              <i class="mdi mdi-chart-bar menu-icon"></i>
-              <span class="menu-title">Charts</span>
+            <a class="nav-link" href="{{url('/admin/shipping')}}">
+              <i class="mdi mdi-truck menu-icon"></i>
+              <span class="menu-title">Pengiriman</span>
+            </a>
+          </li>
+          <li class="nav-item nav-category">Alat Marketing</li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url('/admin/seo')}}">
+              <i class="mdi mdi-web menu-icon"></i>
+              <span class="menu-title">SEO</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="pages/tables/basic-table.html">
-              <i class="mdi mdi-table-large menu-icon"></i>
-              <span class="menu-title">Tables</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <span class="nav-link" href="#">
-              <span class="menu-title">Docs</span>
-            </span>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="https://www.bootstrapdash.com/demo/breeze-free/documentation/documentation.html">
-              <i class="mdi mdi-file-document-box menu-icon"></i>
-              <span class="menu-title">Documentation</span>
+            <a class="nav-link" href="{{url('/admin/google-ads')}}">
+              <i class="mdi mdi-google menu-icon"></i>
+              <span class="menu-title">Iklan Google</span>
             </a>
           </li>
           <li class="nav-item sidebar-actions">
             <div class="nav-link">
               <div class="mt-4">
                 <div class="border-none">
-                  <p class="text-black">Notification</p>
+                  <p class="text-black">Notifikasi</p>
                 </div>
                 <ul class="mt-4 pl-0">
-                  <li>Sign Out</li>
+                  <li>Keluar</li>
                 </ul>
               </div>
             </div>
