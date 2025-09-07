@@ -43,44 +43,59 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/products')}}">
+            <a class="nav-link" data-toggle="collapse" href="#product-menu" aria-expanded="false" aria-controls="product-menu">
               <i class="mdi mdi-basket menu-icon"></i>
-              <span class="menu-title">Produk</span>
+              <span class="menu-title">Products</span>
+              <i class="menu-arrow"></i>
             </a>
+            <div class="collapse" id="product-menu">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item">
+                  <a class="nav-link" href="{{url('/admin/products')}}">All Products</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{url('/admin/categories')}}">Categories</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Brands</a>
+                </li>
+              </ul>
+            </div>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/order')}}">
-              <i class="mdi mdi-currency-usd menu-icon"></i>
-              <span class="menu-title">Pesanan</span>
+              <i class="mdi mdi-receipt menu-icon"></i>
+              <span class="menu-title">Orders</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="pages/forms/basic_elements.html">
-              <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-              <span class="menu-title">Forms</span>
+            <a class="nav-link" href="#">
+              <i class="mdi mdi-account-multiple menu-icon"></i>
+              <span class="menu-title">Users</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="pages/charts/chartjs.html">
-              <i class="mdi mdi-chart-bar menu-icon"></i>
-              <span class="menu-title">Charts</span>
+            <a class="nav-link" href="{{url('/admin/payments')}}">
+              <i class="mdi mdi-credit-card menu-icon"></i>
+              <span class="menu-title">Payments</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="pages/tables/basic-table.html">
-              <i class="mdi mdi-table-large menu-icon"></i>
-              <span class="menu-title">Tables</span>
+            <a class="nav-link" href="{{url('/admin/shipping')}}">
+              <i class="mdi mdi-truck menu-icon"></i>
+              <span class="menu-title">Shipping</span>
             </a>
           </li>
           <li class="nav-item">
-            <span class="nav-link" href="#">
-              <span class="menu-title">Docs</span>
-            </span>
+            <a class="nav-link" href="{{url('/admin/seo')}}">
+              <i class="mdi mdi-web menu-icon"></i>
+              <span class="menu-title">SEO</span>
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="https://www.bootstrapdash.com/demo/breeze-free/documentation/documentation.html">
-              <i class="mdi mdi-file-document-box menu-icon"></i>
-              <span class="menu-title">Documentation</span>
+            <a class="nav-link" href="{{url('/admin/google-ads')}}">
+              <i class="mdi mdi-google menu-icon"></i>
+              <span class="menu-title">Google Ads</span>
             </a>
           </li>
           <li class="nav-item sidebar-actions">
