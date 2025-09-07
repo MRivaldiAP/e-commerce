@@ -92,7 +92,7 @@ class ProductService
 
             foreach ($product->images as $img) {
                 if ($img->path) {
-                    Storage::delete($img->path);
+                    Storage::disk('public')->delete($img->path);
                 }
                 $img->delete();
             }
@@ -152,7 +152,7 @@ class ProductService
 
         $created = new Collection();
         foreach ($files as $file) {
-            $path = $file->store('products');
+            $path = $file->store('products', 'public');
             $created->push(
                 $product->images()->create(['path' => $path])
             );
@@ -173,7 +173,7 @@ class ProductService
         $image = $product->images()->whereKey($imageId)->firstOrFail();
 
         if ($image->path) {
-            Storage::delete($image->path);
+            Storage::disk('public')->delete($image->path);
         }
 
         return (bool) $image->delete();
@@ -186,7 +186,7 @@ class ProductService
 
             foreach ($product->images as $img) {
                 if ($img->path) {
-                    Storage::delete($img->path);
+                    Storage::disk('public')->delete($img->path);
                 }
                 $img->delete();
             }
