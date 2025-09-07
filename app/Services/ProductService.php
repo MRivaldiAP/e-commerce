@@ -152,7 +152,7 @@ class ProductService
 
         $created = new Collection();
         foreach ($files as $file) {
-            $path = $file->store('products', 'public');
+            $path = $file->store('products', ['disk' => 'public']);
             $created->push(
                 $product->images()->create(['path' => $path])
             );
