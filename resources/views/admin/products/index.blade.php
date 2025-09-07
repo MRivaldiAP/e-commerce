@@ -1,5 +1,11 @@
 @extends('layout.admin')
 @section('content')
+<style>
+  .tooltip-inner {
+    max-width: none;
+    padding: 0;
+  }
+</style>
 <div class="main-panel">
   <div class="content-wrapper">
     <div class="page-header">
@@ -108,14 +114,14 @@
                       <td>
                         @php
                           $images = $product->images;
-                          $thumb = optional($images->first())->path;
+                          $thumb  = optional($images->first())->path;
                           $tooltip = '<div style="display:flex">' .
-                            $images->map(fn($img) => "<img src='".Storage::url($img->path)."' style='width:70px;height:50px;object-fit:cover;margin-right:4px;'>")->implode('') .
+                            $images->map(fn($img) => "<img src='" . asset('storage/' . $img->path) . "' style='width:70px;height:50px;object-fit:cover;margin-right:4px;'>")->implode('') .
                             '</div>';
                         @endphp
                         @if($thumb)
                           <!-- Jika produk punya gambar -->
-                          <img src="{{ Storage::url($thumb) }}" alt="thumb" style="width:60px;height:45px;object-fit:cover;border-radius:4px" data-toggle="tooltip" data-html="true" title="{!! $tooltip !!}">
+                          <img src="{{ asset('storage/' . $thumb) }}" alt="thumb" style="width:60px;height:45px;object-fit:cover;border-radius:4px" data-toggle="tooltip" data-html="true" title="{!! $tooltip !!}">
                         @else
                           <!-- Jika tidak ada gambar -->
                           <div style="width:60px;height:45px;background:#f1f1f1;display:flex;align-items:center;justify-content:center;color:#aaa;border-radius:4px">-</div>
