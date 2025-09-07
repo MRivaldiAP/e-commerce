@@ -15,6 +15,13 @@
     <link rel="shortcut icon" href="{{asset('AdminPage/assets/images/favicon.png')}}" />
   </head>
   <body>
+    @php
+        $productCount = \App\Models\Product::count();
+        $categoryCount = \App\Models\Category::count();
+        $orderCount = \App\Models\Order::count();
+        $userCount = \App\Models\User::count();
+        $brandCount = \App\Models\Brand::count();
+    @endphp
     <div class="container-scroller">
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <div class="text-center sidebar-brand-wrapper d-flex align-items-center">
@@ -45,42 +52,36 @@
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/products')}}">
               <i class="mdi mdi-basket menu-icon"></i>
-              <span class="menu-title">Produk</span>
+              <span class="menu-title">Products</span>
+              <span class="badge badge-pill badge-info">{{ $productCount }}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url('/admin/categories')}}">
+              <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+              <span class="menu-title">Categories</span>
+              <span class="badge badge-pill badge-info">{{ $categoryCount }}</span>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/order')}}">
-              <i class="mdi mdi-currency-usd menu-icon"></i>
-              <span class="menu-title">Pesanan</span>
+              <i class="mdi mdi-receipt menu-icon"></i>
+              <span class="menu-title">Orders</span>
+              <span class="badge badge-pill badge-info">{{ $orderCount }}</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="pages/forms/basic_elements.html">
-              <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-              <span class="menu-title">Forms</span>
+            <a class="nav-link" href="#">
+              <i class="mdi mdi-account-multiple menu-icon"></i>
+              <span class="menu-title">Users</span>
+              <span class="badge badge-pill badge-info">{{ $userCount }}</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="pages/charts/chartjs.html">
-              <i class="mdi mdi-chart-bar menu-icon"></i>
-              <span class="menu-title">Charts</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="pages/tables/basic-table.html">
-              <i class="mdi mdi-table-large menu-icon"></i>
-              <span class="menu-title">Tables</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <span class="nav-link" href="#">
-              <span class="menu-title">Docs</span>
-            </span>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="https://www.bootstrapdash.com/demo/breeze-free/documentation/documentation.html">
-              <i class="mdi mdi-file-document-box menu-icon"></i>
-              <span class="menu-title">Documentation</span>
+            <a class="nav-link" href="#">
+              <i class="mdi mdi-tag-multiple menu-icon"></i>
+              <span class="menu-title">Brands</span>
+              <span class="badge badge-pill badge-info">{{ $brandCount }}</span>
             </a>
           </li>
           <li class="nav-item sidebar-actions">
