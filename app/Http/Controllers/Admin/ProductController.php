@@ -49,6 +49,7 @@ class ProductController extends Controller
 
             return redirect()->route('admin.products.index')
                 ->with('success', 'Produk berhasil dibuat.');
+
         } catch (\Throwable $e) {
             Log::error('Create product failed: '.$e->getMessage());
             return back()->withInput()->with('error', 'Gagal membuat produk.');
