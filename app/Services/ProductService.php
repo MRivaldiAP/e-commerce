@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductImage;
+use App\Models\Brand;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,7 @@ class ProductService
             $query->where('price', '<=', $filters['max_price']);
         }
 
-        if (!empty($filters['status'])) {
+        if (isset($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 
@@ -149,7 +150,7 @@ class ProductService
     {
         $product = Product::findOrFail($productId);
 
-        $created = collect();
+        $created = new Collection();
         foreach ($files as $file) {
             $path = $file->store('products');
             $created->push(
@@ -197,6 +198,11 @@ class ProductService
     public function getAllCategories(): Collection
     {
         return Category::withCount('products')->orderBy('name')->get();
+    }
+
+    public function getAllBrands(): Collection
+    {
+        return Brand::orderBy('name')->get();
     }
 
     public function getCategoryById(int $id): ?Category
