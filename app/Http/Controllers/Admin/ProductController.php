@@ -8,6 +8,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Models\Product;
 
 class ProductController extends Controller
 {
@@ -171,7 +172,7 @@ class ProductController extends Controller
 
     public function bulk(Request $request)
     {
-        $ids = $request->input('ids', []);
+        $ids = json_decode($request->input('ids', '[]'), true);
 
         if (!empty($ids)) {
             Product::whereIn('id', $ids)->delete();
