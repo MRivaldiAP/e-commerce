@@ -98,7 +98,7 @@
 
                 <!-- Tombol submit filter -->
                 <div class="col-md-1 mb-2">
-                  <button class="btn btn-primary w-100">Filter</button>
+                  <button class="btn btn-primary w-100"><i class="mdi mdi-filter"></i></button>
                 </div>
               </div>
             </form>
