@@ -1,9 +1,23 @@
 @extends('layout.admin')
 @section('content')
 <style>
-  .tooltip-inner {
-    max-width: none;
-    padding: 0;
+  .image-tooltip {
+    position: absolute;
+    display: flex;
+    gap: 4px;
+    background: #fff;
+    padding: 4px;
+    border: 1px solid rgba(0,0,0,.2);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    z-index: 1000;
+  }
+
+  .image-tooltip img {
+    width: 70px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 3px;
   }
 </style>
 <div class="main-panel">
@@ -115,13 +129,11 @@
                         @php
                           $images = $product->images;
                           $thumb  = optional($images->first())->path;
-                          $tooltip = '<div style="display:flex">' .
-                            $images->map(fn($img) => "<img src='" . asset('storage/' . $img->path) . "' style='width:70px;height:50px;object-fit:cover;margin-right:4px;'>")->implode('') .
-                            '</div>';
+                          $urls   = $images->map(fn($img) => asset('storage/' . $img->path));
                         @endphp
                         @if($thumb)
                           <!-- Jika produk punya gambar -->
-                          <img src="{{ asset('storage/' . $thumb) }}" alt="thumb" style="width:60px;height:45px;object-fit:cover;border-radius:4px" data-toggle="tooltip" data-html="true" title="{!! $tooltip !!}">
+                          <img src="{{ asset('storage/' . $thumb) }}" alt="thumb" style="width:60px;height:45px;object-fit:cover;border-radius:4px" class="product-thumb" data-images='@json($urls)'>
                         @else
                           <!-- Jika tidak ada gambar -->
                           <div style="width:60px;height:45px;background:#f1f1f1;display:flex;align-items:center;justify-content:center;color:#aaa;border-radius:4px">-</div>
@@ -196,11 +208,28 @@
 
 @section('script')
 <script>
-  $(function(){
-    $('[data-toggle="tooltip"]').tooltip({html:true});
-  });
-
   document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.product-thumb').forEach(function (thumb) {
+      let tooltip;
+      const urls = JSON.parse(thumb.dataset.images || '[]');
+
+      thumb.addEventListener('mouseenter', function () {
+        if (!urls.length) return;
+        tooltip = document.createElement('div');
+        tooltip.className = 'image-tooltip';
+        tooltip.innerHTML = urls.map(u => `<img src="${u}" alt="">`).join('');
+        document.body.appendChild(tooltip);
+        const rect = thumb.getBoundingClientRect();
+        tooltip.style.top = `${window.scrollY + rect.bottom + 5}px`;
+        tooltip.style.left = `${window.scrollX + rect.left}px`;
+      });
+
+      thumb.addEventListener('mouseleave', function () {
+        tooltip?.remove();
+        tooltip = null;
+      });
+    });
+
     const selectAll = document.getElementById('select-all'); // Checkbox pilih semua
     const checkboxes = document.querySelectorAll('.row-checkbox'); // Checkbox tiap baris
     const bulkDeleteBtn = document.getElementById('bulk-delete-btn'); // Tombol hapus massal
