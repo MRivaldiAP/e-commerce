@@ -308,7 +308,6 @@
                 @method('DELETE')
               </form>
             @endforeach
-
           </div>
         </div>
       </div>
