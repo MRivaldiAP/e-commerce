@@ -210,11 +210,7 @@
                         @foreach($product->images as $img)
                           <div style="position:relative;margin-right:8px;margin-bottom:8px;width:80px;height:80px;">
                             <img src="{{ asset('storage/' . $img->path) }}" style="width:100%;height:100%;object-fit:cover;border:1px solid #ddd;border-radius:4px;" />
-                            <form action="{{ url('admin/products/'.$product->id.'/images/'.$img->id) }}" method="POST" style="position:absolute;top:2px;right:2px;">
-                              @csrf
-                              @method('DELETE')
-                              <button type="submit" style="width:20px;height:20px;border:none;border-radius:50%;background:rgba(0,0,0,0.6);color:#fff;line-height:18px;cursor:pointer;">&times;</button>
-                            </form>
+                            <button type="submit" form="delete-image-{{ $img->id }}" style="position:absolute;top:2px;right:2px;width:20px;height:20px;border:none;border-radius:50%;background:rgba(0,0,0,0.6);color:#fff;line-height:18px;cursor:pointer;">&times;</button>
                           </div>
                         @endforeach
                       </div>
@@ -298,7 +294,7 @@
               </div>
 
               <div class="row mt-4">
-                <div class="col-md-12 text-right">
+              <div class="col-md-12 text-right">
                   <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">Batal</a>
                   <button type="submit" class="btn btn-primary">Perbarui Produk</button>
                 </div>
@@ -306,6 +302,12 @@
 
             </form>
 
+            @foreach($product->images as $img)
+              <form id="delete-image-{{ $img->id }}" action="{{ url('admin/products/'.$product->id.'/images/'.$img->id) }}" method="POST" style="display:none;">
+                @csrf
+                @method('DELETE')
+              </form>
+            @endforeach
           </div>
         </div>
       </div>
