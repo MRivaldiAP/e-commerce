@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Herbal Green</title>
-    <link rel="stylesheet" href="{{ route('themes.assets', ['theme' => $theme, 'file' => 'theme.css']) }}">
-    <script src="{{ route('themes.assets', ['theme' => $theme, 'file' => 'theme.js']) }}" defer></script>
+    <link rel="stylesheet" href="{{ route('themes.assets', ['theme' => $theme, 'path' => 'theme.css']) }}">
+    <script src="{{ route('themes.assets', ['theme' => $theme, 'path' => 'theme.js']) }}" defer></script>
 </head>
 <body>
 <header class="menu-bar">

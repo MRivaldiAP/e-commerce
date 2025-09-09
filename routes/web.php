@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ThemeController;
+use App\Http\Controllers\ThemeAssetController;
 use App\Models\Setting;
 
 /*
@@ -27,14 +28,9 @@ Route::get('/', function () {
     abort(404);
 });
 
-Route::get('themes/{theme}/assets/{file}', function ($theme, $file) {
-    $path = base_path("themes/{$theme}/assets/{$file}");
-    if (File::exists($path)) {
-        return response()->file($path);
-    }
-    abort(404);
-})->where('file', '.+')
-  ->name('themes.assets');
+Route::get('themes/{theme}/assets/{path}', ThemeAssetController::class)
+    ->where('path', '.*')
+    ->name('themes.assets');
 
 Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
     Route::get('/', function () {
