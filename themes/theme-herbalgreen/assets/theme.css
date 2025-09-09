@@ -1,0 +1,89 @@
+:root {
+  --color-bg: #ffffff;
+  --color-primary: #2e7d32;
+  --color-secondary: #81c784;
+  --color-text: #1b5e20;
+  --font-base: 'Helvetica Neue', sans-serif;
+  --spacing: 1rem;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-base);
+}
+
+.menu-bar {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+.menu-bar nav ul {
+  list-style: none;
+  margin: 0;
+  padding: var(--spacing);
+  display: flex;
+  gap: var(--spacing);
+}
+.menu-bar a {
+  color: #fff;
+  text-decoration: none;
+}
+.menu-bar a:hover {
+  text-decoration: underline;
+}
+
+.hero {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: var(--color-secondary);
+  color: #fff;
+}
+
+section {
+  padding: 4rem 2rem;
+}
+
+.product-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing);
+  justify-content: center;
+}
+.product-card {
+  border: 1px solid var(--color-secondary);
+  border-radius: 4px;
+  padding: var(--spacing);
+  width: 150px;
+  text-align: center;
+}
+
+.contact form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+  max-width: 400px;
+  margin: 0 auto;
+}
+.contact input, .contact textarea {
+  padding: var(--spacing);
+  border: 1px solid var(--color-secondary);
+  border-radius: 4px;
+}
+.contact button {
+  background-color: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: var(--spacing);
+  cursor: pointer;
+}
+.contact button:hover {
+  background-color: var(--color-secondary);
+}
+
+footer {
+  text-align: center;
+  padding: 2rem;
+  background-color: var(--color-primary);
+  color: #fff;
+}
