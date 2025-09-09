@@ -1,0 +1,18 @@
+{
+  "name": "herbalgreen",
+  "displayName": "Herbal Green",
+  "version": "1.0.0",
+  "description": "Calm herbal theme with white and green tones.",
+  "author": "",
+  "tokens": {
+    "colors": {
+      "primary": "#2e7d32",
+      "secondary": "#81c784",
+      "background": "#ffffff",
+      "text": "#1b5e20"
+    },
+    "fonts": {
+      "base": "'Helvetica Neue', sans-serif"
+    }
+  }
+}
