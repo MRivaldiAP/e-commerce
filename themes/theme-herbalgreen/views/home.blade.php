@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Herbal Green</title>
-    <link rel="stylesheet" href="{{ asset('themes/theme-herbalgreen/assets/theme.css') }}">
-    <script src="{{ asset('themes/theme-herbalgreen/assets/theme.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/assets/theme.css') }}">
+    <script src="{{ asset('themes/' . $theme . '/assets/theme.js') }}" defer></script>
 </head>
 <body>
 <header class="menu-bar">
