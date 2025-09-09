@@ -27,6 +27,10 @@ Route::get('/', function () {
     abort(404);
 });
 
+Route::get('themes/{theme}/assets/{path}', ThemeAssetController::class)
+    ->where('path', '.*')
+    ->name('themes.assets');
+
 Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
     Route::get('/', function () {
         return view('layout.admin');
