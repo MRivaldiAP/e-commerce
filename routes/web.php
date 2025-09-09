@@ -27,6 +27,15 @@ Route::get('/', function () {
     abort(404);
 });
 
+Route::get('themes/{theme}/assets/{file}', function ($theme, $file) {
+    $path = base_path("themes/{$theme}/assets/{$file}");
+    if (File::exists($path)) {
+        return response()->file($path);
+    }
+    abort(404);
+})->where('file', '.+')
+  ->name('themes.assets');
+
 Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
     Route::get('/', function () {
         return view('layout.admin');
