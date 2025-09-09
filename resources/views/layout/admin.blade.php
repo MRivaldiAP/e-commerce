@@ -82,6 +82,12 @@
               <span class="menu-title">Pengguna</span>
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url('/admin/themes')}}">
+              <i class="mdi mdi-palette menu-icon"></i>
+              <span class="menu-title">Tema</span>
+            </a>
+          </li>
           <li class="nav-item nav-category">Pembayaran & Pengiriman</li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/payments')}}">

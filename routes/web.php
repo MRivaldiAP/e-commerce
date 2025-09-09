@@ -1,8 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ThemeController;
+use App\Http\Controllers\ThemeAssetController;
+use App\Models\Setting;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,10 +20,23 @@ use App\Http\Controllers\Admin\CategoryController;
 */
 
 Route::get('/', function () {
-    return view('layout.admin');
+    $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
+    $viewPath = base_path("themes/{$activeTheme}/views/home.blade.php");
+    if (File::exists($viewPath)) {
+        return view()->file($viewPath, ['theme' => $activeTheme]);
+    }
+    abort(404);
 });
 
+Route::get('themes/{theme}/assets/{path}', ThemeAssetController::class)
+    ->where('path', '.*')
+    ->name('themes.assets');
+
 Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
+    Route::get('/', function () {
+        return view('layout.admin');
+    });
+
     // products
     Route::get('products', [ProductController::class, 'index'])->name('admin.products.index');
     Route::get('products/create', [ProductController::class, 'create'])->name('admin.products.create');
@@ -30,7 +47,6 @@ Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
     Route::patch('products/{id}', [ProductController::class, 'update']);
     Route::delete('products/{id}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
     Route::post('products/bulk', [ProductController::class, 'bulk'])->name('admin.products.bulk');
-
 
     Route::post('products/{id}/stock', [ProductController::class, 'updateStock']);
     Route::post('products/{id}/images', [ProductController::class, 'uploadImages']);
@@ -48,4 +64,8 @@ Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
     Route::patch('categories/{id}', [CategoryController::class, 'update']);
     Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('admin.categories.destroy');
     Route::get('categories/{id}/products', [CategoryController::class, 'products'])->name('admin.categories.products');
+
+    // themes
+    Route::get('themes', [ThemeController::class, 'index'])->name('admin.themes.index');
+    Route::post('themes', [ThemeController::class, 'update'])->name('admin.themes.update');
 });
