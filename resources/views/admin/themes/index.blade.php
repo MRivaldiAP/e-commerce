@@ -17,7 +17,7 @@
                   <label for="theme">Tema</label>
                   <select name="theme" id="theme" class="form-control">
                     @foreach($themes as $theme)
-                      <option value="{{ $theme }}" {{ $active === $theme ? 'selected' : '' }}>{{ ucfirst(str_replace('theme-', '', $theme)) }}</option>
+                      <option value="{{ $theme }}" {{ $active === $theme ? 'selected' : '' }}>{{ ucfirst(substr($theme, 6)) }}</option>
                     @endforeach
                   </select>
                 </div>

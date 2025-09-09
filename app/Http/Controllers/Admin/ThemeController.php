@@ -22,10 +22,19 @@ class ThemeController extends Controller
             'theme' => 'required|string'
         ]);
 
+        $theme = $request->input('theme');
+
         Setting::updateOrCreate(
             ['key' => 'active_theme'],
-            ['value' => $request->input('theme')]
+            ['value' => $theme]
         );
+
+        $source = base_path("themes/{$theme}/assets");
+        $destination = public_path("themes/{$theme}");
+        if (File::exists($source)) {
+            File::ensureDirectoryExists($destination);
+            File::copyDirectory($source, $destination);
+        }
 
         return redirect()->route('admin.themes.index')->with('success', 'Theme updated.');
     }

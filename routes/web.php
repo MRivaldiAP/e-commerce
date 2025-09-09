@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ThemeController;
-use App\Http\Controllers\ThemeAssetController;
 use App\Models\Setting;
 
 /*
