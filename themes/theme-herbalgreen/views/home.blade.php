@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Herbal Green</title>
-    <link rel="stylesheet" href="{{ asset('themes/theme-herbalgreen/assets/theme.css') }}">
-    <script src="{{ asset('themes/theme-herbalgreen/assets/theme.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/theme.css') }}">
+    <script src="{{ asset('themes/' . $theme . '/theme.js') }}" defer></script>
 </head>
 <body>
 <header class="menu-bar">
@@ -24,6 +24,7 @@
 <section id="hero" class="hero">
     <h1>Welcome to Herbal Green</h1>
     <p>Feel the calm of nature's touch.</p>
+    <button class="cta" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'});">Shop Now</button>
 </section>
 
 <section id="about" class="about">
