@@ -6,6 +6,8 @@
     <title>Ogani</title>
     <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/theme.css') }}">
+    <script src="{{ asset('themes/' . $theme . '/theme.js') }}" defer></script>
 </head>
 <body>
 <div class="shipping-bar">Fresh Produce Delivered</div>
