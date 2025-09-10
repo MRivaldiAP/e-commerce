@@ -1,11 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Models\Setting;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ThemeAssetController;
+use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\ThemeController;
-use App\Models\Setting;
 
 /*
 |--------------------------------------------------------------------------
