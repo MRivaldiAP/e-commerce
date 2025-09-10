@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ogani</title>
+    <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/theme.css') }}">
     <script src="{{ asset('themes/' . $theme . '/theme.js') }}" defer></script>
 </head>
@@ -94,5 +96,8 @@
 <footer>
     <p>&copy; {{ date('Y') }} Ogani</p>
 </footer>
+<script src="{{ asset('themes/' . $theme . '/js/jquery.min.js') }}"></script>
+<script src="{{ asset('themes/' . $theme . '/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('themes/' . $theme . '/js/main.js') }}"></script>
 </body>
 </html>
