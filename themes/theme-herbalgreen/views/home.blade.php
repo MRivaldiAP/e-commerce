@@ -8,23 +8,31 @@
     <script src="{{ asset('themes/' . $theme . '/theme.js') }}" defer></script>
 </head>
 <body>
-<header class="menu-bar">
-    <nav>
+<div class="shipping-bar">Free Worldwide Shipping</div>
+<header class="site-header">
+    <div class="logo">TEA</div>
+    <nav class="main-nav">
         <ul>
-            <li><a href="#hero">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#products">Products</a></li>
-            <li><a href="#services">Services</a></li>
-            <li><a href="#testimonials">Testimonials</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="#hero">Homepage</a></li>
+            <li><a href="#products">Tea Collection</a></li>
+            <li><a href="#testimonials">News</a></li>
+            <li><a href="#contact">Contact Us</a></li>
         </ul>
     </nav>
+    <div class="header-icons">
+        <span>🔍</span>
+        <span>👤</span>
+        <span>🛒</span>
+    </div>
 </header>
 
 <section id="hero" class="hero">
-    <h1>Welcome to Herbal Green</h1>
-    <p>Feel the calm of nature's touch.</p>
-    <button class="cta" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'});">Shop Now</button>
+    <div class="hero-content">
+        <span class="tagline">Go Natural</span>
+        <h1>The Best Time to Drink Tea</h1>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        <a href="#products" class="cta">Shop Now</a>
+    </div>
 </section>
 
 <section id="about" class="about">
