@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Herbal Green</title>
-    <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/theme.css') }}">
-    <script src="{{ asset('themes/' . $theme . '/theme.js') }}" defer></script>
+    <title>Ogani</title>
+    <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/css/style.css') }}">
 </head>
 <body>
-<div class="shipping-bar">Free Worldwide Shipping</div>
+<div class="shipping-bar">Fresh Produce Delivered</div>
 <header class="site-header">
-    <div class="logo">TEA</div>
+    <div class="logo">OGANI</div>
     <nav class="main-nav">
         <ul>
-            <li><a href="#hero">Homepage</a></li>
-            <li><a href="#products">Tea Collection</a></li>
-            <li><a href="#testimonials">News</a></li>
-            <li><a href="#contact">Contact Us</a></li>
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#products">Shop</a></li>
+            <li><a href="#testimonials">Blog</a></li>
+            <li><a href="#contact">Contact</a></li>
         </ul>
     </nav>
     <div class="header-icons">
@@ -28,16 +28,16 @@
 
 <section id="hero" class="hero">
     <div class="hero-content">
-        <span class="tagline">Go Natural</span>
-        <h1>The Best Time to Drink Tea</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        <span class="tagline">Fresh & Organic</span>
+        <h1>Your Daily Groceries</h1>
+        <p>Get high-quality organic produce every day.</p>
         <a href="#products" class="cta">Shop Now</a>
     </div>
 </section>
 
 <section id="about" class="about">
     <h2>About Us</h2>
-    <p>We provide herbal products to bring balance and serenity.</p>
+    <p>We deliver fresh organic products to keep you healthy.</p>
 </section>
 
 <section id="products" class="products">
@@ -56,9 +56,9 @@
 <section id="services" class="services">
     <h2>Our Services</h2>
     <ul>
-        <li>Consultation</li>
-        <li>Custom Blends</li>
-        <li>Workshops</li>
+        <li>Farm-to-table delivery</li>
+        <li>Custom produce boxes</li>
+        <li>Seasonal recipes</li>
     </ul>
 </section>
 
@@ -69,7 +69,7 @@
         <span>- Happy Customer</span>
     </div>
     <div class="testimonial">
-        <p>"I feel more relaxed than ever."</p>
+        <p>"Freshest veggies in town."</p>
         <span>- Satisfied Client</span>
     </div>
 </section>
@@ -92,7 +92,10 @@
 </section>
 
 <footer>
-    <p>&copy; {{ date('Y') }} Herbal Green</p>
+    <p>&copy; {{ date('Y') }} Ogani</p>
 </footer>
+<script src="{{ asset('themes/' . $theme . '/js/jquery.min.js') }}"></script>
+<script src="{{ asset('themes/' . $theme . '/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('themes/' . $theme . '/js/main.js') }}"></script>
 </body>
 </html>
