@@ -33,6 +33,7 @@ class PageController extends Controller
             'hero' => [
                 'label' => 'Hero',
                 'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'hero.visible'],
                     ['type' => 'image', 'label' => 'Background Image', 'id' => 'hero.image'],
                     ['type' => 'text', 'label' => 'Tagline', 'id' => 'hero.tagline'],
                     ['type' => 'text', 'label' => 'Heading', 'id' => 'hero.heading'],
@@ -44,6 +45,7 @@ class PageController extends Controller
             'about' => [
                 'label' => 'About',
                 'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'about.visible'],
                     ['type' => 'text', 'label' => 'Heading', 'id' => 'about.heading'],
                     ['type' => 'textarea', 'label' => 'Text', 'id' => 'about.text'],
                 ],
@@ -58,7 +60,30 @@ class PageController extends Controller
             'testimonials' => [
                 'label' => 'Testimonials',
                 'elements' => [
-                    ['type' => 'repeatable', 'id' => 'testimonials.items'],
+                    ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'testimonials.visible'],
+                    ['type' => 'repeatable', 'id' => 'testimonials.items', 'fields' => [
+                        ['name' => 'name', 'placeholder' => 'Name'],
+                        ['name' => 'title', 'placeholder' => 'Title'],
+                        ['name' => 'text', 'placeholder' => 'Testimonial', 'type' => 'textarea'],
+                    ]],
+                ],
+            ],
+            'services' => [
+                'label' => 'Services',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'services.visible'],
+                    ['type' => 'text', 'label' => 'Heading', 'id' => 'services.heading'],
+                    ['type' => 'repeatable', 'id' => 'services.items', 'fields' => [
+                        ['name' => 'title', 'placeholder' => 'Service Title'],
+                    ]],
+                ],
+            ],
+            'contact' => [
+                'label' => 'Contact',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'contact.visible'],
+                    ['type' => 'text', 'label' => 'Heading', 'id' => 'contact.heading'],
+                    ['type' => 'textarea', 'label' => 'Map Embed', 'id' => 'contact.map'],
                 ],
             ],
             'footer' => [

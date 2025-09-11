@@ -10,45 +10,39 @@
           <div class="card-header">{{ $section['label'] }}</div>
           <div class="card-body">
             @foreach ($section['elements'] as $element)
-              <div class="form-group">
-                @if ($element['type'] === 'checkbox')
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" data-key="{{ $element['id'] }}" {{ ($settings[$element['id']] ?? '1') == '1' ? 'checked' : '' }}>
-                    <label class="form-check-label">{{ $element['label'] }}</label>
-                  </div>
-                @elseif ($element['type'] === 'text')
-                  <label>{{ $element['label'] }}</label>
-                  <input type="text" class="form-control" data-key="{{ $element['id'] }}" value="{{ $settings[$element['id']] ?? '' }}">
-                @elseif ($element['type'] === 'textarea')
-                  <label>{{ $element['label'] }}</label>
-                  <textarea class="form-control" data-key="{{ $element['id'] }}">{{ $settings[$element['id']] ?? '' }}</textarea>
-                @elseif ($element['type'] === 'image')
-                  <label>{{ $element['label'] }}</label>
-                  <input type="file" class="form-control-file" data-key="{{ $element['id'] }}">
-                @elseif ($element['type'] === 'repeatable')
-                  @php $items = json_decode($settings[$element['id']] ?? '[]', true); @endphp
-                  <div data-repeatable="{{ $element['id'] }}">
-                    <div class="repeatable-items" id="testimonial-items">
-                      @foreach ($items as $item)
-                        <div class="repeatable-item mb-2">
-                          <input type="text" class="form-control mb-1" data-field="name" placeholder="Name" value="{{ $item['name'] ?? '' }}">
-                          <input type="text" class="form-control mb-1" data-field="title" placeholder="Title" value="{{ $item['title'] ?? '' }}">
-                          <textarea class="form-control mb-1" data-field="text" placeholder="Testimonial">{{ $item['text'] ?? '' }}</textarea>
-                          <button type="button" class="btn btn-sm btn-danger remove-item">Remove</button>
-                        </div>
-                      @endforeach
+                <div class="form-group">
+                  @if ($element['type'] === 'checkbox')
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" data-key="{{ $element['id'] }}" {{ ($settings[$element['id']] ?? '1') == '1' ? 'checked' : '' }}>
+                      <label class="form-check-label">{{ $element['label'] }}</label>
                     </div>
-                    <button type="button" class="btn btn-sm btn-secondary add-item">Add Testimonial</button>
-                    <textarea class="d-none" id="testimonials-data" data-key="{{ $element['id'] }}">{{ json_encode($items) }}</textarea>
-                  </div>
-                @else
-                  <p class="text-muted mb-0">{{ $element['label'] }}</p>
-                @endif
+                  @elseif ($element['type'] === 'text')
+                    <label>{{ $element['label'] }}</label>
+                    <input type="text" class="form-control" data-key="{{ $element['id'] }}" value="{{ $settings[$element['id']] ?? '' }}">
+                  @elseif ($element['type'] === 'textarea')
+                    <label>{{ $element['label'] }}</label>
+                    <textarea class="form-control" data-key="{{ $element['id'] }}">{{ $settings[$element['id']] ?? '' }}</textarea>
+                  @elseif ($element['type'] === 'image')
+                    <label>{{ $element['label'] }}</label>
+                    <input type="file" class="form-control-file" data-key="{{ $element['id'] }}">
+                  @elseif ($element['type'] === 'repeatable')
+                    @php
+                      $items = json_decode($settings[$element['id']] ?? '[]', true);
+                      $fields = $element['fields'] ?? [];
+                    @endphp
+                    <div data-repeatable="{{ $element['id'] }}" data-fields='@json($fields)'>
+                      <div class="repeatable-items"></div>
+                      <button type="button" class="btn btn-sm btn-secondary add-item">Add Item</button>
+                      <textarea class="d-none" data-key="{{ $element['id'] }}">{{ json_encode($items) }}</textarea>
+                    </div>
+                  @else
+                    <p class="text-muted mb-0">{{ $element['label'] }}</p>
+                  @endif
+                </div>
+                @endforeach
               </div>
+            </div>
             @endforeach
-          </div>
-        </div>
-        @endforeach
       </div>
       <div class="col-md-8 position-sticky" style="top:0;height:100vh">
         <iframe id="page-preview" src="{{ url('/') }}" class="w-100 border h-100"></iframe>
@@ -87,28 +81,39 @@ document.querySelectorAll('#elements [data-key]').forEach(function(input){
 document.querySelectorAll('[data-repeatable]').forEach(function(wrapper){
   const itemsContainer = wrapper.querySelector('.repeatable-items');
   const hidden = wrapper.querySelector('[data-key]');
+  const fields = JSON.parse(wrapper.getAttribute('data-fields') || '[]');
+
+  function buildItem(data = {}){
+    const div = document.createElement('div');
+    div.className = 'repeatable-item mb-2';
+    let html = '';
+    fields.forEach(function(field){
+      if((field.type || 'text') === 'textarea'){
+        html += `<textarea class="form-control mb-1" data-field="${field.name}" placeholder="${field.placeholder}">${data[field.name] || ''}</textarea>`;
+      }else{
+        html += `<input type="text" class="form-control mb-1" data-field="${field.name}" placeholder="${field.placeholder}" value="${data[field.name] || ''}">`;
+      }
+    });
+    html += '<button type="button" class="btn btn-sm btn-danger remove-item">Remove</button>';
+    div.innerHTML = html;
+    return div;
+  }
 
   function sync(){
     const data = [];
     itemsContainer.querySelectorAll('.repeatable-item').forEach(function(item){
-      data.push({
-        name: item.querySelector('[data-field="name"]').value,
-        title: item.querySelector('[data-field="title"]').value,
-        text: item.querySelector('[data-field="text"]').value,
+      const obj = {};
+      item.querySelectorAll('[data-field]').forEach(function(input){
+        obj[input.getAttribute('data-field')] = input.value;
       });
+      data.push(obj);
     });
     hidden.value = JSON.stringify(data);
     hidden.dispatchEvent(new Event('change'));
   }
 
   wrapper.querySelector('.add-item').addEventListener('click', function(){
-    const div = document.createElement('div');
-    div.className = 'repeatable-item mb-2';
-    div.innerHTML = '<input type="text" class="form-control mb-1" data-field="name" placeholder="Name">'+
-                    '<input type="text" class="form-control mb-1" data-field="title" placeholder="Title">'+
-                    '<textarea class="form-control mb-1" data-field="text" placeholder="Testimonial"></textarea>'+ 
-                    '<button type="button" class="btn btn-sm btn-danger remove-item">Remove</button>';
-    itemsContainer.appendChild(div);
+    itemsContainer.appendChild(buildItem());
   });
 
   itemsContainer.addEventListener('input', sync);
@@ -119,6 +124,12 @@ document.querySelectorAll('[data-repeatable]').forEach(function(wrapper){
     }
   });
 
+  // initialize existing
+  try {
+    JSON.parse(hidden.value || '[]').forEach(function(item){
+      itemsContainer.appendChild(buildItem(item));
+    });
+  } catch(e) {}
   sync();
 });
 

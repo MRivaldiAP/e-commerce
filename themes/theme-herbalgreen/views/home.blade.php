@@ -14,6 +14,7 @@
     $settings = PageSetting::where('theme', $theme)->where('page', 'home')->pluck('value', 'key')->toArray();
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
+    $services = json_decode($settings['services.items'] ?? '[]', true);
 
     $navLinks = [
         ['label' => 'Homepage', 'href' => '#hero', 'visible' => ($settings['navigation.home'] ?? '1') == '1'],
@@ -32,6 +33,7 @@
 @endif
 {!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
 
+@if(($settings['hero.visible'] ?? '1') == '1')
 <section id="hero" class="hero" @if(!empty($settings['hero.image'])) style="background-image:url('{{ asset('storage/'.$settings['hero.image']) }}')" @endif>
     <div class="hero-content">
         <span class="tagline">{{ $settings['hero.tagline'] ?? 'Go Natural' }}</span>
@@ -40,11 +42,14 @@
         <a href="{{ $settings['hero.button_link'] ?? '#products' }}" class="cta">{{ $settings['hero.button_label'] ?? 'Shop Now' }}</a>
     </div>
 </section>
+@endif
 
+@if(($settings['about.visible'] ?? '1') == '1')
 <section id="about" class="about">
     <h2>{{ $settings['about.heading'] ?? 'About Us' }}</h2>
     <p>{{ $settings['about.text'] ?? 'We provide herbal products to bring balance and serenity.' }}</p>
 </section>
+@endif
 
 @if(($settings['products.visible'] ?? '1') == '1')
 <section id="products" class="products">
@@ -62,16 +67,20 @@
 </section>
 @endif
 
+@if(($settings['services.visible'] ?? '1') == '1')
 <section id="services" class="services">
-    <h2>Our Services</h2>
+    <h2>{{ $settings['services.heading'] ?? 'Our Services' }}</h2>
+    @if(count($services))
     <ul>
-        <li>Consultation</li>
-        <li>Custom Blends</li>
-        <li>Workshops</li>
+        @foreach($services as $svc)
+            <li>{{ $svc['title'] ?? '' }}</li>
+        @endforeach
     </ul>
+    @endif
 </section>
+@endif
 
-@if(count($testimonials))
+@if(($settings['testimonials.visible'] ?? '1') == '1' && count($testimonials))
 <section id="testimonials" class="testimonials">
     <h2>Testimonials</h2>
     @foreach($testimonials as $t)
@@ -83,22 +92,20 @@
 </section>
 @endif
 
+@if(($settings['contact.visible'] ?? '1') == '1')
 <section id="contact" class="contact">
-    <h2>Contact</h2>
+    <h2>{{ $settings['contact.heading'] ?? 'Contact' }}</h2>
     <form>
         <input type="text" placeholder="Name" required>
         <input type="email" placeholder="Email" required>
         <textarea placeholder="Message" required></textarea>
         <button type="submit">Send</button>
     </form>
+    @if(!empty($settings['contact.map']))
+    <div class="map-container">{!! $settings['contact.map'] !!}</div>
+    @endif
 </section>
-
-<section id="map" class="map">
-    <h2>Find Us</h2>
-    <div class="map-container">
-        <!-- Map embed placeholder -->
-    </div>
-</section>
+@endif
 
 {!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), ['links' => $footerLinks, 'copyright' => $settings['footer.copyright'] ?? ('© ' . date('Y') . ' Herbal Green')])->render() !!}
 </body>
