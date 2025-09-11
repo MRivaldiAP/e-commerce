@@ -94,7 +94,7 @@
                         <span>{{ $settings['hero.tagline'] ?? 'FRUIT FRESH' }}</span>
                         <h2>{{ $settings['hero.heading'] ?? 'Vegetable 100% Organic' }}</h2>
                         <p>{{ $settings['hero.description'] ?? 'Free Pickup and Delivery Available' }}</p>
-                        <a href="{{ $settings['hero.button_link'] ?? route('products.index') }}" class="primary-btn">{{ $settings['hero.button_label'] ?? 'SHOP NOW' }}</a>
+                        <a href="{{ $settings['hero.button_link'] ?? '' /* route('products.index') */ }}" class="primary-btn">{{ $settings['hero.button_label'] ?? 'SHOP NOW' }}</a>
                     </div>
                 </div>
             </div>
@@ -142,7 +142,7 @@
                         </ul>
                     </div>
                     <div class="featured__item__text">
-                        <h6><a href="{{ route('products.show', $product->slug) }}">{{ $product->title }}</a></h6>
+                        <h6><a href="{{-- {{ route('products.show', $product->slug) }} --}}">{{ $product->title }}</a></h6>
                         <h5>{{ $product->price_formatted ?? number_format($product->price, 0, ',', '.') }}</h5>
                     </div>
                 </div>
@@ -222,7 +222,7 @@
         </div>
         <div class="row">
             <div class="col-lg-6 col-md-6">
-                <form method="POST" action="{{ route('contact.submit') }}">
+                <form method="POST" action="{{-- {{ route('contact.submit') }} --}}">
                     @csrf
                     <div class="row">
                         <div class="col-lg-12">
@@ -311,7 +311,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="footer__copyright">
-                    <div class="footer__copyright__text"><p>{{ $settings['footer.copyright'] ?? 'Copyright &copy; '.date('Y').' All rights reserved' }}@if(($settings['footer.privacy'] ?? '0') == '1') | <a href="#">Privacy Policy</a>@endif@if(($settings['footer.terms'] ?? '0') == '1') | <a href="#">Terms & Conditions</a>@endif</p></div>
+                    <div class="footer__copyright__text"><p>{{ $settings['footer.copyright'] ?? 'Copyright &copy; '.date('Y').' All rights reserved' }}@if(($settings['footer.privacy'] ?? '0') == '1') | <a href="#">Privacy Policy</a>@endif @if(($settings['footer.terms'] ?? '0') == '1') | <a href="#">Terms & Conditions</a>@endif</p></div>
                     <div class="footer__copyright__payment"><img src="{{ asset('ogani-master/img/payment-item.png') }}" alt=""></div>
                 </div>
             </div>
