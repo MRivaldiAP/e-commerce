@@ -76,7 +76,9 @@ class PageController extends Controller
                     ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'services.visible'],
                     ['type' => 'text', 'label' => 'Heading', 'id' => 'services.heading'],
                     ['type' => 'repeatable', 'id' => 'services.items', 'fields' => [
+                        ['name' => 'icon', 'placeholder' => 'Icon class'],
                         ['name' => 'title', 'placeholder' => 'Service Title'],
+                        ['name' => 'text', 'placeholder' => 'Description', 'type' => 'textarea'],
                     ]],
                 ],
             ],
