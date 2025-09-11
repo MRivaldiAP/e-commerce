@@ -89,10 +89,16 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{url('/admin/pages/home')}}">
+              <a class="nav-link" data-toggle="collapse" href="#pages-menu" aria-expanded="false" aria-controls="pages-menu">
                 <i class="mdi mdi-arrange-bring-forward menu-icon"></i>
-                <span class="menu-title">Home Organizer</span>
+                <span class="menu-title">Kelola Halaman</span>
+                <i class="menu-arrow"></i>
               </a>
+              <div class="collapse" id="pages-menu">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/home')}}">Home</a></li>
+                </ul>
+              </div>
             </li>
             <li class="nav-item nav-category">Pembayaran & Pengiriman</li>
           <li class="nav-item">

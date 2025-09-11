@@ -9,33 +9,38 @@
 </head>
 <body>
 @php
+    use App\Models\PageSetting;
+    $settings = PageSetting::where('page', 'home')->pluck('value', 'key')->toArray();
+
     $navLinks = [
-        ['label' => 'Homepage', 'href' => '#hero', 'visible' => true],
-        ['label' => 'Tea Collection', 'href' => '#products', 'visible' => true],
-        ['label' => 'News', 'href' => '#testimonials', 'visible' => true],
-        ['label' => 'Contact Us', 'href' => '#contact', 'visible' => true],
+        ['label' => 'Homepage', 'href' => '#hero', 'visible' => ($settings['navigation.home'] ?? '1') == '1'],
+        ['label' => 'Tea Collection', 'href' => '#products', 'visible' => ($settings['navigation.products'] ?? '1') == '1'],
+        ['label' => 'News', 'href' => '#testimonials', 'visible' => ($settings['navigation.news'] ?? '1') == '1'],
+        ['label' => 'Contact Us', 'href' => '#contact', 'visible' => ($settings['navigation.contact'] ?? '1') == '1'],
     ];
 
     $footerLinks = [
-        ['label' => 'Privacy Policy', 'href' => '#', 'visible' => true],
-        ['label' => 'Terms & Conditions', 'href' => '#', 'visible' => true],
+        ['label' => 'Privacy Policy', 'href' => '#', 'visible' => ($settings['footer.privacy'] ?? '1') == '1'],
+        ['label' => 'Terms & Conditions', 'href' => '#', 'visible' => ($settings['footer.terms'] ?? '1') == '1'],
     ];
 @endphp
-<div id="topbar" class="shipping-bar">Free Worldwide Shipping</div>
+@if(($settings['topbar.visible'] ?? '1') == '1')
+<div id="topbar" class="shipping-bar">{{ $settings['topbar.text'] ?? 'Free Worldwide Shipping' }}</div>
+@endif
 {!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
 
 <section id="hero" class="hero">
     <div class="hero-content">
-        <span class="tagline">Go Natural</span>
-        <h1>The Best Time to Drink Tea</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        <a href="#products" class="cta">Shop Now</a>
+        <span class="tagline">{{ $settings['hero.tagline'] ?? 'Go Natural' }}</span>
+        <h1>{{ $settings['hero.heading'] ?? 'The Best Time to Drink Tea' }}</h1>
+        <p>{{ $settings['hero.description'] ?? 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' }}</p>
+        <a href="{{ $settings['hero.button_link'] ?? '#products' }}" class="cta">{{ $settings['hero.button_label'] ?? 'Shop Now' }}</a>
     </div>
 </section>
 
 <section id="about" class="about">
-    <h2>About Us</h2>
-    <p>We provide herbal products to bring balance and serenity.</p>
+    <h2>{{ $settings['about.heading'] ?? 'About Us' }}</h2>
+    <p>{{ $settings['about.text'] ?? 'We provide herbal products to bring balance and serenity.' }}</p>
 </section>
 
 <section id="products" class="products">
@@ -89,6 +94,6 @@
     </div>
 </section>
 
-{!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), ['links' => $footerLinks])->render() !!}
+{!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), ['links' => $footerLinks, 'copyright' => $settings['footer.copyright'] ?? ('© ' . date('Y') . ' Herbal Green')])->render() !!}
 </body>
 </html>

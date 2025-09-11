@@ -6,5 +6,6 @@
             @endif
         @endforeach
     </ul>
-    <p>&copy; {{ date('Y') }} Herbal Green</p>
+    <p>{{ $copyright }}</p>
 </footer>
+

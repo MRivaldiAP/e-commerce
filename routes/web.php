@@ -71,4 +71,5 @@ Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
     Route::post('themes', [ThemeController::class, 'update'])->name('admin.themes.update');
 
     Route::get('pages/home', [PageController::class, 'home'])->name('admin.pages.home');
+    Route::post('pages/home', [PageController::class, 'updateHome'])->name('admin.pages.home.update');
 });
