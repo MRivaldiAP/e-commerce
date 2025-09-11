@@ -106,13 +106,13 @@
 @if(($settings['about.visible'] ?? '1') == '1')
 <section id="about" class="about spad">
     <div class="container">
-        <div class="blog__details__author">
-            <div class="blog__details__author__pic">
-                <img src="{{ $aboutImage ? asset('storage/'.$aboutImage) : asset('ogani-master/img/blog/details/blog-author.jpg') }}" alt="">
-            </div>
-            <div class="blog__details__author__text">
-                <h4>{{ $settings['about.heading'] ?? 'About Us' }}</h4>
-                <p>{{ $settings['about.text'] ?? 'We provide quality products.' }}</p>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="blog__details__text">
+                    <img src="{{ $aboutImage ? asset('storage/'.$aboutImage) : asset('ogani-master/img/blog/details/details-pic.jpg') }}" alt="">
+                    <h4>{{ $settings['about.heading'] ?? 'About Us' }}</h4>
+                    <p>{{ $settings['about.text'] ?? 'We provide quality products.' }}</p>
+                </div>
             </div>
         </div>
     </div>
@@ -192,7 +192,8 @@
             <div class="col-lg-4 col-md-4 col-sm-6">
                 <div class="blog__item">
                     <div class="blog__item__pic">
-                        <img src="{{ asset('ogani-master/img/blog/blog-' . (($loop->iteration - 1) % 3 + 1) . '.jpg') }}" alt="">
+                        @php $photo = $t['photo'] ?? null; @endphp
+                        <img src="{{ $photo ? asset('storage/'.$photo) : asset('ogani-master/img/blog/blog-' . (($loop->iteration - 1) % 3 + 1) . '.jpg') }}" alt="{{ $t['name'] ?? '' }}">
                     </div>
                     <div class="blog__item__text">
                         <ul>
@@ -219,35 +220,104 @@
                 </div>
             </div>
         </div>
-        <form method="POST" action="{{ route('contact.submit') }}">
-            @csrf
-            <div class="row">
-                <div class="col-lg-6 col-md-6">
-                    <input type="text" name="name" placeholder="Your name" required>
-                </div>
-                <div class="col-lg-6 col-md-6">
-                    <input type="email" name="email" placeholder="Your Email" required>
-                </div>
-                <div class="col-lg-12">
-                    <input type="text" name="subject" placeholder="Subject" required>
-                </div>
-                <div class="col-lg-12 text-center">
-                    <textarea name="message" placeholder="Your message" required></textarea>
-                    <button type="submit" class="site-btn">SEND MESSAGE</button>
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <form method="POST" action="{{ route('contact.submit') }}">
+                    @csrf
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <input type="text" name="name" placeholder="Your name" required>
+                        </div>
+                        <div class="col-lg-12">
+                            <input type="email" name="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="col-lg-12">
+                            <input type="text" name="subject" placeholder="Subject" required>
+                        </div>
+                        <div class="col-lg-12 text-center">
+                            <textarea name="message" placeholder="Your message" required></textarea>
+                            <button type="submit" class="site-btn">SEND MESSAGE</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-6 col-md-6">
+                <div class="map" style="height:100%;">
+                    @if(!empty($settings['contact.map']))
+                        {!! $settings['contact.map'] !!}
+                    @else
+                        <div style="width:100%; height:100%; min-height:300px; background:#f2f2f2;"></div>
+                    @endif
                 </div>
             </div>
-        </form>
+        </div>
     </div>
 </section>
-
-<div class="map">
-    @if(!empty($settings['contact.map']))
-        {!! $settings['contact.map'] !!}
-    @else
-        <div style="width:100%; height:500px; background:#f2f2f2;"></div>
-    @endif
-</div>
 @endif
+
+<footer class="footer spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="footer__about">
+                    <div class="footer__about__logo">
+                        <a href="{{ url('/') }}"><img src="{{ asset('ogani-master/img/logo.png') }}" alt=""></a>
+                    </div>
+                    <ul>
+                        <li>Address: 60-49 Road 11378 New York</li>
+                        <li>Phone: +65 11.188.888</li>
+                        <li>Email: hello@colorlib.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-1">
+                <div class="footer__widget">
+                    <h6>Useful Links</h6>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">About Our Shop</a></li>
+                        <li><a href="#">Secure Shopping</a></li>
+                        <li><a href="#">Delivery infomation</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Our Sitemap</a></li>
+                    </ul>
+                    <ul>
+                        <li><a href="#">Who We Are</a></li>
+                        <li><a href="#">Our Services</a></li>
+                        <li><a href="#">Projects</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Innovation</a></li>
+                        <li><a href="#">Testimonials</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12">
+                <div class="footer__widget">
+                    <h6>Join Our Newsletter Now</h6>
+                    <p>Get E-mail updates about our latest shop and special offers.</p>
+                    <form action="#">
+                        <input type="text" placeholder="Enter your mail">
+                        <button type="submit" class="site-btn">Subscribe</button>
+                    </form>
+                    <div class="footer__widget__social">
+                        <a href="#"><i class="fa fa-facebook"></i></a>
+                        <a href="#"><i class="fa fa-instagram"></i></a>
+                        <a href="#"><i class="fa fa-twitter"></i></a>
+                        <a href="#"><i class="fa fa-pinterest"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="footer__copyright">
+                    <div class="footer__copyright__text"><p>{{ $settings['footer.copyright'] ?? 'Copyright &copy; '.date('Y').' All rights reserved' }}@if(($settings['footer.privacy'] ?? '0') == '1') | <a href="#">Privacy Policy</a>@endif@if(($settings['footer.terms'] ?? '0') == '1') | <a href="#">Terms & Conditions</a>@endif</p></div>
+                    <div class="footer__copyright__payment"><img src="{{ asset('ogani-master/img/payment-item.png') }}" alt=""></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
 
 <script src="{{ asset('ogani-master/js/jquery-3.3.1.min.js') }}"></script>
 <script src="{{ asset('ogani-master/js/bootstrap.min.js') }}"></script>

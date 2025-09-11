@@ -66,6 +66,7 @@ class PageController extends Controller
                         ['name' => 'name', 'placeholder' => 'Name'],
                         ['name' => 'title', 'placeholder' => 'Title'],
                         ['name' => 'text', 'placeholder' => 'Testimonial', 'type' => 'textarea'],
+                        ['name' => 'photo', 'placeholder' => 'Photo', 'type' => 'image'],
                     ]],
                 ],
             ],
