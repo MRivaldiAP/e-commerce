@@ -7,3 +7,5 @@
         @endforeach
     </ul>
     <p>{{ $copyright }}</p>
+</footer>
+
