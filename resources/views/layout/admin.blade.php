@@ -82,13 +82,19 @@
               <span class="menu-title">Pengguna</span>
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/themes')}}">
-              <i class="mdi mdi-palette menu-icon"></i>
-              <span class="menu-title">Tema</span>
-            </a>
-          </li>
-          <li class="nav-item nav-category">Pembayaran & Pengiriman</li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{url('/admin/themes')}}">
+                <i class="mdi mdi-palette menu-icon"></i>
+                <span class="menu-title">Tema</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{url('/admin/pages/home')}}">
+                <i class="mdi mdi-arrange-bring-forward menu-icon"></i>
+                <span class="menu-title">Home Organizer</span>
+              </a>
+            </li>
+            <li class="nav-item nav-category">Pembayaran & Pengiriman</li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/payments')}}">
               <i class="mdi mdi-credit-card menu-icon"></i>
