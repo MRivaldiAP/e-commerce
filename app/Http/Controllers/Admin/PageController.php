@@ -47,6 +47,7 @@ class PageController extends Controller
                 'elements' => [
                     ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'about.visible'],
                     ['type' => 'text', 'label' => 'Heading', 'id' => 'about.heading'],
+                    ['type' => 'image', 'label' => 'Image', 'id' => 'about.image'],
                     ['type' => 'textarea', 'label' => 'Text', 'id' => 'about.text'],
                 ],
             ],
