@@ -11,7 +11,6 @@ class PageController extends Controller
     public function home()
     {
         $settings = PageSetting::where('page', 'home')->pluck('value', 'key');
-
         $sections = [
             'topbar' => [
                 'label' => 'Shipping Bar',
