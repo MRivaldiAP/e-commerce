@@ -7,6 +7,7 @@ use App\Http\Controllers\ThemeAssetController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\PageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,4 +69,6 @@ Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
     // themes
     Route::get('themes', [ThemeController::class, 'index'])->name('admin.themes.index');
     Route::post('themes', [ThemeController::class, 'update'])->name('admin.themes.update');
+
+    Route::get('pages/home', [PageController::class, 'home'])->name('admin.pages.home');
 });

@@ -8,23 +8,21 @@
     <script src="{{ asset('themes/' . $theme . '/theme.js') }}" defer></script>
 </head>
 <body>
-<div class="shipping-bar">Free Worldwide Shipping</div>
-<header class="site-header">
-    <div class="logo">TEA</div>
-    <nav class="main-nav">
-        <ul>
-            <li><a href="#hero">Homepage</a></li>
-            <li><a href="#products">Tea Collection</a></li>
-            <li><a href="#testimonials">News</a></li>
-            <li><a href="#contact">Contact Us</a></li>
-        </ul>
-    </nav>
-    <div class="header-icons">
-        <span>🔍</span>
-        <span>👤</span>
-        <span>🛒</span>
-    </div>
-</header>
+@php
+    $navLinks = [
+        ['label' => 'Homepage', 'href' => '#hero', 'visible' => true],
+        ['label' => 'Tea Collection', 'href' => '#products', 'visible' => true],
+        ['label' => 'News', 'href' => '#testimonials', 'visible' => true],
+        ['label' => 'Contact Us', 'href' => '#contact', 'visible' => true],
+    ];
+
+    $footerLinks = [
+        ['label' => 'Privacy Policy', 'href' => '#', 'visible' => true],
+        ['label' => 'Terms & Conditions', 'href' => '#', 'visible' => true],
+    ];
+@endphp
+<div id="topbar" class="shipping-bar">Free Worldwide Shipping</div>
+{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
 
 <section id="hero" class="hero">
     <div class="hero-content">
@@ -91,8 +89,6 @@
     </div>
 </section>
 
-<footer>
-    <p>&copy; {{ date('Y') }} Herbal Green</p>
-</footer>
+{!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), ['links' => $footerLinks])->render() !!}
 </body>
 </html>
