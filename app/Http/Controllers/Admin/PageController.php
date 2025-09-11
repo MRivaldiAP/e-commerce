@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PageSetting;
+use App\Models\Setting;
 
 class PageController extends Controller
 {
     public function home()
     {
-        $settings = PageSetting::where('page', 'home')->pluck('value', 'key');
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+        $settings = PageSetting::where('theme', $theme)->where('page', 'home')->pluck('value', 'key');
         $sections = [
             'topbar' => [
                 'label' => 'Shipping Bar',
@@ -31,7 +33,7 @@ class PageController extends Controller
             'hero' => [
                 'label' => 'Hero',
                 'elements' => [
-                    ['type' => 'image', 'label' => 'Background Image'],
+                    ['type' => 'image', 'label' => 'Background Image', 'id' => 'hero.image'],
                     ['type' => 'text', 'label' => 'Tagline', 'id' => 'hero.tagline'],
                     ['type' => 'text', 'label' => 'Heading', 'id' => 'hero.heading'],
                     ['type' => 'textarea', 'label' => 'Description', 'id' => 'hero.description'],
@@ -44,6 +46,19 @@ class PageController extends Controller
                 'elements' => [
                     ['type' => 'text', 'label' => 'Heading', 'id' => 'about.heading'],
                     ['type' => 'textarea', 'label' => 'Text', 'id' => 'about.text'],
+                ],
+            ],
+            'products' => [
+                'label' => 'Products',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'products.visible'],
+                    ['type' => 'text', 'label' => 'Heading', 'id' => 'products.heading'],
+                ],
+            ],
+            'testimonials' => [
+                'label' => 'Testimonials',
+                'elements' => [
+                    ['type' => 'repeatable', 'id' => 'testimonials.items'],
                 ],
             ],
             'footer' => [
@@ -66,9 +81,16 @@ class PageController extends Controller
             'value' => 'nullable',
         ]);
 
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+
+        $value = $request->input('value');
+        if ($request->hasFile('value')) {
+            $value = $request->file('value')->store("pages/{$theme}", 'public');
+        }
+
         PageSetting::updateOrCreate(
-            ['page' => 'home', 'key' => $request->input('key')],
-            ['value' => $request->input('value')]
+            ['theme' => $theme, 'page' => 'home', 'key' => $request->input('key')],
+            ['value' => $value]
         );
 
         return response()->json(['status' => 'ok']);

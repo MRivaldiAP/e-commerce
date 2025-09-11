@@ -10,7 +10,10 @@
 <body>
 @php
     use App\Models\PageSetting;
-    $settings = PageSetting::where('page', 'home')->pluck('value', 'key')->toArray();
+    use App\Models\Product;
+    $settings = PageSetting::where('theme', $theme)->where('page', 'home')->pluck('value', 'key')->toArray();
+    $products = Product::where('is_featured', true)->latest()->take(5)->get();
+    $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
 
     $navLinks = [
         ['label' => 'Homepage', 'href' => '#hero', 'visible' => ($settings['navigation.home'] ?? '1') == '1'],
@@ -29,7 +32,7 @@
 @endif
 {!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
 
-<section id="hero" class="hero">
+<section id="hero" class="hero" @if(!empty($settings['hero.image'])) style="background-image:url('{{ asset('storage/'.$settings['hero.image']) }}')" @endif>
     <div class="hero-content">
         <span class="tagline">{{ $settings['hero.tagline'] ?? 'Go Natural' }}</span>
         <h1>{{ $settings['hero.heading'] ?? 'The Best Time to Drink Tea' }}</h1>
@@ -43,18 +46,21 @@
     <p>{{ $settings['about.text'] ?? 'We provide herbal products to bring balance and serenity.' }}</p>
 </section>
 
+@if(($settings['products.visible'] ?? '1') == '1')
 <section id="products" class="products">
-    <h2>Products</h2>
+    <h2>{{ $settings['products.heading'] ?? 'Products' }}</h2>
     <div class="product-grid">
-        @for ($i = 1; $i <= 5; $i++)
+        @foreach ($products as $product)
             <div class="product-card">
-                <img src="https://via.placeholder.com/150" alt="Product {{ $i }}">
-                <h3>Product {{ $i }}</h3>
-                <p>Short description for product {{ $i }}.</p>
+                @php $img = optional($product->images()->first())->path; @endphp
+                <img src="{{ $img ? asset('storage/'.$img) : 'https://via.placeholder.com/150' }}" alt="{{ $product->name }}">
+                <h3>{{ $product->name }}</h3>
+                <p>{{ $product->description }}</p>
             </div>
-        @endfor
+        @endforeach
     </div>
 </section>
+@endif
 
 <section id="services" class="services">
     <h2>Our Services</h2>
@@ -65,17 +71,17 @@
     </ul>
 </section>
 
+@if(count($testimonials))
 <section id="testimonials" class="testimonials">
     <h2>Testimonials</h2>
+    @foreach($testimonials as $t)
     <div class="testimonial">
-        <p>"Amazing quality products!"</p>
-        <span>- Happy Customer</span>
+        <p>"{{ $t['text'] ?? '' }}"</p>
+        <span>- {{ $t['title'] ?? '' }} {{ $t['name'] ?? '' }}</span>
     </div>
-    <div class="testimonial">
-        <p>"I feel more relaxed than ever."</p>
-        <span>- Satisfied Client</span>
-    </div>
+    @endforeach
 </section>
+@endif
 
 <section id="contact" class="contact">
     <h2>Contact</h2>

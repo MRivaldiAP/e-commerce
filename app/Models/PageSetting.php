@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class PageSetting extends Model
 {
-    protected $fillable = ['page', 'key', 'value'];
+    protected $fillable = ['theme', 'page', 'key', 'value'];
 }
