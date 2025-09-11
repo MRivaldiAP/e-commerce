@@ -13,7 +13,6 @@ class PageController extends Controller
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = PageSetting::where('theme', $theme)->where('page', 'home')->pluck('value', 'key');
-
         $sections = [
             'topbar' => [
                 'label' => 'Shipping Bar',
