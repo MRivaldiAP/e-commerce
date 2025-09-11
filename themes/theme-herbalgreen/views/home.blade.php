@@ -8,50 +8,59 @@
     <script src="{{ asset('themes/' . $theme . '/theme.js') }}" defer></script>
 </head>
 <body>
-<div class="shipping-bar">Free Worldwide Shipping</div>
-<header class="site-header">
-    <div class="logo">TEA</div>
-    <nav class="main-nav">
-        <ul>
-            <li><a href="#hero">Homepage</a></li>
-            <li><a href="#products">Tea Collection</a></li>
-            <li><a href="#testimonials">News</a></li>
-            <li><a href="#contact">Contact Us</a></li>
-        </ul>
-    </nav>
-    <div class="header-icons">
-        <span>🔍</span>
-        <span>👤</span>
-        <span>🛒</span>
-    </div>
-</header>
+@php
+    use App\Models\PageSetting;
+    use App\Models\Product;
+    $settings = PageSetting::where('theme', $theme)->where('page', 'home')->pluck('value', 'key')->toArray();
+    $products = Product::where('is_featured', true)->latest()->take(5)->get();
+    $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
 
-<section id="hero" class="hero">
+    $navLinks = [
+        ['label' => 'Homepage', 'href' => '#hero', 'visible' => ($settings['navigation.home'] ?? '1') == '1'],
+        ['label' => 'Tea Collection', 'href' => '#products', 'visible' => ($settings['navigation.products'] ?? '1') == '1'],
+        ['label' => 'News', 'href' => '#testimonials', 'visible' => ($settings['navigation.news'] ?? '1') == '1'],
+        ['label' => 'Contact Us', 'href' => '#contact', 'visible' => ($settings['navigation.contact'] ?? '1') == '1'],
+    ];
+
+    $footerLinks = [
+        ['label' => 'Privacy Policy', 'href' => '#', 'visible' => ($settings['footer.privacy'] ?? '1') == '1'],
+        ['label' => 'Terms & Conditions', 'href' => '#', 'visible' => ($settings['footer.terms'] ?? '1') == '1'],
+    ];
+@endphp
+@if(($settings['topbar.visible'] ?? '1') == '1')
+<div id="topbar" class="shipping-bar">{{ $settings['topbar.text'] ?? 'Free Worldwide Shipping' }}</div>
+@endif
+{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+
+<section id="hero" class="hero" @if(!empty($settings['hero.image'])) style="background-image:url('{{ asset('storage/'.$settings['hero.image']) }}')" @endif>
     <div class="hero-content">
-        <span class="tagline">Go Natural</span>
-        <h1>The Best Time to Drink Tea</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        <a href="#products" class="cta">Shop Now</a>
+        <span class="tagline">{{ $settings['hero.tagline'] ?? 'Go Natural' }}</span>
+        <h1>{{ $settings['hero.heading'] ?? 'The Best Time to Drink Tea' }}</h1>
+        <p>{{ $settings['hero.description'] ?? 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' }}</p>
+        <a href="{{ $settings['hero.button_link'] ?? '#products' }}" class="cta">{{ $settings['hero.button_label'] ?? 'Shop Now' }}</a>
     </div>
 </section>
 
 <section id="about" class="about">
-    <h2>About Us</h2>
-    <p>We provide herbal products to bring balance and serenity.</p>
+    <h2>{{ $settings['about.heading'] ?? 'About Us' }}</h2>
+    <p>{{ $settings['about.text'] ?? 'We provide herbal products to bring balance and serenity.' }}</p>
 </section>
 
+@if(($settings['products.visible'] ?? '1') == '1')
 <section id="products" class="products">
-    <h2>Products</h2>
+    <h2>{{ $settings['products.heading'] ?? 'Products' }}</h2>
     <div class="product-grid">
-        @for ($i = 1; $i <= 5; $i++)
+        @foreach ($products as $product)
             <div class="product-card">
-                <img src="https://via.placeholder.com/150" alt="Product {{ $i }}">
-                <h3>Product {{ $i }}</h3>
-                <p>Short description for product {{ $i }}.</p>
+                @php $img = optional($product->images()->first())->path; @endphp
+                <img src="{{ $img ? asset('storage/'.$img) : 'https://via.placeholder.com/150' }}" alt="{{ $product->name }}">
+                <h3>{{ $product->name }}</h3>
+                <p>{{ $product->description }}</p>
             </div>
-        @endfor
+        @endforeach
     </div>
 </section>
+@endif
 
 <section id="services" class="services">
     <h2>Our Services</h2>
@@ -62,17 +71,17 @@
     </ul>
 </section>
 
+@if(count($testimonials))
 <section id="testimonials" class="testimonials">
     <h2>Testimonials</h2>
+    @foreach($testimonials as $t)
     <div class="testimonial">
-        <p>"Amazing quality products!"</p>
-        <span>- Happy Customer</span>
+        <p>"{{ $t['text'] ?? '' }}"</p>
+        <span>- {{ $t['title'] ?? '' }} {{ $t['name'] ?? '' }}</span>
     </div>
-    <div class="testimonial">
-        <p>"I feel more relaxed than ever."</p>
-        <span>- Satisfied Client</span>
-    </div>
+    @endforeach
 </section>
+@endif
 
 <section id="contact" class="contact">
     <h2>Contact</h2>
@@ -91,8 +100,6 @@
     </div>
 </section>
 
-<footer>
-    <p>&copy; {{ date('Y') }} Herbal Green</p>
-</footer>
+{!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), ['links' => $footerLinks, 'copyright' => $settings['footer.copyright'] ?? ('© ' . date('Y') . ' Herbal Green')])->render() !!}
 </body>
 </html>
