@@ -18,7 +18,11 @@
     <link href="{{ asset('restoran-1.0.0/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('restoran-1.0.0/css/style.css') }}" rel="stylesheet">
     <style>
+        :root{--bs-primary:#FEA116;--bs-primary-rgb:254,161,22;}
         .navbar {position: sticky; top:0; z-index:1030;}
+        .hero-header img.main{animation:none;}
+        .hero-header img.spin{animation:imgRotate 50s linear infinite;}
+        .hero-header .spin-text{animation:imgRotate 50s linear infinite;}
     </style>
 </head>
 <body>
@@ -37,9 +41,6 @@
     ];
     $aboutImage = $settings['about.image'] ?? null;
 @endphp
-@if(($settings['topbar.visible'] ?? '1') == '1')
-<div id="topbar" class="bg-dark text-light text-center small py-2">{{ $settings['topbar.text'] ?? 'Free Shipping for all Order of $99' }}</div>
-@endif
 <div class="container-xxl position-relative p-0">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
         <a href="{{ url('/') }}" class="navbar-brand p-0">
@@ -71,8 +72,14 @@
                     <p class="text-white animated slideInLeft mb-4 pb-2">{{ $settings['hero.description'] ?? 'Tempor erat elitr rebum at clita.' }}</p>
                     <a href="{{ $settings['hero.button_link'] ?? '#' }}" class="btn btn-primary py-sm-3 px-sm-5 me-3 animated slideInLeft">{{ $settings['hero.button_label'] ?? 'Book A Table' }}</a>
                 </div>
-                <div class="col-lg-6 text-center text-lg-end overflow-hidden">
-                    <img class="img-fluid" src="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('restoran-1.0.0/img/hero.png') }}" alt="">
+                <div class="col-lg-6 text-center text-lg-end overflow-hidden position-relative">
+                    @if(!empty($settings['hero.spin_image']))
+                    <img class="img-fluid position-absolute top-0 start-0 spin" style="width:200px;" src="{{ asset('storage/'.$settings['hero.spin_image']) }}" alt="">
+                    @endif
+                    <img class="img-fluid main" src="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('restoran-1.0.0/img/hero.png') }}" alt="">
+                    @if(!empty($settings['hero.spin_text']))
+                    <span class="text-white position-absolute top-50 start-50 translate-middle spin-text">{{ $settings['hero.spin_text'] }}</span>
+                    @endif
                 </div>
             </div>
         </div>

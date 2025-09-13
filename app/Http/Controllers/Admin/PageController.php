@@ -14,13 +14,6 @@ class PageController extends Controller
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = PageSetting::where('theme', $theme)->where('page', 'home')->pluck('value', 'key');
         $sections = [
-            'topbar' => [
-                'label' => 'Shipping Bar',
-                'elements' => [
-                    ['type' => 'text', 'label' => 'Text', 'id' => 'topbar.text'],
-                    ['type' => 'checkbox', 'label' => 'Show Bar', 'id' => 'topbar.visible'],
-                ],
-            ],
             'navigation' => [
                 'label' => 'Navigation',
                 'elements' => [
@@ -34,7 +27,9 @@ class PageController extends Controller
                 'label' => 'Hero',
                 'elements' => [
                     ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'hero.visible'],
-                    ['type' => 'image', 'label' => 'Background Image', 'id' => 'hero.image'],
+                    ['type' => 'image', 'label' => 'Main Image', 'id' => 'hero.image'],
+                    ['type' => 'image', 'label' => 'Spinning Image', 'id' => 'hero.spin_image'],
+                    ['type' => 'text', 'label' => 'Spinning Text', 'id' => 'hero.spin_text'],
                     ['type' => 'text', 'label' => 'Tagline', 'id' => 'hero.tagline'],
                     ['type' => 'text', 'label' => 'Heading', 'id' => 'hero.heading'],
                     ['type' => 'textarea', 'label' => 'Description', 'id' => 'hero.description'],
