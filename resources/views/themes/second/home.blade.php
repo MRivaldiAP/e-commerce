@@ -33,22 +33,6 @@
     $aboutImage = $settings['about.image'] ?? null;
 @endphp
 
-@if(($settings['topbar.visible'] ?? '1') == '1')
-<div class="header__top">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-6 col-md-6">
-                <div class="header__top__left">
-                    <ul>
-                        <li>{{ $settings['topbar.text'] ?? 'Free Shipping for all Order of $99' }}</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
-
 <header class="header">
     <div class="container">
         <div class="row">

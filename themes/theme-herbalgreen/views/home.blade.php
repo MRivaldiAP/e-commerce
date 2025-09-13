@@ -28,9 +28,6 @@
         ['label' => 'Terms & Conditions', 'href' => '#', 'visible' => ($settings['footer.terms'] ?? '1') == '1'],
     ];
 @endphp
-@if(($settings['topbar.visible'] ?? '1') == '1')
-<div id="topbar" class="shipping-bar">{{ $settings['topbar.text'] ?? 'Free Worldwide Shipping' }}</div>
-@endif
 {!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
 
 @if(($settings['hero.visible'] ?? '1') == '1')
