@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Produk</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="{{ asset('restoran-1.0.0/img/favicon.ico') }}" rel="icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ asset('restoran-1.0.0/lib/animate/animate.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('restoran-1.0.0/lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('restoran-1.0.0/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('restoran-1.0.0/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('restoran-1.0.0/css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+@php
+    use App\Models\PageSetting;
+    use App\Models\Product;
+    use App\Models\Category;
+    $settings = PageSetting::where('theme', 'theme-restoran')->where('page', 'product')->pluck('value','key')->toArray();
+    $query = Product::query();
+    if($s = request('search')){ $query->where('name','like',"%$s%"); }
+    if($cat = request('category')){ $query->whereHas('categories', fn($q)=>$q->where('slug',$cat)); }
+    if($sort = request('sort')){
+        if($sort==='price_asc') $query->orderBy('price');
+        elseif($sort==='price_desc') $query->orderByDesc('price');
+        elseif($sort==='sold_desc') $query->withCount('orderItems')->orderByDesc('order_items_count');
+    }
+    $products = $query->paginate(15)->withQueryString();
+    $categories = Category::all();
+    $navLinks = [
+        ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
+        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
+    ];
+@endphp
+<div class="container-xxl position-relative p-0">
+    {!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+    <div class="container-xxl py-5 bg-dark hero-header mb-5">
+        <div class="container text-center my-5 pt-5 pb-4">
+            <h1 class="display-3 text-white mb-3">{{ $settings['title'] ?? 'Produk Kami' }}</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center text-uppercase">
+                    <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
+                    <li class="breadcrumb-item text-white active" aria-current="page">{{ $settings['title'] ?? 'Produk Kami' }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+<div class="container py-5">
+    <form method="GET" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <input type="text" name="search" class="form-control" placeholder="Cari Produk" value="{{ request('search') }}">
+        </div>
+        <div class="col-md-3">
+            <select name="category" class="form-select">
+                <option value="">Semua Kategori</option>
+                @foreach($categories as $cat)
+                    <option value="{{ $cat->slug }}" @selected(request('category')==$cat->slug)>{{ $cat->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="sort" class="form-select">
+                <option value="">Urutkan</option>
+                <option value="price_asc" @selected(request('sort')=='price_asc')>Harga Terendah</option>
+                <option value="price_desc" @selected(request('sort')=='price_desc')>Harga Tertinggi</option>
+                <option value="sold_desc" @selected(request('sort')=='sold_desc')>Terjual Terbanyak</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+    <div class="row g-4">
+        @foreach($products as $product)
+        @php $img = $product->image_url ?? optional($product->images()->first())->path; @endphp
+        <div class="col-lg-6">
+            <div class="d-flex align-items-center">
+                <img class="flex-shrink-0 img-fluid rounded" src="{{ $img ? asset('storage/'.$img) : asset('restoran-1.0.0/img/menu-1.jpg') }}" alt="{{ $product->name }}" style="width: 80px;">
+                <div class="w-100 d-flex flex-column text-start ps-4">
+                    <h5 class="d-flex justify-content-between border-bottom pb-2">
+                        <span>{{ $product->name }}</span>
+                        <span class="text-primary">{{ $product->price_formatted ?? number_format($product->price,0,',','.') }}</span>
+                    </h5>
+                    <small class="fst-italic">{{ $product->description }}</small>
+                    <a href="{{ url('products/'.$product->id) }}" class="btn btn-sm btn-primary mt-2 align-self-start">Detail</a>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    <div class="mt-4">
+        {{ $products->links() }}
+    </div>
+</div>
+{!! view()->file(base_path('themes/theme-restoran/views/components/footer.blade.php'), ['settings' => $settings])->render() !!}
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('restoran-1.0.0/lib/wow/wow.min.js') }}"></script>
+<script src="{{ asset('restoran-1.0.0/lib/easing/easing.min.js') }}"></script>
+<script src="{{ asset('restoran-1.0.0/lib/waypoints/waypoints.min.js') }}"></script>
+<script src="{{ asset('restoran-1.0.0/lib/counterup/counterup.min.js') }}"></script>
+<script src="{{ asset('restoran-1.0.0/lib/owlcarousel/owl.carousel.min.js') }}"></script>
+<script src="{{ asset('restoran-1.0.0/lib/tempusdominus/js/moment.min.js') }}"></script>
+<script src="{{ asset('restoran-1.0.0/lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
+<script src="{{ asset('restoran-1.0.0/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
+<script src="{{ asset('restoran-1.0.0/js/main.js') }}"></script>
+</body>
+</html>
