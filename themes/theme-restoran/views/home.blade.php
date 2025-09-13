@@ -43,24 +43,7 @@
     $aboutImage = $settings['about.image'] ?? null;
 @endphp
 <div class="container-xxl position-relative p-0">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
-        <a href="{{ url('/') }}" class="navbar-brand p-0">
-            <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>Restoran</h1>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-            <span class="fa fa-bars"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-            <div class="navbar-nav ms-auto py-0 pe-4">
-                @foreach($navLinks as $link)
-                    @if($link['visible'])
-                        <a href="{{ $link['href'] }}" class="nav-item nav-link">{{ $link['label'] }}</a>
-                    @endif
-                @endforeach
-            </div>
-            <a href="#" class="btn btn-primary py-2 px-4">Book A Table</a>
-        </div>
-    </nav>
+    {!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
     @if(($settings['hero.visible'] ?? '1') == '1')
     <div id="hero" class="container-xxl py-5 bg-dark hero-header mb-5">
         <div class="container my-5 py-5">
@@ -229,13 +212,7 @@
     </div>
 </div>
 @endif
-<footer class="bg-dark text-light pt-5 mt-5">
-    <div class="container">
-        <div class="text-center">
-            <p>{{ $settings['footer.copyright'] ?? '© '.date('Y').' Restoran' }}@if(($settings['footer.privacy'] ?? '0') == '1') | <a href="#" class="text-light">Privacy Policy</a>@endif @if(($settings['footer.terms'] ?? '0') == '1') | <a href="#" class="text-light">Terms & Conditions</a>@endif</p>
-        </div>
-    </div>
-</footer>
+{!! view()->file(base_path('themes/theme-restoran/views/components/footer.blade.php'), ['settings' => $settings])->render() !!}
 <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>

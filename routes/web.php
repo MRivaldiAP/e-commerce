@@ -29,6 +29,15 @@ Route::get('/', function () {
     abort(404);
 });
 
+Route::get('/produk', function () {
+    $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
+    $viewPath = base_path("themes/{$activeTheme}/views/product.blade.php");
+    if (File::exists($viewPath)) {
+        return view()->file($viewPath, ['theme' => $activeTheme]);
+    }
+    abort(404);
+})->name('products.index');
+
 Route::get('themes/{theme}/assets/{path}', ThemeAssetController::class)
     ->where('path', '.*')
     ->name('themes.assets');
