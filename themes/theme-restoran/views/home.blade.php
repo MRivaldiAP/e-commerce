@@ -20,8 +20,9 @@
     <style>
         :root{--bs-primary:#FEA116;--bs-primary-rgb:254,161,22;}
         .navbar {position: sticky; top:0; z-index:1030;}
+        .navbar-dark{background:var(--dark)!important;}
         .hero-header img.main{animation:none;}
-        .hero-header img.spin{animation:imgRotate 50s linear infinite;}
+        .hero-header img.spin{animation:imgRotate 50s linear infinite!important;}
         .hero-header .spin-text{animation:imgRotate 50s linear infinite;}
     </style>
 </head>
