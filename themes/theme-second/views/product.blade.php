@@ -55,16 +55,28 @@
 <section class="product spad">
     <div class="container">
         <div class="row">
+            <div class="col-lg-12 mb-4">
+                <div class="hero__search">
+                    <div class="hero__search__form">
+                        <form method="GET">
+                            <input type="text" name="search" placeholder="Cari Produk..." value="{{ request('search') }}">
+                            <input type="hidden" name="category" value="{{ request('category') }}">
+                            <input type="hidden" name="minprice" value="{{ request('minprice') }}">
+                            <input type="hidden" name="maxprice" value="{{ request('maxprice') }}">
+                            <input type="hidden" name="sort" value="{{ request('sort') }}">
+                            <button type="submit" class="site-btn">SEARCH</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-lg-3 col-md-5">
                 <div class="sidebar">
                     <form method="GET" id="sidebar-form">
-                        <div class="sidebar__item">
-                            <h4>Pencarian</h4>
-                            <div class="hero__search__form">
-                                <input type="text" name="search" placeholder="Cari Produk..." value="{{ request('search') }}">
-                                <button type="submit" class="site-btn">SEARCH</button>
-                            </div>
-                        </div>
+                        <input type="hidden" name="search" value="{{ request('search') }}">
+                        <input type="hidden" id="category" name="category" value="{{ request('category') }}">
+                        <input type="hidden" name="sort" value="{{ request('sort') }}">
                         <div class="sidebar__item">
                             <h4>Kategori</h4>
                             <ul>
@@ -73,7 +85,6 @@
                                     <li class="{{ request('category')==$cat->slug ? 'active' : '' }}"><a href="#" onclick="event.preventDefault();document.getElementById('category').value='{{ $cat->slug }}';document.getElementById('sidebar-form').submit();">{{ $cat->name }}</a></li>
                                 @endforeach
                             </ul>
-                            <input type="hidden" id="category" name="category" value="{{ request('category') }}">
                         </div>
                         <div class="sidebar__item">
                             <h4>Harga</h4>
