@@ -29,6 +29,15 @@ Route::get('/', function () {
     abort(404);
 });
 
+Route::get('/produk', function () {
+    $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
+    $viewPath = base_path("themes/{$activeTheme}/views/product.blade.php");
+    if (File::exists($viewPath)) {
+        return view()->file($viewPath, ['theme' => $activeTheme]);
+    }
+    abort(404);
+})->name('products.index');
+
 Route::get('themes/{theme}/assets/{path}', ThemeAssetController::class)
     ->where('path', '.*')
     ->name('themes.assets');
@@ -72,4 +81,6 @@ Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
 
     Route::get('pages/home', [PageController::class, 'home'])->name('admin.pages.home');
     Route::post('pages/home', [PageController::class, 'updateHome'])->name('admin.pages.home.update');
+    Route::get('pages/product', [PageController::class, 'product'])->name('admin.pages.product');
+    Route::post('pages/product', [PageController::class, 'updateProduct'])->name('admin.pages.product.update');
 });
