@@ -81,4 +81,6 @@ Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
 
     Route::get('pages/home', [PageController::class, 'home'])->name('admin.pages.home');
     Route::post('pages/home', [PageController::class, 'updateHome'])->name('admin.pages.home.update');
+    Route::get('pages/product', [PageController::class, 'product'])->name('admin.pages.product');
+    Route::post('pages/product', [PageController::class, 'updateProduct'])->name('admin.pages.product.update');
 });

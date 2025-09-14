@@ -60,29 +60,39 @@
             </form>
         </div>
     </div>
-    <div class="filter__item mt-3">
-        <form class="row" method="GET">
-            <div class="col-lg-3 col-md-3">
-                <select name="category" class="form-select nice-select wide">
-                    <option value="">Semua Kategori</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat->slug }}" @selected(request('category')==$cat->slug)>{{ $cat->name }}</option>
-                    @endforeach
-                </select>
+    <form method="GET">
+        <input type="hidden" name="search" value="{{ request('search') }}">
+        <div class="filter__item">
+            <div class="row">
+                <div class="col-lg-4 col-md-5">
+                    <div class="filter__sort">
+                        <span>Sort By</span>
+                        <select name="sort" class="form-select" onchange="this.form.submit()">
+                            <option value="">Default</option>
+                            <option value="price_asc" @selected(request('sort')=='price_asc')>Harga Terendah</option>
+                            <option value="price_desc" @selected(request('sort')=='price_desc')>Harga Tertinggi</option>
+                            <option value="sold_desc" @selected(request('sort')=='sold_desc')>Terjual Terbanyak</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <div class="filter__found">
+                        <h6><span>{{ $products->total() }}</span> Produk ditemukan</h6>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-3">
+                    <div class="filter__option">
+                        <select name="category" class="form-select" onchange="this.form.submit()">
+                            <option value="">Semua Kategori</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->slug }}" @selected(request('category')==$cat->slug)>{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div class="col-lg-3 col-md-3">
-                <select name="sort" class="form-select nice-select wide">
-                    <option value="">Urutkan</option>
-                    <option value="price_asc" @selected(request('sort')=='price_asc')>Harga Terendah</option>
-                    <option value="price_desc" @selected(request('sort')=='price_desc')>Harga Tertinggi</option>
-                    <option value="sold_desc" @selected(request('sort')=='sold_desc')>Terjual Terbanyak</option>
-                </select>
-            </div>
-            <div class="col-lg-3 col-md-3">
-                <button type="submit" class="site-btn">Filter</button>
-            </div>
-        </form>
-    </div>
+        </div>
+    </form>
     <div class="row mt-4">
         @foreach($products as $product)
         @php $img = $product->image_url ?? optional($product->images()->first())->path; @endphp
