@@ -33,40 +33,7 @@
     $aboutImage = $settings['about.image'] ?? null;
 @endphp
 
-<header class="header">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-3">
-                <div class="header__logo">
-                    <a href="{{ url('/') }}"><img src="{{ asset('ogani-master/img/logo.png') }}" alt=""></a>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <nav class="header__menu">
-                    <ul>
-                        @foreach($navLinks as $link)
-                            @if($link['visible'])
-                                <li><a href="{{ $link['href'] }}">{{ $link['label'] }}</a></li>
-                            @endif
-                        @endforeach
-                    </ul>
-                </nav>
-            </div>
-            <div class="col-lg-3">
-                <div class="header__cart">
-                    <ul>
-                        <li><a href="#"><i class="fa fa-heart"></i> <span>0</span></a></li>
-                        <li><a href="#"><i class="fa fa-shopping-bag"></i> <span>0</span></a></li>
-                    </ul>
-                    <div class="header__cart__price">item: <span>$0.00</span></div>
-                </div>
-            </div>
-        </div>
-        <div class="humberger__open">
-            <i class="fa fa-bars"></i>
-        </div>
-    </div>
-</header>
+{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
 
 @if(($settings['hero.visible'] ?? '1') == '1')
 <section id="hero" class="hero">
@@ -232,6 +199,8 @@
     @endif
 </div>
 @endif
+
+{!! view()->file(base_path('themes/theme-second/views/components/footer.blade.php'), ['settings' => $settings])->render() !!}
 
 <script src="{{ asset('ogani-master/js/jquery-3.3.1.min.js') }}"></script>
 <script src="{{ asset('ogani-master/js/bootstrap.min.js') }}"></script>

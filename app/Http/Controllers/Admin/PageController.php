@@ -119,4 +119,53 @@ class PageController extends Controller
 
         return response()->json(['status' => 'ok']);
     }
+
+    public function product()
+    {
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+        $settings = PageSetting::where('theme', $theme)->where('page', 'product')->pluck('value', 'key');
+
+        $sections = [
+            'hero' => [
+                'label' => 'Hero',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'hero.visible'],
+                    ['type' => 'image', 'label' => 'Background Image', 'id' => 'hero.image'],
+                    ['type' => 'text', 'label' => 'Title', 'id' => 'title'],
+                ],
+            ],
+            'footer' => [
+                'label' => 'Footer',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Privacy Policy link', 'id' => 'footer.privacy'],
+                    ['type' => 'checkbox', 'label' => 'Terms & Conditions link', 'id' => 'footer.terms'],
+                    ['type' => 'text', 'label' => 'Copyright Text', 'id' => 'footer.copyright'],
+                ],
+            ],
+        ];
+
+        return view('admin.pages.product', compact('sections', 'settings'));
+    }
+
+    public function updateProduct(Request $request)
+    {
+        $request->validate([
+            'key' => 'required',
+            'value' => 'nullable',
+        ]);
+
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+
+        $value = $request->input('value');
+        if ($request->hasFile('value')) {
+            $value = $request->file('value')->store("pages/{$theme}", 'public');
+        }
+
+        PageSetting::updateOrCreate(
+            ['theme' => $theme, 'page' => 'product', 'key' => $request->input('key')],
+            ['value' => $value]
+        );
+
+        return response()->json(['status' => 'ok']);
+    }
 }
