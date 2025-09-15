@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Second Theme</title>
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/bootstrap.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/font-awesome.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/elegant-icons.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/nice-select.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/jquery-ui.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/owl.carousel.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/slicknav.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/style.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/bootstrap.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/font-awesome.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/elegant-icons.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/nice-select.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/jquery-ui.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/owl.carousel.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/slicknav.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/style.css') }}" type="text/css">
     <style>
         .header {position: sticky; top: 0; z-index: 1000; background: #fff;}
     </style>
@@ -39,7 +39,7 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="hero__item set-bg" data-setbg="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('ogani-master/img/hero/banner.jpg') }}">
+                <div class="hero__item set-bg" data-setbg="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('storage/themes/theme-second/img/hero/banner.jpg') }}">
                     <div class="hero__text">
                         <span>{{ $settings['hero.tagline'] ?? 'FRUIT FRESH' }}</span>
                         <h2>{{ $settings['hero.heading'] ?? 'Vegetable 100% Organic' }}</h2>
@@ -59,7 +59,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="blog__details__text">
-                    <img src="{{ $aboutImage ? asset('storage/'.$aboutImage) : asset('ogani-master/img/blog/details/details-pic.jpg') }}" alt="">
+                    <img src="{{ $aboutImage ? asset('storage/'.$aboutImage) : asset('storage/themes/theme-second/img/blog/details/details-pic.jpg') }}" alt="">
                     <h4>{{ $settings['about.heading'] ?? 'About Us' }}</h4>
                     <p>{{ $settings['about.text'] ?? 'We provide quality products.' }}</p>
                 </div>
@@ -84,7 +84,7 @@
             @php $img = $product->image_url ?? optional($product->images()->first())->path; @endphp
             <div class="col-lg-3 col-md-4 col-sm-6">
                 <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="{{ $img ? asset('storage/'.$img) : asset('ogani-master/img/featured/feature-1.jpg') }}">
+                    <div class="featured__item__pic set-bg" data-setbg="{{ $img ? asset('storage/'.$img) : asset('storage/themes/theme-second/img/featured/feature-1.jpg') }}">
                         <ul class="featured__item__pic__hover">
                             <li><a href="#"><i class="fa fa-heart"></i></a></li>
                             <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -143,7 +143,7 @@
                 <div class="blog__item">
                     <div class="blog__item__pic">
                         @php $photo = $t['photo'] ?? null; @endphp
-                        <img src="{{ $photo ? asset('storage/'.$photo) : asset('ogani-master/img/blog/blog-' . (($loop->iteration - 1) % 3 + 1) . '.jpg') }}" alt="{{ $t['name'] ?? '' }}">
+                        <img src="{{ $photo ? asset('storage/'.$photo) : asset('storage/themes/theme-second/img/blog/blog-' . (($loop->iteration - 1) % 3 + 1) . '.jpg') }}" alt="{{ $t['name'] ?? '' }}">
                     </div>
                     <div class="blog__item__text">
                         <ul>
@@ -207,14 +207,14 @@
 
 {!! view()->file(base_path('themes/theme-second/views/components/footer.blade.php'), ['settings' => $settings])->render() !!}
 
-<script src="{{ asset('ogani-master/js/jquery-3.3.1.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/bootstrap.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/jquery.nice-select.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/jquery-ui.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/jquery.slicknav.js') }}"></script>
-<script src="{{ asset('ogani-master/js/mixitup.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/owl.carousel.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/main.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/jquery-3.3.1.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/bootstrap.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/jquery.nice-select.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/jquery-ui.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/jquery.slicknav.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/mixitup.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/owl.carousel.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/main.js') }}"></script>
 </body>
 </html>
 

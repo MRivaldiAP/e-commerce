@@ -4,7 +4,7 @@
             <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="footer__about">
                     <div class="footer__about__logo">
-                        <a href="{{ url('/') }}"><img src="{{ asset('ogani-master/img/logo.png') }}" alt=""></a>
+                        <a href="{{ url('/') }}"><img src="{{ asset('storage/themes/theme-second/img/logo.png') }}" alt=""></a>
                     </div>
                     <ul>
                         <li>Address: 60-49 Road 11378 New York</li>
@@ -55,7 +55,7 @@
             <div class="col-lg-12">
                 <div class="footer__copyright">
                     <div class="footer__copyright__text"><p>{{ $settings['footer.copyright'] ?? 'Copyright &copy; '.date('Y').' All rights reserved' }}@if(($settings['footer.privacy'] ?? '0') == '1') | <a href="#">Privacy Policy</a>@endif @if(($settings['footer.terms'] ?? '0') == '1') | <a href="#">Terms & Conditions</a>@endif</p></div>
-                    <div class="footer__copyright__payment"><img src="{{ asset('ogani-master/img/payment-item.png') }}" alt=""></div>
+                    <div class="footer__copyright__payment"><img src="{{ asset('storage/themes/theme-second/img/payment-item.png') }}" alt=""></div>
                 </div>
             </div>
         </div>

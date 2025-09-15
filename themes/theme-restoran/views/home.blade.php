@@ -6,17 +6,17 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
-    <link href="{{ asset('restoran-1.0.0/img/favicon.ico') }}" rel="icon">
+    <link href="{{ asset('storage/themes/theme-restoran/img/favicon.ico') }}" rel="icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="{{ asset('restoran-1.0.0/lib/animate/animate.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('restoran-1.0.0/lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('restoran-1.0.0/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
-    <link href="{{ asset('restoran-1.0.0/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('restoran-1.0.0/css/style.css') }}" rel="stylesheet">
+    <link href="{{ asset('storage/themes/theme-restoran/lib/animate/animate.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('storage/themes/theme-restoran/lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
     <style>
         :root{--bs-primary:#FEA116;--bs-primary-rgb:254,161,22;}
         .navbar {position: sticky; top:0; z-index:1030;}
@@ -60,7 +60,7 @@
                     @if(!empty($settings['hero.spin_image']))
                     <img class="img-fluid position-absolute top-0 start-0 spin" style="width:200px;" src="{{ asset('storage/'.$settings['hero.spin_image']) }}" alt="">
                     @endif
-                    <img class="img-fluid main" src="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('restoran-1.0.0/img/hero.png') }}" alt="">
+                    <img class="img-fluid main" src="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('storage/themes/theme-restoran/img/hero.png') }}" alt="">
                     @if(!empty($settings['hero.spin_text']))
                     <span class="text-white position-absolute top-50 start-50 translate-middle spin-text">{{ $settings['hero.spin_text'] }}</span>
                     @endif
@@ -94,7 +94,7 @@
     <div class="container">
         <div class="row g-5 align-items-center">
             <div class="col-lg-6">
-                <img class="img-fluid rounded w-100" src="{{ $aboutImage ? asset('storage/'.$aboutImage) : asset('restoran-1.0.0/img/about-1.jpg') }}" alt="">
+                <img class="img-fluid rounded w-100" src="{{ $aboutImage ? asset('storage/'.$aboutImage) : asset('storage/themes/theme-restoran/img/about-1.jpg') }}" alt="">
             </div>
             <div class="col-lg-6">
                 <h5 class="section-title ff-secondary text-start text-primary fw-normal">About Us</h5>
@@ -117,7 +117,7 @@
             @php $img = $product->image_url ?? optional($product->images()->first())->path; @endphp
             <div class="col-lg-6">
                 <div class="d-flex align-items-center">
-                    <img class="flex-shrink-0 img-fluid rounded" src="{{ $img ? asset('storage/'.$img) : asset('restoran-1.0.0/img/menu-1.jpg') }}" alt="{{ $product->name }}" style="width: 80px;">
+                    <img class="flex-shrink-0 img-fluid rounded" src="{{ $img ? asset('storage/'.$img) : asset('storage/themes/theme-restoran/img/menu-1.jpg') }}" alt="{{ $product->name }}" style="width: 80px;">
                     <div class="w-100 d-flex flex-column text-start ps-4">
                         <h5 class="d-flex justify-content-between border-bottom pb-2">
                             <span>{{ $product->name }}</span>
@@ -146,7 +146,7 @@
                 <p>{{ $t['text'] ?? '' }}</p>
                 <div class="d-flex align-items-center">
                     @php $photo = $t['photo'] ?? null; @endphp
-                    <img class="img-fluid flex-shrink-0 rounded-circle" src="{{ $photo ? asset('storage/'.$photo) : asset('restoran-1.0.0/img/testimonial-1.jpg') }}" style="width: 50px; height: 50px;">
+                    <img class="img-fluid flex-shrink-0 rounded-circle" src="{{ $photo ? asset('storage/'.$photo) : asset('storage/themes/theme-restoran/img/testimonial-1.jpg') }}" style="width: 50px; height: 50px;">
                     <div class="ps-3">
                         <h5 class="mb-1">{{ $t['name'] ?? '' }}</h5>
                         <small>{{ $t['title'] ?? '' }}</small>
@@ -216,14 +216,14 @@
 <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{{ asset('restoran-1.0.0/lib/wow/wow.min.js') }}"></script>
-<script src="{{ asset('restoran-1.0.0/lib/easing/easing.min.js') }}"></script>
-<script src="{{ asset('restoran-1.0.0/lib/waypoints/waypoints.min.js') }}"></script>
-<script src="{{ asset('restoran-1.0.0/lib/counterup/counterup.min.js') }}"></script>
-<script src="{{ asset('restoran-1.0.0/lib/owlcarousel/owl.carousel.min.js') }}"></script>
-<script src="{{ asset('restoran-1.0.0/lib/tempusdominus/js/moment.min.js') }}"></script>
-<script src="{{ asset('restoran-1.0.0/lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
-<script src="{{ asset('restoran-1.0.0/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
-<script src="{{ asset('restoran-1.0.0/js/main.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-restoran/lib/wow/wow.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-restoran/lib/easing/easing.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-restoran/lib/waypoints/waypoints.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-restoran/lib/counterup/counterup.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-restoran/lib/owlcarousel/owl.carousel.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/js/moment.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-restoran/js/main.js') }}"></script>
 </body>
 </html>

@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produk</title>
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/bootstrap.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/font-awesome.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/elegant-icons.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/nice-select.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/jquery-ui.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/owl.carousel.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/slicknav.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('ogani-master/css/style.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/bootstrap.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/font-awesome.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/elegant-icons.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/nice-select.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/jquery-ui.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/owl.carousel.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/slicknav.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/style.css') }}" type="text/css">
 </head>
 <body>
 @php
@@ -37,7 +37,7 @@
     ];
 @endphp
 {!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
-<section class="breadcrumb-section set-bg" data-setbg="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('ogani-master/img/breadcrumb.jpg') }}">
+<section class="breadcrumb-section set-bg" data-setbg="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('storage/themes/theme-second/img/breadcrumb.jpg') }}">
     <div class="container">
         <div class="row">
             <div class="col-lg-12 text-center">
@@ -134,7 +134,7 @@
                         @php $img = $product->image_url ?? optional($product->images()->first())->path; @endphp
                         <div class="col-lg-4 col-md-6 col-sm-6">
                             <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="{{ $img ? asset('storage/'.$img) : asset('ogani-master/img/product/product-1.jpg') }}">
+                                <div class="product__item__pic set-bg" data-setbg="{{ $img ? asset('storage/'.$img) : asset('storage/themes/theme-second/img/product/product-1.jpg') }}">
                                     <ul class="product__item__pic__hover">
                                         <li><a href="#"><i class="fa fa-heart"></i></a></li>
                                         <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -157,14 +157,14 @@
     </div>
 </section>
 {!! view()->file(base_path('themes/theme-second/views/components/footer.blade.php'), ['settings' => $settings])->render() !!}
-<script src="{{ asset('ogani-master/js/jquery-3.3.1.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/bootstrap.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/jquery.nice-select.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/jquery-ui.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/jquery.slicknav.js') }}"></script>
-<script src="{{ asset('ogani-master/js/mixitup.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/owl.carousel.min.js') }}"></script>
-<script src="{{ asset('ogani-master/js/main.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/jquery-3.3.1.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/bootstrap.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/jquery.nice-select.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/jquery-ui.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/jquery.slicknav.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/mixitup.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/owl.carousel.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/main.js') }}"></script>
 <script>
     $(function(){
         var min = {{ request('minprice',0) }};
