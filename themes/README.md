@@ -40,3 +40,15 @@ C) functional Search bar
 D) functional filter sectin, harga, kategori, terjual, etc. 
 E) list produk complete with button to product details, pagination 15 (showing products)
 Components - Footer
+----------------
+PRODUCT DETAILS PAGE :
+Components - Nav Menu
+A) Product Name (heading)
+B) Product Image
+C) slider containing thumbnal of product image (to choice which product image to show in product image section)
+D) Prduct Price
+E) button to increment and decrement number
+F) masukkan ke keranjang button
+G) Product's comment (can be toggle active or not in admin page)
+H) recomendatin of 5 similiar products
+Components - Footer
