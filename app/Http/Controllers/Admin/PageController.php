@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PageSetting;
 use App\Models\Setting;
+use App\Models\Comment;
+use App\Models\Product;
 
 class PageController extends Controller
 {
@@ -167,5 +169,80 @@ class PageController extends Controller
         );
 
         return response()->json(['status' => 'ok']);
+    }
+
+    public function productDetail()
+    {
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+        $settings = PageSetting::where('theme', $theme)->where('page', 'product-detail')->pluck('value', 'key');
+
+        $sections = [
+            'hero' => [
+                'label' => 'Hero',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'hero.visible'],
+                    ['type' => 'image', 'label' => 'Background Image', 'id' => 'hero.image'],
+                    ['type' => 'text', 'label' => 'Breadcrumb Title', 'id' => 'hero.title'],
+                ],
+            ],
+            'comments' => [
+                'label' => 'Comments',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'comments.visible'],
+                    ['type' => 'text', 'label' => 'Heading', 'id' => 'comments.heading'],
+                ],
+            ],
+            'recommendations' => [
+                'label' => 'Recommendations',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'recommendations.visible'],
+                    ['type' => 'text', 'label' => 'Heading', 'id' => 'recommendations.heading'],
+                ],
+            ],
+            'footer' => [
+                'label' => 'Footer',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Privacy Policy link', 'id' => 'footer.privacy'],
+                    ['type' => 'checkbox', 'label' => 'Terms & Conditions link', 'id' => 'footer.terms'],
+                    ['type' => 'text', 'label' => 'Copyright Text', 'id' => 'footer.copyright'],
+                ],
+            ],
+        ];
+
+        $previewProduct = Product::first();
+        $previewUrl = $previewProduct ? route('products.show', $previewProduct) : null;
+        $comments = Comment::with(['product', 'user'])->latest()->get();
+
+        return view('admin.pages.product-detail', compact('sections', 'settings', 'comments', 'previewUrl'));
+    }
+
+    public function updateProductDetail(Request $request)
+    {
+        $request->validate([
+            'key' => 'required',
+            'value' => 'nullable',
+        ]);
+
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+
+        $value = $request->input('value');
+        if ($request->hasFile('value')) {
+            $value = $request->file('value')->store("pages/{$theme}", 'public');
+        }
+
+        PageSetting::updateOrCreate(
+            ['theme' => $theme, 'page' => 'product-detail', 'key' => $request->input('key')],
+            ['value' => $value]
+        );
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function toggleComment(Comment $comment)
+    {
+        $comment->is_active = ! $comment->is_active;
+        $comment->save();
+
+        return back()->with('success', 'Status komentar diperbarui.');
     }
 }

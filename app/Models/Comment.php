@@ -13,6 +13,25 @@ class Comment extends Model
     use HasFactory;
 
     /**
+     * The attributes that are mass assignable.
+     */
+    protected $fillable = [
+        'product_id',
+        'user_id',
+        'name',
+        'email',
+        'content',
+        'is_active',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     */
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    /**
      * Get the user that owns the Comment
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\OrderItem;
 use App\Models\ProductImage;
 use App\Models\Brand;
+use App\Models\Comment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,5 +38,9 @@ class Product extends Model
 
     public function orderItems(): HasMany {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function comments(): HasMany {
+        return $this->hasMany(Comment::class);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Setting;
+use App\Models\Product;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThemeAssetController;
@@ -38,6 +39,24 @@ Route::get('/produk', function () {
     }
     abort(404);
 })->name('products.index');
+
+Route::get('/produk/{product}', function (Product $product) {
+    $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
+    $viewPath = base_path("themes/{$activeTheme}/views/product-detail.blade.php");
+    if (File::exists($viewPath)) {
+        $product->load([
+            'images',
+            'categories',
+            'comments' => fn ($query) => $query->where('is_active', true)->latest(),
+        ]);
+
+        return view()->file($viewPath, [
+            'theme' => $activeTheme,
+            'product' => $product,
+        ]);
+    }
+    abort(404);
+})->name('products.show');
 
 Route::get('themes/{theme}/assets/{path}', ThemeAssetController::class)
     ->where('path', '.*')
@@ -87,4 +106,7 @@ Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
     Route::post('pages/home', [PageController::class, 'updateHome'])->name('admin.pages.home.update');
     Route::get('pages/product', [PageController::class, 'product'])->name('admin.pages.product');
     Route::post('pages/product', [PageController::class, 'updateProduct'])->name('admin.pages.product.update');
+    Route::get('pages/product-detail', [PageController::class, 'productDetail'])->name('admin.pages.product-detail');
+    Route::post('pages/product-detail', [PageController::class, 'updateProductDetail'])->name('admin.pages.product-detail.update');
+    Route::patch('pages/product-detail/comments/{comment}', [PageController::class, 'toggleComment'])->name('admin.pages.product-detail.comments.toggle');
 });

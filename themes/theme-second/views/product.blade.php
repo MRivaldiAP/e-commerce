@@ -142,7 +142,7 @@
                                     </ul>
                                 </div>
                                 <div class="product__item__text">
-                                    <h6><a href="{{ url('products/'.$product->id) }}">{{ $product->name }}</a></h6>
+                                    <h6><a href="{{ route('products.show', $product) }}">{{ $product->name }}</a></h6>
                                     <h5>{{ $product->price_formatted ?? number_format($product->price,0,',','.') }}</h5>
                                 </div>
                             </div>
