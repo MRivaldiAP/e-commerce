@@ -88,7 +88,7 @@
                         <span class="text-primary">{{ $product->price_formatted ?? number_format($product->price,0,',','.') }}</span>
                     </h5>
                     <small class="fst-italic">{{ $product->description }}</small>
-                    <a href="{{ url('products/'.$product->id) }}" class="btn btn-sm btn-primary mt-2 align-self-start">Detail</a>
+                    <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-primary mt-2 align-self-start">Detail</a>
                 </div>
             </div>
         </div>

@@ -62,7 +62,7 @@
                 <img src="{{ $img ? asset('storage/'.$img) : 'https://via.placeholder.com/150' }}" alt="{{ $product->name }}">
                 <h3>{{ $product->name }}</h3>
                 <p>{{ $product->price_formatted ?? number_format($product->price,0,',','.') }}</p>
-                <a href="{{ url('products/'.$product->id) }}" class="btn">Detail</a>
+                <a href="{{ route('products.show', $product) }}" class="btn">Detail</a>
             </div>
         @endforeach
     </div>
