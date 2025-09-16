@@ -89,6 +89,12 @@
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link" href="{{url('/admin/tags')}}">
+                <i class="mdi mdi-tag-multiple menu-icon"></i>
+                <span class="menu-title">Tag Tema</span>
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" data-toggle="collapse" href="#pages-menu" aria-expanded="false" aria-controls="pages-menu">
                 <i class="mdi mdi-arrange-bring-forward menu-icon"></i>
                 <span class="menu-title">Kelola Halaman</span>
