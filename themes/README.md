@@ -52,3 +52,11 @@ F) masukkan ke keranjang button
 G) Product's comment (can be toggle active or not in admin page)
 H) recomendatin of 5 similiar products
 Components - Footer
+-----------------
+KERANJANG/CART PAGE :
+Components - Nav Menu
+A) H1 saying keranjang
+B) List of items table : single photo - name - price - quantity (can be incremented or decremented)
+C) Row of total : change dynamicly according to quantity changed
+D) Button continue to shipping (if biteship service exist and shipping turned on) to payment otherwis
+Components - Footer
