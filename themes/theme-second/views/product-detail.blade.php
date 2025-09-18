@@ -12,17 +12,32 @@
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/owl.carousel.min.css') }}" type="text/css">
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/slicknav.min.css') }}" type="text/css">
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/style.css') }}" type="text/css">
+    <style>
+        .cart-feedback {
+            margin-top: 1rem;
+            color: #7fad39;
+            min-height: 1.25rem;
+            font-weight: 500;
+        }
+
+        .cart-feedback.error {
+            color: #d9534f;
+        }
+    </style>
 </head>
 <body>
 @php
     use App\Models\PageSetting;
     use App\Models\Product;
+    use App\Support\Cart;
 
     $settings = PageSetting::where('theme', 'theme-second')->where('page', 'product-detail')->pluck('value', 'key')->toArray();
     $navLinks = [
         ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
         ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
+        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
     ];
+    $cartSummary = Cart::summary();
 
     $images = $product->images ?? collect();
     $imageSources = $images->pluck('path')->filter()->map(fn($path) => asset('storage/'.$path))->values();
@@ -46,7 +61,7 @@
         $recommendations = $recommendations->concat($fallback);
     }
 @endphp
-{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
 
 <section class="breadcrumb-section set-bg" data-setbg="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('storage/themes/theme-second/img/breadcrumb.jpg') }}">
     <div class="container">
@@ -94,6 +109,7 @@
                     </div>
                     <a href="#" class="primary-btn" id="addToCartButton">MASUKKAN KE KERANJANG</a>
                     <a href="#" class="heart-icon"><span class="icon_heart_alt"></span></a>
+                    <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
                     <ul>
                         <li><b>Ketersediaan</b> <span>{{ $product->stock > 0 ? 'Stok Tersedia' : 'Stok Habis' }}</span></li>
                         <li><b>Berat</b> <span>{{ $product->weight ? $product->weight.' kg' : '-' }}</span></li>
@@ -207,16 +223,93 @@
 <script src="{{ asset('storage/themes/theme-second/js/mixitup.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/owl.carousel.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/main.js') }}"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function(){
-        const addToCart = document.getElementById('addToCartButton');
-        if(addToCart){
-            addToCart.addEventListener('click', function(event){
-                event.preventDefault();
-                alert('Produk ditambahkan ke keranjang sebanyak ' + (document.getElementById('quantityInput')?.value || 1) + ' pcs.');
-            });
-        }
-    });
-</script>
+  <script>
+      document.addEventListener('DOMContentLoaded', function(){
+          const addToCart = document.getElementById('addToCartButton');
+          const feedback = document.getElementById('cartFeedback');
+          const quantityInput = document.getElementById('quantityInput');
+          const csrf = '{{ csrf_token() }}';
+          const productId = {{ $product->id }};
+          const endpoint = '{{ route('cart.items.store') }}';
+          let feedbackTimer = null;
+
+          function showFeedback(message, isError = false) {
+              if (!feedback) {
+                  return;
+              }
+
+              if (feedbackTimer) {
+                  clearTimeout(feedbackTimer);
+                  feedbackTimer = null;
+              }
+
+              feedback.textContent = message;
+              feedback.classList.toggle('error', Boolean(isError));
+
+              if (message) {
+                  feedbackTimer = setTimeout(function(){
+                      feedback.textContent = '';
+                      feedback.classList.remove('error');
+                  }, 2600);
+              }
+          }
+
+          function handleResponse(response) {
+              if (!response.ok) {
+                  throw response;
+              }
+              return response.json();
+          }
+
+          function parseError(error) {
+              if (typeof error.json === 'function') {
+                  return error.json().then(function(data){
+                      return data?.message || 'Gagal menambahkan produk ke keranjang.';
+                  }).catch(function(){
+                      return 'Gagal menambahkan produk ke keranjang.';
+                  });
+              }
+
+              return Promise.resolve('Gagal menambahkan produk ke keranjang.');
+          }
+
+          if(addToCart){
+              addToCart.addEventListener('click', function(event){
+                  event.preventDefault();
+
+                  const quantity = Math.max(1, parseInt(quantityInput?.value || '1', 10));
+                  addToCart.classList.add('disabled');
+                  addToCart.setAttribute('aria-busy', 'true');
+
+                  fetch(endpoint, {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                          'Accept': 'application/json',
+                          'X-CSRF-TOKEN': csrf,
+                      },
+                      body: JSON.stringify({
+                          product_id: productId,
+                          quantity: quantity,
+                      })
+                  })
+                  .then(handleResponse)
+                  .then(function(data){
+                      showFeedback('Produk ditambahkan ke keranjang.');
+                      window.dispatchEvent(new CustomEvent('cart:updated', { detail: data.summary }));
+                  })
+                  .catch(function(error){
+                      parseError(error).then(function(message){
+                          showFeedback(message, true);
+                      });
+                  })
+                  .finally(function(){
+                      addToCart.classList.remove('disabled');
+                      addToCart.removeAttribute('aria-busy');
+                  });
+              });
+          }
+      });
+  </script>
 </body>
 </html>

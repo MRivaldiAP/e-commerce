@@ -20,6 +20,7 @@
 @php
     use App\Models\PageSetting;
     use App\Models\Product;
+    use App\Support\Cart;
     $settings = PageSetting::where('theme', 'theme-second')->where('page', 'home')->pluck('value', 'key')->toArray();
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
@@ -31,8 +32,9 @@
         ['label' => 'Contact Us', 'href' => '#contact', 'visible' => ($settings['navigation.contact'] ?? '1') == '1'],
     ];
     $aboutImage = $settings['about.image'] ?? null;
+    $cartSummary = Cart::summary();
 @endphp
-{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
 
 @if(($settings['hero.visible'] ?? '1') == '1')
 <section id="hero" class="hero">

@@ -12,6 +12,7 @@
     use App\Models\PageSetting;
     use App\Models\Product;
     use App\Models\Category;
+    use App\Support\Cart;
     $settings = PageSetting::where('theme', $theme)->where('page', 'product')->pluck('value', 'key')->toArray();
     $query = Product::query();
     if($s = request('search')){ $query->where('name', 'like', "%$s%"); }
@@ -26,9 +27,11 @@
     $navLinks = [
         ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
         ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
+        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
     ];
+    $cartSummary = Cart::summary();
 @endphp
-{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
 @if(($settings['hero.visible'] ?? '1') == '1')
 <section id="hero" class="hero" @if(!empty($settings['hero.image'])) style="background-image:url('{{ asset('storage/'.$settings['hero.image']) }}')" @endif>
     <div class="hero-content">
