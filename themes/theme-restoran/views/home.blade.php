@@ -30,6 +30,7 @@
 @php
     use App\Models\PageSetting;
     use App\Models\Product;
+    use App\Support\Cart;
     $settings = PageSetting::where('theme', 'theme-restoran')->where('page', 'home')->pluck('value', 'key')->toArray();
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
@@ -41,9 +42,10 @@
         ['label' => 'Contact', 'href' => '#contact', 'visible' => ($settings['navigation.contact'] ?? '1') == '1'],
     ];
     $aboutImage = $settings['about.image'] ?? null;
+    $cartSummary = Cart::summary();
 @endphp
 <div class="container-xxl position-relative p-0">
-    {!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+    {!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
     @if(($settings['hero.visible'] ?? '1') == '1')
     <div id="hero" class="container-xxl py-5 bg-dark hero-header mb-5">
         <div class="container my-5 py-5">

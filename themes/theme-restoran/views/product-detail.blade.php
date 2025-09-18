@@ -15,17 +15,32 @@
     <link href="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
+    <style>
+        .cart-feedback {
+            margin-top: 0.5rem;
+            color: var(--bs-primary);
+            min-height: 1.25rem;
+            font-weight: 600;
+        }
+
+        .cart-feedback.error {
+            color: #dc3545;
+        }
+    </style>
 </head>
 <body>
 @php
     use App\Models\PageSetting;
     use App\Models\Product;
+    use App\Support\Cart;
 
     $settings = PageSetting::where('theme', 'theme-restoran')->where('page', 'product-detail')->pluck('value','key')->toArray();
     $navLinks = [
         ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
         ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
+        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
     ];
+    $cartSummary = Cart::summary();
 
     $images = $product->images ?? collect();
     $imageSources = $images->pluck('path')->filter()->map(fn($path) => asset('storage/'.$path))->values();
@@ -50,7 +65,7 @@
     }
 @endphp
 <div class="container-xxl position-relative p-0">
-    {!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+    {!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
     @if(($settings['hero.visible'] ?? '1') == '1')
     <div class="container-xxl py-5 bg-dark hero-header mb-5" @if(!empty($settings['hero.image'])) style="background-image:url('{{ asset('storage/'.$settings['hero.image']) }}'); background-size:cover; background-position:center;" @endif>
         <div class="container text-center my-5 pt-5 pb-4">
@@ -91,9 +106,10 @@
                 </div>
             </div>
             <div class="mb-4">
-                <button class="btn btn-primary py-2 px-4 me-2" id="addToCartButton"><i class="bi bi-cart"></i> Masukkan ke Keranjang</button>
-                <button class="btn btn-outline-primary py-2 px-4"><i class="bi bi-heart"></i></button>
+                <button class="btn btn-primary py-2 px-4 me-2" id="addToCartButton" type="button"><i class="bi bi-cart"></i> Masukkan ke Keranjang</button>
+                <button class="btn btn-outline-primary py-2 px-4" type="button"><i class="bi bi-heart"></i></button>
             </div>
+            <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
             <div class="mt-4">
                 <h5 class="mb-3">Deskripsi Produk</h5>
                 <p>{!! $product->description ? nl2br(e($product->description)) : 'Belum ada deskripsi produk.' !!}</p>
@@ -196,12 +212,90 @@
         }
 
         const addToCart = document.getElementById('addToCartButton');
+        const feedback = document.getElementById('cartFeedback');
+        const quantityInput = document.getElementById('quantityInput');
+        const csrf = '{{ csrf_token() }}';
+        const productId = {{ $product->id }};
+        const endpoint = '{{ route('cart.items.store') }}';
+        let feedbackTimer = null;
+
+        function showFeedback(message, isError = false) {
+            if (!feedback) {
+                return;
+            }
+
+            if (feedbackTimer) {
+                clearTimeout(feedbackTimer);
+                feedbackTimer = null;
+            }
+
+            feedback.textContent = message;
+            feedback.classList.toggle('error', Boolean(isError));
+
+            if (message) {
+                feedbackTimer = setTimeout(function(){
+                    feedback.textContent = '';
+                    feedback.classList.remove('error');
+                }, 2600);
+            }
+        }
+
+        function handleResponse(response) {
+            if (!response.ok) {
+                throw response;
+            }
+            return response.json();
+        }
+
+        function parseError(error) {
+            if (typeof error.json === 'function') {
+                return error.json().then(function(data){
+                    return data?.message || 'Gagal menambahkan produk ke keranjang.';
+                }).catch(function(){
+                    return 'Gagal menambahkan produk ke keranjang.';
+                });
+            }
+
+            return Promise.resolve('Gagal menambahkan produk ke keranjang.');
+        }
+
         if(addToCart){
-            addToCart.addEventListener('click', function(){
-                alert('Produk ditambahkan ke keranjang sebanyak ' + (document.getElementById('quantityInput')?.value || 1) + ' pcs.');
+            addToCart.addEventListener('click', function(event){
+                event.preventDefault();
+
+                const quantity = Math.max(1, parseInt(quantityInput?.value || '1', 10));
+                addToCart.disabled = true;
+                addToCart.setAttribute('aria-busy', 'true');
+
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: quantity,
+                    })
+                })
+                .then(handleResponse)
+                .then(function(data){
+                    showFeedback('Produk ditambahkan ke keranjang.');
+                    window.dispatchEvent(new CustomEvent('cart:updated', { detail: data.summary }));
+                })
+                .catch(function(error){
+                    parseError(error).then(function(message){
+                        showFeedback(message, true);
+                    });
+                })
+                .finally(function(){
+                    addToCart.disabled = false;
+                    addToCart.removeAttribute('aria-busy');
+                });
             });
         }
     });
-</script>
+  </script>
 </body>
 </html>

@@ -24,19 +24,24 @@
         #comments .comment:last-child { border-bottom: none; }
         #comments .comment strong { display: block; margin-bottom: 0.5rem; }
         #recommendations .product-card .btn { margin-top: 1rem; display: inline-block; }
+        #product-detail .cart-feedback { margin-top: 0.75rem; color: var(--color-primary); min-height: 1.25rem; }
+        #product-detail .cart-feedback.error { color: #d32f2f; }
     </style>
 </head>
 <body>
 @php
     use App\Models\PageSetting;
     use App\Models\Product;
+    use App\Support\Cart;
 
     $settings = PageSetting::where('theme', $theme)->where('page', 'product-detail')->pluck('value', 'key')->toArray();
 
     $navLinks = [
         ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
         ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
+        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
     ];
+    $cartSummary = Cart::summary();
 
     $footerLinks = [
         ['label' => 'Privacy Policy', 'href' => '#', 'visible' => ($settings['footer.privacy'] ?? '0') == '1'],
@@ -67,7 +72,7 @@
         $recommendations = $recommendations->concat($fallback);
     }
 @endphp
-{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
 
 @if(($settings['hero.visible'] ?? '1') == '1')
 <section id="hero" class="hero" @if(!empty($settings['hero.image'])) style="background-image:url('{{ asset('storage/'.$settings['hero.image']) }}')" @endif>
@@ -101,6 +106,7 @@
                 <button type="button" data-action="increase">+</button>
             </div>
             <button class="cta" id="addToCartButton">Masukkan ke Keranjang</button>
+            <p class="cart-feedback" id="cartFeedback" role="status"></p>
             <div class="description">
                 {!! $product->description ? nl2br(e($product->description)) : '<p>Belum ada deskripsi produk.</p>' !!}
             </div>
@@ -177,9 +183,66 @@
         }
 
         const addToCart = document.getElementById('addToCartButton');
+        const feedback = document.getElementById('cartFeedback');
+        const csrf = '{{ csrf_token() }}';
+        const productId = {{ $product->id }};
+
+        function showFeedback(message, isError = false) {
+            if (!feedback) return;
+            feedback.textContent = message;
+            feedback.classList.toggle('error', !!isError);
+            if (message) {
+                feedback.classList.add('visible');
+                setTimeout(() => feedback.classList.remove('visible'), 2600);
+            }
+        }
+
+        function handleResponse(response) {
+            if (!response.ok) {
+                throw response;
+            }
+            return response.json();
+        }
+
+        function parseError(error) {
+            if (typeof error.json === 'function') {
+                return error.json().then(function (data) {
+                    return data.message || 'Gagal menambahkan produk ke keranjang.';
+                }).catch(function () {
+                    return 'Gagal menambahkan produk ke keranjang.';
+                });
+            }
+            return Promise.resolve('Gagal menambahkan produk ke keranjang.');
+        }
+
         if(addToCart){
-            addToCart.addEventListener('click', function(){
-                alert('Produk ditambahkan ke keranjang (' + (document.getElementById('quantityInput')?.value || 1) + ' pcs).');
+            addToCart.addEventListener('click', function(event){
+                event.preventDefault();
+                const inputField = document.getElementById('quantityInput');
+                const quantity = Math.max(1, parseInt(inputField?.value || '1', 10));
+
+                fetch('{{ route('cart.items.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: quantity
+                    })
+                })
+                .then(handleResponse)
+                .then(function(data){
+                    showFeedback('Produk ditambahkan ke keranjang.');
+                    window.dispatchEvent(new CustomEvent('cart:updated', { detail: data.summary }));
+                })
+                .catch(function(error){
+                    parseError(error).then(function(message){
+                        showFeedback(message, true);
+                    });
+                });
             });
         }
     });
