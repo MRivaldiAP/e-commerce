@@ -5,6 +5,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThemeAssetController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\ProductController;
@@ -58,6 +59,11 @@ Route::get('/produk/{product}', function (Product $product) {
     abort(404);
 })->name('products.show');
 
+Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
+Route::patch('/cart/items/{product}', [CartController::class, 'update'])->name('cart.items.update');
+Route::delete('/cart/items/{product}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+
 Route::get('themes/{theme}/assets/{path}', ThemeAssetController::class)
     ->where('path', '.*')
     ->name('themes.assets');
@@ -109,4 +115,6 @@ Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
     Route::get('pages/product-detail', [PageController::class, 'productDetail'])->name('admin.pages.product-detail');
     Route::post('pages/product-detail', [PageController::class, 'updateProductDetail'])->name('admin.pages.product-detail.update');
     Route::patch('pages/product-detail/comments/{comment}', [PageController::class, 'toggleComment'])->name('admin.pages.product-detail.comments.toggle');
+    Route::get('pages/cart', [PageController::class, 'cart'])->name('admin.pages.cart');
+    Route::post('pages/cart', [PageController::class, 'updateCart'])->name('admin.pages.cart.update');
 });

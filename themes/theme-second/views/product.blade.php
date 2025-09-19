@@ -18,6 +18,7 @@
     use App\Models\PageSetting;
     use App\Models\Product;
     use App\Models\Category;
+    use App\Support\Cart;
     $settings = PageSetting::where('theme', 'theme-second')->where('page', 'product')->pluck('value', 'key')->toArray();
     $query = Product::query();
     if($s = request('search')){ $query->where('name','like',"%$s%"); }
@@ -34,9 +35,11 @@
     $navLinks = [
         ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
         ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
+        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
     ];
+    $cartSummary = Cart::summary();
 @endphp
-{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
 <section class="breadcrumb-section set-bg" data-setbg="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('storage/themes/theme-second/img/breadcrumb.jpg') }}">
     <div class="container">
         <div class="row">

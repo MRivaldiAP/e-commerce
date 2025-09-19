@@ -11,6 +11,7 @@
 @php
     use App\Models\PageSetting;
     use App\Models\Product;
+    use App\Support\Cart;
     $settings = PageSetting::where('theme', $theme)->where('page', 'home')->pluck('value', 'key')->toArray();
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
@@ -27,8 +28,9 @@
         ['label' => 'Privacy Policy', 'href' => '#', 'visible' => ($settings['footer.privacy'] ?? '1') == '1'],
         ['label' => 'Terms & Conditions', 'href' => '#', 'visible' => ($settings['footer.terms'] ?? '1') == '1'],
     ];
+    $cartSummary = Cart::summary();
 @endphp
-{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
 
 @if(($settings['hero.visible'] ?? '1') == '1')
 <section id="hero" class="hero" @if(!empty($settings['hero.image'])) style="background-image:url('{{ asset('storage/'.$settings['hero.image']) }}')" @endif>

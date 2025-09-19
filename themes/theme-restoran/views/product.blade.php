@@ -21,6 +21,7 @@
     use App\Models\PageSetting;
     use App\Models\Product;
     use App\Models\Category;
+    use App\Support\Cart;
     $settings = PageSetting::where('theme', 'theme-restoran')->where('page', 'product')->pluck('value','key')->toArray();
     $query = Product::query();
     if($s = request('search')){ $query->where('name','like',"%$s%"); }
@@ -35,10 +36,12 @@
     $navLinks = [
         ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
         ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
+        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
     ];
+    $cartSummary = Cart::summary();
 @endphp
 <div class="container-xxl position-relative p-0">
-    {!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+    {!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
     <div class="container-xxl py-5 bg-dark hero-header mb-5">
         <div class="container text-center my-5 pt-5 pb-4">
             <h1 class="display-3 text-white mb-3">{{ $settings['title'] ?? 'Produk Kami' }}</h1>

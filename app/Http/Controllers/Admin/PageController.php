@@ -238,6 +238,70 @@ class PageController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
+    public function cart()
+    {
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+        $settings = PageSetting::where('theme', $theme)->where('page', 'cart')->pluck('value', 'key');
+
+        $sections = [
+            'header' => [
+                'label' => 'Header',
+                'elements' => [
+                    ['type' => 'text', 'label' => 'Judul Halaman', 'id' => 'title'],
+                    ['type' => 'textarea', 'label' => 'Deskripsi Singkat', 'id' => 'subtitle'],
+                ],
+            ],
+            'empty' => [
+                'label' => 'Keranjang Kosong',
+                'elements' => [
+                    ['type' => 'textarea', 'label' => 'Pesan Keranjang Kosong', 'id' => 'empty.message'],
+                    ['type' => 'text', 'label' => 'Label Tombol Belanja', 'id' => 'empty.button'],
+                ],
+            ],
+            'actions' => [
+                'label' => 'Tombol Aksi',
+                'elements' => [
+                    ['type' => 'text', 'label' => 'Label Tombol Pengiriman', 'id' => 'button.shipping'],
+                    ['type' => 'text', 'label' => 'Label Tombol Pembayaran', 'id' => 'button.payment'],
+                ],
+            ],
+            'footer' => [
+                'label' => 'Footer',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Privacy Policy link', 'id' => 'footer.privacy'],
+                    ['type' => 'checkbox', 'label' => 'Terms & Conditions link', 'id' => 'footer.terms'],
+                    ['type' => 'text', 'label' => 'Copyright Text', 'id' => 'footer.copyright'],
+                ],
+            ],
+        ];
+
+        $previewUrl = route('cart.index');
+
+        return view('admin.pages.cart', compact('sections', 'settings', 'previewUrl'));
+    }
+
+    public function updateCart(Request $request)
+    {
+        $request->validate([
+            'key' => 'required',
+            'value' => 'nullable',
+        ]);
+
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+
+        $value = $request->input('value');
+        if ($request->hasFile('value')) {
+            $value = $request->file('value')->store("pages/{$theme}", 'public');
+        }
+
+        PageSetting::updateOrCreate(
+            ['theme' => $theme, 'page' => 'cart', 'key' => $request->input('key')],
+            ['value' => $value]
+        );
+
+        return response()->json(['status' => 'ok']);
+    }
+
     public function toggleComment(Comment $comment)
     {
         $comment->is_active = ! $comment->is_active;
