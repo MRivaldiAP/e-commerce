@@ -241,6 +241,7 @@
         const csrf = '{{ csrf_token() }}';
         const updateUrl = '{{ route('cart.items.update', ['product' => '__ID__']) }}';
         const destroyUrl = '{{ route('cart.items.destroy', ['product' => '__ID__']) }}';
+        const paymentUrl = '{{ route('checkout.payment') }}';
         const cartBody = document.querySelector('[data-cart-body]');
         const cartContent = document.getElementById('cart-content');
         const emptyState = document.getElementById('cart-empty');
@@ -419,6 +420,15 @@
                     }
                     updateQuantity(row.dataset.productId, value);
                 }
+            });
+        }
+
+        if(actionButton){
+            actionButton.addEventListener('click', function(){
+                if(actionButton.disabled){
+                    return;
+                }
+                window.location.href = paymentUrl;
             });
         }
     })();
