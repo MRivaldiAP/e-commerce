@@ -43,4 +43,15 @@ interface PaymentGateway
      * @return array<string, mixed>
      */
     public function checkoutData(array $config, array $selectedMethods, array $cartSummary): array;
+
+    /**
+     * Create a hosted payment session and return the information required to redirect
+     * the customer to the gateway's default payment page.
+     *
+     * @param  array<string, mixed>  $config
+     * @param  array<string, mixed>  $cart
+     * @param  array<string, mixed>  $context
+     * @return array<string, mixed>
+     */
+    public function createPaymentSession(array $config, array $cart, array $context = []): array;
 }

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $checkoutData['title'] ?? 'Pembayaran' }}</title>
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/bootstrap.min.css') }}" type="text/css">
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/font-awesome.min.css') }}" type="text/css">
@@ -28,8 +29,10 @@
         .info__badge { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 1rem 1.25rem; font-size: .95rem; color: #166534; }
         .btn-pay { background: #7fad39; border: none; border-radius: 999px; padding: .9rem 2.5rem; color: #fff; font-weight: 600; width: 100%; }
         .btn-pay:hover { background: #6c9b30; }
-        .payment-feedback { min-height: 1.5rem; margin-top: 1rem; font-weight: 600; color: #7fad39; }
+        .payment-feedback { min-height: 1.5rem; margin-top: 1rem; font-weight: 600; color: #6c757d; }
+        .payment-feedback.success { color: #7fad39; }
         .payment-feedback.error { color: #d9534f; }
+        .payment-feedback.info { color: #0d6efd; }
     </style>
 </head>
 <body>
@@ -47,6 +50,8 @@
     $instructions = $checkoutData['instructions'] ?? [];
     $publicConfig = $checkoutData['publicConfig'] ?? [];
     $selected = $selectedMethod ?? ($methods[0]['key'] ?? null);
+    $feedbackMessage = $feedbackStatus['message'] ?? null;
+    $feedbackType = $feedbackStatus['type'] ?? null;
 @endphp
 
 {!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
@@ -116,7 +121,7 @@
                     </div>
                     <div class="mt-auto">
                         <button class="btn-pay" data-pay-button>Bayar dengan {{ $gatewayLabel }}</button>
-                        <div class="payment-feedback" data-payment-feedback></div>
+                        <div class="payment-feedback {{ $feedbackType === 'success' ? 'success' : ($feedbackType === 'error' ? 'error' : ($feedbackType === 'info' ? 'info' : '')) }}" data-payment-feedback data-initial-message="{{ $feedbackMessage ?? '' }}" data-initial-type="{{ $feedbackType ?? '' }}">{{ $feedbackMessage }}</div>
                         <a href="{{ route('cart.index') }}" class="text-decoration-none text-muted">&larr; Kembali ke Keranjang</a>
                     </div>
                 </div>
@@ -135,7 +140,10 @@
         const payButton = document.querySelector('[data-pay-button]');
         const feedback = document.querySelector('[data-payment-feedback]');
         const gateway = @json($gatewayKey);
-        const config = @json($publicConfig);
+        const sessionEndpoint = @json(route('checkout.payment.session'));
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+        const statusClasses = ['success', 'error', 'info'];
 
         function setActive(card){
             methodCards.forEach(item => item.classList.remove('active'));
@@ -146,6 +154,24 @@
             }
         }
 
+        function setFeedback(message, type){
+            if(!feedback){
+                return;
+            }
+            feedback.textContent = message || '';
+            statusClasses.forEach(cls => feedback.classList.remove(cls));
+            if(type && statusClasses.includes(type)){
+                feedback.classList.add(type);
+            }
+        }
+
+        if(feedback){
+            const initialMessage = feedback.dataset.initialMessage || '';
+            const initialType = feedback.dataset.initialType || '';
+            if(initialMessage){
+                setFeedback(initialMessage, initialType);
+            }
+        }
         methodCards.forEach(card => {
             card.addEventListener('click', function(event){
                 if(event.target.matches('input')) return;
@@ -157,26 +183,61 @@
             }
         });
 
-        payButton?.addEventListener('click', function(){
-            const selected = document.querySelector('input[name="payment_method"]:checked');
-            if(!selected){
-                if(feedback){
-                    feedback.textContent = 'Pilih metode pembayaran terlebih dahulu.';
-                    feedback.classList.remove('error');
+        if(payButton){
+            payButton.dataset.originalText = payButton.textContent;
+            payButton.addEventListener('click', async function(){
+                const selected = document.querySelector('input[name="payment_method"]:checked');
+                if(!selected){
+                    setFeedback('Pilih metode pembayaran terlebih dahulu.', 'error');
+                    return;
                 }
-                return;
-            }
-            if(feedback){
-                feedback.textContent = 'Membuka pembayaran ' + gateway.toUpperCase() + '...';
-                feedback.classList.remove('error');
-            }
-            setTimeout(() => {
-                if(feedback){
-                    feedback.textContent = 'Instruksi pembayaran untuk metode ' + selected.value.toUpperCase() + ' siap digunakan.';
+
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                };
+                if(csrfToken){
+                    headers['X-CSRF-TOKEN'] = csrfToken;
                 }
-                console.log('Payment gateway config', config);
-            }, 650);
-        });
+
+                try {
+                    payButton.disabled = true;
+                    payButton.textContent = 'Memproses...';
+                    setFeedback('Membuka pembayaran ' + (gateway || '').toUpperCase() + '...', 'info');
+
+                    const response = await fetch(sessionEndpoint, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({ payment_method: selected.value })
+                    });
+
+                    const payload = await response.json().catch(() => ({}));
+
+                    if(!response.ok || !payload || payload.status !== 'ok'){
+                        const message = (payload && payload.message) ? payload.message : 'Gagal memproses pembayaran.';
+                        throw new Error(message);
+                    }
+
+                    const data = payload.data || {};
+                    const redirectUrl = data.redirect_url || data.url || data.snap_url;
+
+                    if(redirectUrl){
+                        window.location.href = redirectUrl;
+                        return;
+                    }
+
+                    throw new Error('Gateway tidak mengembalikan tautan pembayaran.');
+                } catch (error) {
+                    setFeedback(error.message || 'Gagal memproses pembayaran.', 'error');
+                } finally {
+                    payButton.disabled = false;
+                    if(payButton.dataset.originalText){
+                        payButton.textContent = payButton.dataset.originalText;
+                    }
+                }
+            });
+        }
     })();
 </script>
 </body>

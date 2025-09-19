@@ -78,6 +78,17 @@ class PaymentGatewayManager
         return $methods;
     }
 
+    public function getEnabledMethod(string $methodKey, ?string $gatewayKey = null): ?array
+    {
+        foreach ($this->getEnabledMethods($gatewayKey) as $method) {
+            if (($method['key'] ?? null) === $methodKey) {
+                return $method;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @return array<string, array<string, mixed>>
      */

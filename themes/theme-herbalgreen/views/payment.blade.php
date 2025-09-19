@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $checkoutData['title'] ?? 'Pembayaran' }}</title>
     <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/theme.css') }}">
     <style>
@@ -135,6 +136,12 @@
         .payment-feedback.success {
             color: #047857;
         }
+        .payment-feedback.error {
+            color: #dc2626;
+        }
+        .payment-feedback.info {
+            color: #2563eb;
+        }
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -166,6 +173,8 @@
     $subtitle = $checkoutData['subtitle'] ?? 'Selesaikan pembayaran Anda dengan aman.';
     $publicConfig = $checkoutData['publicConfig'] ?? [];
     $selected = $selectedMethod ?? ($methods[0]['key'] ?? null);
+    $feedbackMessage = $feedbackStatus['message'] ?? null;
+    $feedbackType = $feedbackStatus['type'] ?? null;
 @endphp
 
 {!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
@@ -231,7 +240,7 @@
                 @endif
             </div>
             <button class="cta-button" data-pay-button>Bayar dengan {{ $gatewayLabel }}</button>
-            <div class="payment-feedback" data-payment-feedback></div>
+            <div class="payment-feedback {{ $feedbackType === 'success' ? 'success' : ($feedbackType === 'error' ? 'error' : ($feedbackType === 'info' ? 'info' : '')) }}" data-payment-feedback data-initial-message="{{ $feedbackMessage ?? '' }}" data-initial-type="{{ $feedbackType ?? '' }}">{{ $feedbackMessage }}</div>
             <a href="{{ route('cart.index') }}" class="back-link">&larr; Kembali ke Keranjang</a>
         </div>
     </div>
@@ -248,7 +257,10 @@
         const payButton = document.querySelector('[data-pay-button]');
         const feedback = document.querySelector('[data-payment-feedback]');
         const gateway = @json($gatewayKey);
-        const config = @json($publicConfig);
+        const sessionEndpoint = @json(route('checkout.payment.session'));
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+        const statusClasses = ['success', 'error', 'info'];
 
         function setActive(card){
             methodCards.forEach(item => item.classList.remove('active'));
@@ -256,6 +268,25 @@
             const input = card.querySelector('input[type="radio"]');
             if(input){
                 input.checked = true;
+            }
+        }
+
+        function setFeedback(message, type){
+            if(!feedback){
+                return;
+            }
+            feedback.textContent = message || '';
+            statusClasses.forEach(cls => feedback.classList.remove(cls));
+            if(type && statusClasses.includes(type)){
+                feedback.classList.add(type);
+            }
+        }
+
+        if(feedback){
+            const initialMessage = feedback.dataset.initialMessage || '';
+            const initialType = feedback.dataset.initialType || '';
+            if(initialMessage){
+                setFeedback(initialMessage, initialType);
             }
         }
 
@@ -271,28 +302,58 @@
         });
 
         if(payButton){
-            payButton.addEventListener('click', function(){
+            payButton.dataset.originalText = payButton.textContent;
+            payButton.addEventListener('click', async function(){
                 const selected = document.querySelector('input[name="payment_method"]:checked');
                 if(!selected){
-                    if(feedback){
-                        feedback.textContent = 'Silakan pilih metode pembayaran terlebih dahulu.';
-                        feedback.classList.remove('success');
-                    }
+                    setFeedback('Silakan pilih metode pembayaran terlebih dahulu.', 'error');
                     return;
                 }
 
-                if(feedback){
-                    feedback.textContent = 'Mempersiapkan pembayaran ' + gateway.toUpperCase() + '...';
-                    feedback.classList.remove('success');
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                };
+                if(csrfToken){
+                    headers['X-CSRF-TOKEN'] = csrfToken;
                 }
 
-                setTimeout(() => {
-                    if(feedback){
-                        feedback.textContent = 'Instruksi pembayaran untuk metode ' + selected.value.toUpperCase() + ' telah dibuat. Periksa email atau notifikasi Anda.';
-                        feedback.classList.add('success');
+                try {
+                    payButton.disabled = true;
+                    payButton.textContent = 'Memproses...';
+                    setFeedback('Mempersiapkan pembayaran ' + (gateway || '').toUpperCase() + '...', 'info');
+
+                    const response = await fetch(sessionEndpoint, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({ payment_method: selected.value })
+                    });
+
+                    const payload = await response.json().catch(() => ({}));
+
+                    if(!response.ok || !payload || payload.status !== 'ok'){
+                        const message = (payload && payload.message) ? payload.message : 'Gagal memproses pembayaran.';
+                        throw new Error(message);
                     }
-                    console.log('Payment gateway config', config);
-                }, 650);
+
+                    const data = payload.data || {};
+                    const redirectUrl = data.redirect_url || data.url || data.snap_url;
+
+                    if(redirectUrl){
+                        window.location.href = redirectUrl;
+                        return;
+                    }
+
+                    throw new Error('Gateway tidak mengembalikan tautan pembayaran.');
+                } catch (error) {
+                    setFeedback(error.message || 'Gagal memproses pembayaran.', 'error');
+                } finally {
+                    payButton.disabled = false;
+                    if(payButton.dataset.originalText){
+                        payButton.textContent = payButton.dataset.originalText;
+                    }
+                }
             });
         }
     })();
