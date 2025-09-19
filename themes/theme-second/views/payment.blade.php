@@ -172,7 +172,6 @@
                 setFeedback(initialMessage, initialType);
             }
         }
-
         methodCards.forEach(card => {
             card.addEventListener('click', function(event){
                 if(event.target.matches('input')) return;
