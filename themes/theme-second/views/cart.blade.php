@@ -138,6 +138,7 @@
     $shippingLabel = $settings['button.shipping'] ?? 'Lanjut ke Pengiriman';
     $paymentLabel = $settings['button.payment'] ?? 'Lanjut ke Pembayaran';
     $primaryButton = $shippingEnabled ? $shippingLabel : $paymentLabel;
+    $hasItems = !empty($cartSummary['items']);
 @endphp
 
 {!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
@@ -160,7 +161,7 @@
 
 <section class="shoping-cart spad">
     <div class="container">
-        <div class="row" id="cart-content" @class(['d-none' => empty($cartSummary['items'])])>
+        <div class="row" id="cart-content" @class(['d-none' => empty($cartSummary['items'])]) style="{{ $hasItems ? '' : 'display:none;' }}">
             <div class="col-lg-12">
                 <div class="shoping__cart__table">
                     <table>
@@ -216,7 +217,7 @@
                 </div>
             </div>
         </div>
-        <div id="cart-empty" class="cart-empty" @class(['d-none' => !empty($cartSummary['items'])])>
+        <div id="cart-empty" class="cart-empty" @class(['d-none' => !empty($cartSummary['items'])]) style="{{ $hasItems ? 'display:none;' : '' }}">
             <h4>{{ $title }}</h4>
             <p>{{ $subtitle }}</p>
             <p>{{ $emptyMessage }}</p>
@@ -322,11 +323,23 @@
                 actionButton.disabled = items.length === 0;
             }
             if(items.length === 0){
-                cartContent?.classList.add('d-none');
-                emptyState?.classList.remove('d-none');
+                if(cartContent){
+                    cartContent.classList.add('d-none');
+                    cartContent.style.display = 'none';
+                }
+                if(emptyState){
+                    emptyState.classList.remove('d-none');
+                    emptyState.style.display = '';
+                }
             }else{
-                cartContent?.classList.remove('d-none');
-                emptyState?.classList.add('d-none');
+                if(cartContent){
+                    cartContent.classList.remove('d-none');
+                    cartContent.style.display = '';
+                }
+                if(emptyState){
+                    emptyState.classList.add('d-none');
+                    emptyState.style.display = 'none';
+                }
             }
             window.dispatchEvent(new CustomEvent('cart:updated', { detail: summary }));
         }
