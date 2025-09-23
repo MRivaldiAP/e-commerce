@@ -60,3 +60,9 @@ B) List of items table : single photo - name - price - quantity (can be incremen
 C) Row of total : change dynamicly according to quantity changed
 D) Button continue to shipping (if biteship service exist and shipping turned on) to payment otherwis
 Components - Footer
+-----------------
+ORDER PAGE :
+Components - Nav Menu
+A) H1 saying pesananan
+B) List of items table : single photo - name - price - status (if shipping enabled, show the shipping status, if shipping not enabled, show confirmed/ not confirmed)
+Components - Footer

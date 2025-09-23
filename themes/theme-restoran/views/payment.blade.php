@@ -65,7 +65,7 @@
     $feedbackType = $feedbackStatus['type'] ?? null;
 @endphp
 
-{!! view()->file(base_path('themes/' . $theme . '/views/components/navbar.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
 
 <div class="container-xxl py-5">
     <div class="container">
