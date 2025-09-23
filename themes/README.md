@@ -64,5 +64,5 @@ Components - Footer
 ORDER PAGE :
 Components - Nav Menu
 A) H1 saying pesananan
-B) List of items table : single photo - name - price - status (if shipping enabled, show the shipping status, if shipping not enabled, show confirmed/ not confirmed)
+B) List of order items table  : single photo - name - price - status (if shipping enabled, show the shipping status, if shipping not enabled, show confirmed/ not confirmed)
 Components - Footer
