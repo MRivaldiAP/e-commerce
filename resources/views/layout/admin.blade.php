@@ -71,7 +71,7 @@
             </div>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/order')}}">
+            <a class="nav-link" href="{{ route('admin.orders.index') }}">
               <i class="mdi mdi-receipt menu-icon"></i>
               <span class="menu-title">Pesanan</span>
             </a>

@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +67,8 @@ Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
 Route::patch('/cart/items/{product}', [CartController::class, 'update'])->name('cart.items.update');
 Route::delete('/cart/items/{product}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+
+Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
 
 Route::get('/checkout/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
 Route::post('/checkout/payment/session', [CheckoutController::class, 'createPaymentSession'])->name('checkout.payment.session');
@@ -123,6 +127,9 @@ Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
     Route::patch('pages/product-detail/comments/{comment}', [PageController::class, 'toggleComment'])->name('admin.pages.product-detail.comments.toggle');
     Route::get('pages/cart', [PageController::class, 'cart'])->name('admin.pages.cart');
     Route::post('pages/cart', [PageController::class, 'updateCart'])->name('admin.pages.cart.update');
+
+    Route::get('order', [AdminOrderController::class, 'index'])->name('admin.orders.index');
+    Route::patch('order/{order}/review', [AdminOrderController::class, 'toggleReview'])->name('admin.orders.review');
 
     Route::get('payments', [PaymentController::class, 'index'])->name('admin.payments.index');
     Route::post('payments', [PaymentController::class, 'update'])->name('admin.payments.update');
