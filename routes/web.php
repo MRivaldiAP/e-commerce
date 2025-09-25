@@ -2,6 +2,7 @@
 
 use App\Models\Setting;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThemeAssetController;
@@ -78,61 +79,78 @@ Route::get('themes/{theme}/assets/{path}', ThemeAssetController::class)
     ->where('path', '.*')
     ->name('themes.assets');
 
-Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
-    Route::get('/', function () {
-        return view('layout.admin');
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::middleware('role:' . implode(',', [
+        User::ROLE_ADMINISTRATOR,
+        User::ROLE_PRODUCT_MANAGER,
+        User::ROLE_ORDER_MANAGER,
+    ]))->group(function () {
+        Route::get('/', function () {
+            return view('layout.admin');
+        })->name('admin.dashboard');
     });
 
-    // products
-    Route::get('products', [ProductController::class, 'index'])->name('admin.products.index');
-    Route::get('products/create', [ProductController::class, 'create'])->name('admin.products.create');
-    Route::post('products', [ProductController::class, 'store'])->name('admin.products.store');
-    Route::get('products/{id}', [ProductController::class, 'show'])->name('admin.products.show');
-    Route::get('products/{id}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
-    Route::put('products/{id}', [ProductController::class, 'update'])->name('admin.products.update');
-    Route::patch('products/{id}', [ProductController::class, 'update']);
-    Route::delete('products/{id}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
-    Route::post('products/bulk', [ProductController::class, 'bulk'])->name('admin.products.bulk');
+    Route::middleware('role:' . implode(',', [
+        User::ROLE_ADMINISTRATOR,
+        User::ROLE_PRODUCT_MANAGER,
+    ]))->group(function () {
+        Route::get('products', [ProductController::class, 'index'])->name('admin.products.index');
+        Route::get('products/create', [ProductController::class, 'create'])->name('admin.products.create');
+        Route::post('products', [ProductController::class, 'store'])->name('admin.products.store');
+        Route::get('products/{id}', [ProductController::class, 'show'])->name('admin.products.show');
+        Route::get('products/{id}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
+        Route::put('products/{id}', [ProductController::class, 'update'])->name('admin.products.update');
+        Route::patch('products/{id}', [ProductController::class, 'update']);
+        Route::delete('products/{id}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
+        Route::post('products/bulk', [ProductController::class, 'bulk'])->name('admin.products.bulk');
 
-    Route::post('products/{id}/stock', [ProductController::class, 'updateStock']);
-    Route::post('products/{id}/images', [ProductController::class, 'uploadImages']);
-    Route::get('products/{id}/images', [ProductController::class, 'listImages']);
-    Route::delete('products/{productId}/images/{imageId}', [ProductController::class, 'removeImage']);
-    Route::post('products/{id}/replace-images', [ProductController::class, 'replaceImages']);
-    Route::put('products/{id}/categories', [ProductController::class, 'syncCategories']);
+        Route::post('products/{id}/stock', [ProductController::class, 'updateStock']);
+        Route::post('products/{id}/images', [ProductController::class, 'uploadImages']);
+        Route::get('products/{id}/images', [ProductController::class, 'listImages']);
+        Route::delete('products/{productId}/images/{imageId}', [ProductController::class, 'removeImage']);
+        Route::post('products/{id}/replace-images', [ProductController::class, 'replaceImages']);
+        Route::put('products/{id}/categories', [ProductController::class, 'syncCategories']);
 
-    // categories
-    Route::get('categories', [CategoryController::class, 'index'])->name('admin.categories.index');
-    Route::get('categories/create', [CategoryController::class, 'create'])->name('admin.categories.create');
-    Route::post('categories', [CategoryController::class, 'store'])->name('admin.categories.store');
-    Route::get('categories/{id}/edit', [CategoryController::class, 'edit'])->name('admin.categories.edit');
-    Route::put('categories/{id}', [CategoryController::class, 'update'])->name('admin.categories.update');
-    Route::patch('categories/{id}', [CategoryController::class, 'update']);
-    Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('admin.categories.destroy');
-    Route::get('categories/{id}/products', [CategoryController::class, 'products'])->name('admin.categories.products');
+        Route::get('categories', [CategoryController::class, 'index'])->name('admin.categories.index');
+        Route::get('categories/create', [CategoryController::class, 'create'])->name('admin.categories.create');
+        Route::post('categories', [CategoryController::class, 'store'])->name('admin.categories.store');
+        Route::get('categories/{id}/edit', [CategoryController::class, 'edit'])->name('admin.categories.edit');
+        Route::put('categories/{id}', [CategoryController::class, 'update'])->name('admin.categories.update');
+        Route::patch('categories/{id}', [CategoryController::class, 'update']);
+        Route::delete('categories/{id}', [CategoryController::class, 'destroy'])->name('admin.categories.destroy');
+        Route::get('categories/{id}/products', [CategoryController::class, 'products'])->name('admin.categories.products');
+    });
 
-    // themes
-    Route::get('themes', [ThemeController::class, 'index'])->name('admin.themes.index');
-    Route::post('themes', [ThemeController::class, 'update'])->name('admin.themes.update');
-    Route::get('themes/preview/{theme}', [ThemeController::class, 'preview'])->name('admin.themes.preview');
+    Route::middleware('role:' . implode(',', [
+        User::ROLE_ADMINISTRATOR,
+        User::ROLE_ORDER_MANAGER,
+    ]))->group(function () {
+        Route::get('order', [AdminOrderController::class, 'index'])->name('admin.orders.index');
+        Route::patch('order/{order}/review', [AdminOrderController::class, 'toggleReview'])->name('admin.orders.review');
+    });
 
-    Route::resource('tags', TagController::class)->except(['show'])->names('admin.tags');
+    Route::middleware('role:' . User::ROLE_ADMINISTRATOR)->group(function () {
+        Route::get('themes', [ThemeController::class, 'index'])->name('admin.themes.index');
+        Route::post('themes', [ThemeController::class, 'update'])->name('admin.themes.update');
+        Route::get('themes/preview/{theme}', [ThemeController::class, 'preview'])->name('admin.themes.preview');
 
-    Route::get('pages/home', [PageController::class, 'home'])->name('admin.pages.home');
-    Route::post('pages/home', [PageController::class, 'updateHome'])->name('admin.pages.home.update');
-    Route::get('pages/product', [PageController::class, 'product'])->name('admin.pages.product');
-    Route::post('pages/product', [PageController::class, 'updateProduct'])->name('admin.pages.product.update');
-    Route::get('pages/product-detail', [PageController::class, 'productDetail'])->name('admin.pages.product-detail');
-    Route::post('pages/product-detail', [PageController::class, 'updateProductDetail'])->name('admin.pages.product-detail.update');
-    Route::patch('pages/product-detail/comments/{comment}', [PageController::class, 'toggleComment'])->name('admin.pages.product-detail.comments.toggle');
-    Route::get('pages/cart', [PageController::class, 'cart'])->name('admin.pages.cart');
-    Route::post('pages/cart', [PageController::class, 'updateCart'])->name('admin.pages.cart.update');
+        Route::resource('tags', TagController::class)->except(['show'])->names('admin.tags');
 
-    Route::get('order', [AdminOrderController::class, 'index'])->name('admin.orders.index');
-    Route::patch('order/{order}/review', [AdminOrderController::class, 'toggleReview'])->name('admin.orders.review');
+        Route::get('pages/home', [PageController::class, 'home'])->name('admin.pages.home');
+        Route::post('pages/home', [PageController::class, 'updateHome'])->name('admin.pages.home.update');
+        Route::get('pages/product', [PageController::class, 'product'])->name('admin.pages.product');
+        Route::post('pages/product', [PageController::class, 'updateProduct'])->name('admin.pages.product.update');
+        Route::get('pages/product-detail', [PageController::class, 'productDetail'])->name('admin.pages.product-detail');
+        Route::post('pages/product-detail', [PageController::class, 'updateProductDetail'])->name('admin.pages.product-detail.update');
+        Route::patch('pages/product-detail/comments/{comment}', [PageController::class, 'toggleComment'])->name('admin.pages.product-detail.comments.toggle');
+        Route::get('pages/cart', [PageController::class, 'cart'])->name('admin.pages.cart');
+        Route::post('pages/cart', [PageController::class, 'updateCart'])->name('admin.pages.cart.update');
 
-    Route::get('payments', [PaymentController::class, 'index'])->name('admin.payments.index');
-    Route::post('payments', [PaymentController::class, 'update'])->name('admin.payments.update');
+        Route::get('payments', [PaymentController::class, 'index'])->name('admin.payments.index');
+        Route::post('payments', [PaymentController::class, 'update'])->name('admin.payments.update');
+
+        Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except(['show'])->names('admin.users');
+    });
 });
 
 Auth::routes();

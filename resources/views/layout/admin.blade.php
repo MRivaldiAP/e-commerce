@@ -21,6 +21,13 @@
         $orderCount = \App\Models\Order::count();
         $userCount = \App\Models\User::count();
         $brandCount = \App\Models\Brand::count();
+        $currentUser = auth()->user();
+        $roleLabels = [
+            \App\Models\User::ROLE_ADMINISTRATOR => 'Administrator',
+            \App\Models\User::ROLE_PRODUCT_MANAGER => 'Product Manager',
+            \App\Models\User::ROLE_ORDER_MANAGER => 'Order Manager',
+            \App\Models\User::ROLE_BASIC => 'Basic',
+        ];
     @endphp
     <div class="container-scroller">
       <nav class="sidebar sidebar-offcanvas" id="sidebar" style="overflow-y: auto;">
@@ -34,22 +41,23 @@
               <div class="nav-profile-image">
                 <img src="{{asset('AdminPage/assets/images/faces/face1.jpg')}}" alt="profile" />
                 <span class="login-status online"></span>
-                <!--change to offline or busy as needed-->
               </div>
               <div class="nav-profile-text d-flex flex-column pr-3">
-                <span class="font-weight-medium mb-2">Henry Klein</span>
-                <span class="font-weight-normal">$8,753.00</span>
+                <span class="font-weight-medium mb-1">{{ $currentUser?->name ?? 'Pengguna' }}</span>
+                <span class="font-weight-normal small text-muted">{{ $roleLabels[$currentUser->role ?? ''] ?? 'Pengguna' }}</span>
               </div>
-              <span class="badge badge-danger text-white ml-3 rounded">3</span>
             </a>
           </li>
           <li class="nav-item nav-category">Menu Utama</li>
+          @if($currentUser)
           <li class="nav-item">
-            <a class="nav-link" href="{{url('/')}}">
+            <a class="nav-link" href="{{ route('admin.dashboard') }}">
               <i class="mdi mdi-home menu-icon"></i>
               <span class="menu-title">Dasbor</span>
             </a>
           </li>
+          @endif
+          @if($currentUser?->hasAnyRole(\App\Models\User::ROLE_ADMINISTRATOR, \App\Models\User::ROLE_PRODUCT_MANAGER))
           <li class="nav-item">
             <a class="nav-link" data-toggle="collapse" href="#product-menu" aria-expanded="false" aria-controls="product-menu">
               <i class="mdi mdi-basket menu-icon"></i>
@@ -70,46 +78,50 @@
               </ul>
             </div>
           </li>
+          @endif
+          @if($currentUser?->hasAnyRole(\App\Models\User::ROLE_ADMINISTRATOR, \App\Models\User::ROLE_ORDER_MANAGER))
           <li class="nav-item">
             <a class="nav-link" href="{{ route('admin.orders.index') }}">
               <i class="mdi mdi-receipt menu-icon"></i>
               <span class="menu-title">Pesanan</span>
             </a>
           </li>
+          @endif
+          @if($currentUser?->isAdministrator())
           <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{ route('admin.users.index') }}">
               <i class="mdi mdi-account-multiple menu-icon"></i>
               <span class="menu-title">Pengguna</span>
             </a>
           </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{url('/admin/themes')}}">
-                <i class="mdi mdi-palette menu-icon"></i>
-                <span class="menu-title">Tema</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{url('/admin/tags')}}">
-                <i class="mdi mdi-tag-multiple menu-icon"></i>
-                <span class="menu-title">Tag Tema</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" data-toggle="collapse" href="#pages-menu" aria-expanded="false" aria-controls="pages-menu">
-                <i class="mdi mdi-arrange-bring-forward menu-icon"></i>
-                <span class="menu-title">Kelola Halaman</span>
-                <i class="menu-arrow"></i>
-              </a>
-              <div class="collapse" id="pages-menu">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/home')}}">Home</a></li>
-                  <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/product')}}">Produk</a></li>
-                  <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/product-detail')}}">Detail Produk</a></li>
-                  <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/cart')}}">Keranjang</a></li>
-                </ul>
-              </div>
-            </li>
-            <li class="nav-item nav-category">Pembayaran & Pengiriman</li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url('/admin/themes')}}">
+              <i class="mdi mdi-palette menu-icon"></i>
+              <span class="menu-title">Tema</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url('/admin/tags')}}">
+              <i class="mdi mdi-tag-multiple menu-icon"></i>
+              <span class="menu-title">Tag Tema</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="collapse" href="#pages-menu" aria-expanded="false" aria-controls="pages-menu">
+              <i class="mdi mdi-arrange-bring-forward menu-icon"></i>
+              <span class="menu-title">Kelola Halaman</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="pages-menu">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/home')}}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/product')}}">Produk</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/product-detail')}}">Detail Produk</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/cart')}}">Keranjang</a></li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item nav-category">Pembayaran & Pengiriman</li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/payments')}}">
               <i class="mdi mdi-credit-card menu-icon"></i>
@@ -135,6 +147,7 @@
               <span class="menu-title">Iklan Google</span>
             </a>
           </li>
+          @endif
           <li class="nav-item sidebar-actions">
             <div class="nav-link">
               <div class="mt-4">
@@ -142,7 +155,12 @@
                   <p class="text-black">Notifikasi</p>
                 </div>
                 <ul class="mt-4 pl-0">
-                  <li>Keluar</li>
+                  <li>
+                    <form method="POST" action="{{ route('logout') }}">
+                      @csrf
+                      <button type="submit" class="btn btn-link p-0 text-danger">Keluar</button>
+                    </form>
+                  </li>
                 </ul>
               </div>
             </div>

@@ -22,10 +22,16 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    public const ROLE_ADMINISTRATOR = 'administrator';
+    public const ROLE_PRODUCT_MANAGER = 'product_manager';
+    public const ROLE_ORDER_MANAGER = 'order_manager';
+    public const ROLE_BASIC = 'basic';
+
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -45,7 +51,38 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'role' => 'string',
     ];
+
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
+    }
+
+    public function hasAnyRole(string ...$roles): bool
+    {
+        return in_array($this->role, $roles, true);
+    }
+
+    public function isAdministrator(): bool
+    {
+        return $this->hasRole(self::ROLE_ADMINISTRATOR);
+    }
+
+    public function isProductManager(): bool
+    {
+        return $this->hasRole(self::ROLE_PRODUCT_MANAGER);
+    }
+
+    public function isOrderManager(): bool
+    {
+        return $this->hasRole(self::ROLE_ORDER_MANAGER);
+    }
+
+    public function isBasic(): bool
+    {
+        return $this->hasRole(self::ROLE_BASIC);
+    }
 
     public function addresses(): HasMany {
         return $this->hasMany(Address::class);
