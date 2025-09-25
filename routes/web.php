@@ -134,3 +134,7 @@ Route::prefix('admin')/* ->middleware(['auth']) */->group(function () {
     Route::get('payments', [PaymentController::class, 'index'])->name('admin.payments.index');
     Route::post('payments', [PaymentController::class, 'update'])->name('admin.payments.update');
 });
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
