@@ -17,23 +17,42 @@ class Order extends Model
 {
     use HasFactory;
 
-    public function user(): BelongsTo {
+    protected $fillable = [
+        'user_id',
+        'address_id',
+        'order_number',
+        'status',
+        'total_price',
+        'is_reviewed',
+    ];
+
+    protected $casts = [
+        'total_price' => 'float',
+        'is_reviewed' => 'boolean',
+    ];
+
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function address(): BelongsTo {
+    public function address(): BelongsTo
+    {
         return $this->belongsTo(Address::class);
     }
 
-    public function items(): HasMany {
+    public function items(): HasMany
+    {
         return $this->hasMany(OrderItem::class);
     }
 
-    public function payment(): HasOne {
+    public function payment(): HasOne
+    {
         return $this->hasOne(Payment::class);
     }
 
-    public function shipping(): HasOne {
+    public function shipping(): HasOne
+    {
         return $this->hasOne(Shipping::class);
     }
 }
