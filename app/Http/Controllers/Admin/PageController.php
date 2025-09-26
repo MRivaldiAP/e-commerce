@@ -16,15 +16,6 @@ class PageController extends Controller
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = PageSetting::where('theme', $theme)->where('page', 'home')->pluck('value', 'key');
         $sections = [
-            'navigation' => [
-                'label' => 'Navigation',
-                'elements' => [
-                    ['type' => 'checkbox', 'label' => 'Homepage link', 'id' => 'navigation.home'],
-                    ['type' => 'checkbox', 'label' => 'Tea Collection link', 'id' => 'navigation.products'],
-                    ['type' => 'checkbox', 'label' => 'News link', 'id' => 'navigation.news'],
-                    ['type' => 'checkbox', 'label' => 'Contact Us link', 'id' => 'navigation.contact'],
-                ],
-            ],
             'hero' => [
                 'label' => 'Hero',
                 'elements' => [
@@ -87,14 +78,6 @@ class PageController extends Controller
                     ['type' => 'textarea', 'label' => 'Map Embed', 'id' => 'contact.map'],
                 ],
             ],
-            'footer' => [
-                'label' => 'Footer',
-                'elements' => [
-                    ['type' => 'checkbox', 'label' => 'Privacy Policy link', 'id' => 'footer.privacy'],
-                    ['type' => 'checkbox', 'label' => 'Terms & Conditions link', 'id' => 'footer.terms'],
-                    ['type' => 'text', 'label' => 'Copyright Text', 'id' => 'footer.copyright'],
-                ],
-            ],
         ];
 
         return view('admin.pages.home', compact('sections', 'settings'));
@@ -134,14 +117,6 @@ class PageController extends Controller
                     ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'hero.visible'],
                     ['type' => 'image', 'label' => 'Background Image', 'id' => 'hero.image'],
                     ['type' => 'text', 'label' => 'Title', 'id' => 'title'],
-                ],
-            ],
-            'footer' => [
-                'label' => 'Footer',
-                'elements' => [
-                    ['type' => 'checkbox', 'label' => 'Privacy Policy link', 'id' => 'footer.privacy'],
-                    ['type' => 'checkbox', 'label' => 'Terms & Conditions link', 'id' => 'footer.terms'],
-                    ['type' => 'text', 'label' => 'Copyright Text', 'id' => 'footer.copyright'],
                 ],
             ],
         ];
@@ -197,14 +172,6 @@ class PageController extends Controller
                 'elements' => [
                     ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'recommendations.visible'],
                     ['type' => 'text', 'label' => 'Heading', 'id' => 'recommendations.heading'],
-                ],
-            ],
-            'footer' => [
-                'label' => 'Footer',
-                'elements' => [
-                    ['type' => 'checkbox', 'label' => 'Privacy Policy link', 'id' => 'footer.privacy'],
-                    ['type' => 'checkbox', 'label' => 'Terms & Conditions link', 'id' => 'footer.terms'],
-                    ['type' => 'text', 'label' => 'Copyright Text', 'id' => 'footer.copyright'],
                 ],
             ],
         ];
@@ -265,14 +232,6 @@ class PageController extends Controller
                     ['type' => 'text', 'label' => 'Label Tombol Pembayaran', 'id' => 'button.payment'],
                 ],
             ],
-            'footer' => [
-                'label' => 'Footer',
-                'elements' => [
-                    ['type' => 'checkbox', 'label' => 'Privacy Policy link', 'id' => 'footer.privacy'],
-                    ['type' => 'checkbox', 'label' => 'Terms & Conditions link', 'id' => 'footer.terms'],
-                    ['type' => 'text', 'label' => 'Copyright Text', 'id' => 'footer.copyright'],
-                ],
-            ],
         ];
 
         $previewUrl = route('cart.index');
@@ -296,6 +255,74 @@ class PageController extends Controller
 
         PageSetting::updateOrCreate(
             ['theme' => $theme, 'page' => 'cart', 'key' => $request->input('key')],
+            ['value' => $value]
+        );
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function layout()
+    {
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+        $settings = PageSetting::where('theme', $theme)
+            ->where('page', 'layout')
+            ->pluck('value', 'key')
+            ->toArray();
+
+        $sections = [
+            'navigation' => [
+                'label' => 'Navigasi',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Brand', 'id' => 'navigation.brand.visible'],
+                    ['type' => 'text', 'label' => 'Nama Brand', 'id' => 'navigation.brand.text'],
+                    ['type' => 'image', 'label' => 'Logo Brand', 'id' => 'navigation.brand.logo'],
+                    ['type' => 'checkbox', 'label' => 'Tautan Home', 'id' => 'navigation.link.home'],
+                    ['type' => 'checkbox', 'label' => 'Tautan Produk', 'id' => 'navigation.link.products'],
+                    ['type' => 'checkbox', 'label' => 'Tautan Pesanan Saya', 'id' => 'navigation.link.orders'],
+                    ['type' => 'checkbox', 'label' => 'Ikon Keranjang', 'id' => 'navigation.icon.cart'],
+                    ['type' => 'checkbox', 'label' => 'Tombol Login', 'id' => 'navigation.button.login'],
+                ],
+            ],
+            'footer' => [
+                'label' => 'Footer',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Hot Links', 'id' => 'footer.hotlinks.visible'],
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Alamat', 'id' => 'footer.address.visible'],
+                    ['type' => 'textarea', 'label' => 'Alamat', 'id' => 'footer.address.text'],
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Nomor Telepon', 'id' => 'footer.phone.visible'],
+                    ['type' => 'text', 'label' => 'Nomor Telepon', 'id' => 'footer.phone.text'],
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Email', 'id' => 'footer.email.visible'],
+                    ['type' => 'text', 'label' => 'Email', 'id' => 'footer.email.text'],
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Link Media Sosial', 'id' => 'footer.social.visible'],
+                    ['type' => 'text', 'label' => 'Link Media Sosial', 'id' => 'footer.social.text'],
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Jam Operasional', 'id' => 'footer.schedule.visible'],
+                    ['type' => 'text', 'label' => 'Jam Operasional', 'id' => 'footer.schedule.text'],
+                    ['type' => 'text', 'label' => 'Teks Hak Cipta', 'id' => 'footer.copyright'],
+                ],
+            ],
+        ];
+
+        $previewUrl = url('/');
+
+        return view('admin.pages.layout', compact('sections', 'settings', 'previewUrl'));
+    }
+
+    public function updateLayout(Request $request)
+    {
+        $request->validate([
+            'key' => 'required',
+            'value' => 'nullable',
+        ]);
+
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+
+        $value = $request->input('value');
+        if ($request->hasFile('value')) {
+            $value = $request->file('value')->store("pages/{$theme}", 'public');
+        }
+
+        PageSetting::updateOrCreate(
+            ['theme' => $theme, 'page' => 'layout', 'key' => $request->input('key')],
             ['value' => $value]
         );
 

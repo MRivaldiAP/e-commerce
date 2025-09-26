@@ -123,14 +123,13 @@
 <body>
 @php
     use App\Support\Cart;
+    use App\Support\LayoutSettings;
 
+    $themeName = $theme ?? 'theme-second';
     $settings = $settings ?? collect();
     $cartSummary = $cartSummary ?? Cart::summary();
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-    ];
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
     $title = $settings['title'] ?? 'Keranjang';
     $subtitle = $settings['subtitle'] ?? 'Periksa kembali daftar belanja Anda.';
     $emptyMessage = $settings['empty.message'] ?? 'Keranjang Anda masih kosong.';
@@ -141,7 +140,13 @@
     $hasItems = !empty($cartSummary['items']);
 @endphp
 
-{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
+    'brand' => $navigation['brand'],
+    'links' => $navigation['links'],
+    'showCart' => $navigation['show_cart'],
+    'showLogin' => $navigation['show_login'],
+    'cart' => $cartSummary,
+])->render() !!}
 
 <section class="breadcrumb-section set-bg" data-setbg="{{ asset('storage/themes/theme-second/img/breadcrumb.jpg') }}">
     <div class="container">
@@ -226,7 +231,9 @@
     </div>
 </section>
 
-{!! view()->file(base_path('themes/theme-second/views/components/footer.blade.php'), ['settings' => $settings])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/footer.blade.php'), [
+    'footer' => $footerConfig,
+])->render() !!}
 
 <script src="{{ asset('storage/themes/theme-second/js/jquery-3.3.1.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/bootstrap.min.js') }}"></script>

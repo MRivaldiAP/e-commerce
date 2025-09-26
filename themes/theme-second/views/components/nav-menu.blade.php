@@ -1,12 +1,25 @@
 @php
     $cartSummary = $cart ?? ['total_quantity' => 0, 'total_price_formatted' => '0'];
+    $brand = $brand ?? ['visible' => true, 'label' => 'Ogani Store', 'logo' => null, 'url' => url('/')];
+    $links = $links ?? [];
+    $showCart = $showCart ?? true;
+    $showLogin = $showLogin ?? false;
+    $showIcons = $showCart || $showLogin;
 @endphp
-<header class="header">
+<header id="navigation" class="header">
     <div class="container">
         <div class="row">
             <div class="col-lg-3">
                 <div class="header__logo">
-                    <a href="{{ url('/') }}"><img src="{{ asset('storage/themes/theme-second/img/logo.png') }}" alt=""></a>
+                    @if ($brand['visible'])
+                        <a href="{{ $brand['url'] ?? url('/') }}" class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                            @if (!empty($brand['logo']))
+                                <img src="{{ $brand['logo'] }}" alt="{{ $brand['label'] }}" style="max-height: 48px; width: auto;">
+                            @else
+                                <span class="fw-bold fs-4 text-success">{{ $brand['label'] }}</span>
+                            @endif
+                        </a>
+                    @endif
                 </div>
             </div>
             <div class="col-lg-6">
@@ -21,13 +34,28 @@
                 </nav>
             </div>
             <div class="col-lg-3">
-                <div class="header__cart">
-                    <ul>
-                        <li><a href="#"><i class="fa fa-heart"></i> <span>0</span></a></li>
-                        <li><a href="{{ route('cart.index') }}" class="cart-indicator"><i class="fa fa-shopping-bag"></i> <span class="cart-count" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">{{ $cartSummary['total_quantity'] ?? 0 }}</span></a></li>
-                    </ul>
-                    <div class="header__cart__price">item: <span data-cart-total>{{ $cartSummary['total_price_formatted'] ?? '0' }}</span></div>
-                </div>
+                @if ($showIcons)
+                    <div class="header__cart d-flex justify-content-end align-items-center gap-3">
+                        @if ($showLogin)
+                            <div class="header__cart__login">
+                                @auth
+                                    <a href="{{ route('orders.index') }}" class="text-decoration-none fw-semibold">Akun Saya</a>
+                                @else
+                                    <a href="{{ route('login') }}" class="text-decoration-none fw-semibold">Login</a>
+                                @endauth
+                            </div>
+                        @endif
+                        @if ($showCart)
+                            <div>
+                                <a href="{{ route('cart.index') }}" class="cart-indicator d-inline-flex align-items-center text-decoration-none">
+                                    <i class="fa fa-shopping-bag me-1"></i>
+                                    <span class="cart-count" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">{{ $cartSummary['total_quantity'] ?? 0 }}</span>
+                                </a>
+                                <div class="header__cart__price">item: <span data-cart-total>{{ $cartSummary['total_price_formatted'] ?? '0' }}</span></div>
+                            </div>
+                        @endif
+                    </div>
+                @endif
             </div>
         </div>
         <div class="humberger__open">

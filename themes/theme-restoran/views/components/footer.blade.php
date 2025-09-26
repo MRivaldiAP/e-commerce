@@ -1,60 +1,59 @@
-<div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
+@php
+    $footer = $footer ?? [];
+    $links = $footer['links'] ?? [];
+    $showHotlinks = $footer['show_hotlinks'] ?? false;
+    $address = $footer['address'] ?? ['visible' => false, 'text' => ''];
+    $phone = $footer['phone'] ?? ['visible' => false, 'text' => ''];
+    $email = $footer['email'] ?? ['visible' => false, 'text' => ''];
+    $social = $footer['social'] ?? ['visible' => false, 'text' => ''];
+    $schedule = $footer['schedule'] ?? ['visible' => false, 'text' => ''];
+    $copyright = $footer['copyright'] ?? '';
+@endphp
+<div id="footer" class="container-fluid bg-dark text-light footer pt-5 mt-5">
     <div class="container py-5">
         <div class="row g-5">
-            <div class="col-lg-3 col-md-6">
-                <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Company</h4>
-                <a class="btn btn-link" href="#">About Us</a>
-                <a class="btn btn-link" href="#">Contact Us</a>
-                <a class="btn btn-link" href="#">Reservation</a>
-                <a class="btn btn-link" href="#">Privacy Policy</a>
-                <a class="btn btn-link" href="#">Terms & Condition</a>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Contact</h4>
-                <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@example.com</p>
-                <div class="d-flex pt-2">
-                    <a class="btn btn-outline-light btn-social" href="#"><i class="fab fa-twitter"></i></a>
-                    <a class="btn btn-outline-light btn-social" href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a class="btn btn-outline-light btn-social" href="#"><i class="fab fa-youtube"></i></a>
-                    <a class="btn btn-outline-light btn-social" href="#"><i class="fab fa-linkedin-in"></i></a>
+            @if ($showHotlinks && count($links))
+                <div class="col-lg-3 col-md-6">
+                    <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Hot Links</h4>
+                    @foreach ($links as $link)
+                        <a class="btn btn-link" href="{{ $link['href'] }}">{{ $link['label'] }}</a>
+                    @endforeach
                 </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Opening</h4>
-                <h5 class="text-light fw-normal">Monday - Saturday</h5>
-                <p>09AM - 09PM</p>
-                <h5 class="text-light fw-normal">Sunday</h5>
-                <p>10AM - 08PM</p>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Newsletter</h4>
-                <p>Dolor amet sit justo amet elitr clita ipsum elitr est.</p>
-                <div class="position-relative mx-auto" style="max-width: 400px;">
-                    <input class="form-control border-primary w-100 py-3 ps-4 pe-5" type="text" placeholder="Your email">
-                    <button type="button" class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">SignUp</button>
+            @endif
+            @if (($address['visible'] ?? false) || ($phone['visible'] ?? false) || ($email['visible'] ?? false) || ($social['visible'] ?? false))
+                <div class="col-lg-4 col-md-6">
+                    <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Contact</h4>
+                    @if ($address['visible'] ?? false)
+                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>{{ $address['text'] }}</p>
+                    @endif
+                    @if ($phone['visible'] ?? false)
+                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i><a href="tel:{{ preg_replace('/[^0-9+]/', '', $phone['text']) }}" class="text-light text-decoration-none">{{ $phone['text'] }}</a></p>
+                    @endif
+                    @if ($email['visible'] ?? false)
+                        <p class="mb-2"><i class="fa fa-envelope me-3"></i><a href="mailto:{{ $email['text'] }}" class="text-light text-decoration-none">{{ $email['text'] }}</a></p>
+                    @endif
+                    @if ($social['visible'] ?? false)
+                        <div class="d-flex pt-2">
+                            <a class="btn btn-outline-light btn-social" href="{{ $social['text'] }}" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                        </div>
+                    @endif
                 </div>
-            </div>
+            @endif
+            @if ($schedule['visible'] ?? false)
+                <div class="col-lg-3 col-md-6">
+                    <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Opening</h4>
+                    <p class="mb-2">{{ $schedule['text'] }}</p>
+                </div>
+            @endif
         </div>
     </div>
     <div class="container">
         <div class="copyright">
             <div class="row">
-                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                    {{ $settings['footer.copyright'] ?? '© ' . date('Y') . ' Restoran' }}
-                    @if(($settings['footer.privacy'] ?? '0') == '1') | <a class="border-bottom" href="#">Privacy Policy</a>@endif
-                    @if(($settings['footer.terms'] ?? '0') == '1') | <a class="border-bottom" href="#">Terms & Conditions</a>@endif
-                    <br>Designed By <a class="border-bottom" href="https://htmlcodex.com">HTML Codex</a><br>
-                    Distributed By <a class="border-bottom" href="https://themewagon.com" target="_blank">ThemeWagon</a>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <div class="footer-menu">
-                        <a href="#">Home</a>
-                        <a href="#">Cookies</a>
-                        <a href="#">Help</a>
-                        <a href="#">FQAs</a>
-                    </div>
+                <div class="col-12 text-center">
+                    @if (!empty($copyright))
+                        <span>{{ $copyright }}</span>
+                    @endif
                 </div>
             </div>
         </div>

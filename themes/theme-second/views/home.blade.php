@@ -21,20 +21,24 @@
     use App\Models\PageSetting;
     use App\Models\Product;
     use App\Support\Cart;
-    $settings = PageSetting::where('theme', 'theme-second')->where('page', 'home')->pluck('value', 'key')->toArray();
+    use App\Support\LayoutSettings;
+    $themeName = $theme ?? 'theme-second';
+    $settings = PageSetting::where('theme', $themeName)->where('page', 'home')->pluck('value', 'key')->toArray();
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
     $services = json_decode($settings['services.items'] ?? '[]', true);
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => '#hero', 'visible' => ($settings['navigation.home'] ?? '1') == '1'],
-        ['label' => 'Tea Collection', 'href' => '#products', 'visible' => ($settings['navigation.products'] ?? '1') == '1'],
-        ['label' => 'News', 'href' => '#testimonials', 'visible' => ($settings['navigation.news'] ?? '1') == '1'],
-        ['label' => 'Contact Us', 'href' => '#contact', 'visible' => ($settings['navigation.contact'] ?? '1') == '1'],
-    ];
     $aboutImage = $settings['about.image'] ?? null;
     $cartSummary = Cart::summary();
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
 @endphp
-{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
+    'brand' => $navigation['brand'],
+    'links' => $navigation['links'],
+    'showCart' => $navigation['show_cart'],
+    'showLogin' => $navigation['show_login'],
+    'cart' => $cartSummary,
+])->render() !!}
 
 @if(($settings['hero.visible'] ?? '1') == '1')
 <section id="hero" class="hero">
@@ -207,7 +211,9 @@
 </section>
 @endif
 
-{!! view()->file(base_path('themes/theme-second/views/components/footer.blade.php'), ['settings' => $settings])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/footer.blade.php'), [
+    'footer' => $footerConfig,
+])->render() !!}
 
 <script src="{{ asset('storage/themes/theme-second/js/jquery-3.3.1.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/bootstrap.min.js') }}"></script>

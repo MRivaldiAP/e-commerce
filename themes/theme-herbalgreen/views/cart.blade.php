@@ -165,18 +165,12 @@
 <body>
 @php
     use App\Support\Cart;
+    use App\Support\LayoutSettings;
 
     $settings = $settings ?? collect();
     $cartSummary = $cartSummary ?? Cart::summary();
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-    ];
-    $footerLinks = [
-        ['label' => 'Privacy Policy', 'href' => '#', 'visible' => ($settings['footer.privacy'] ?? '0') == '1'],
-        ['label' => 'Terms & Conditions', 'href' => '#', 'visible' => ($settings['footer.terms'] ?? '0') == '1'],
-    ];
+    $navigation = LayoutSettings::navigation($theme);
+    $footerConfig = LayoutSettings::footer($theme);
     $title = $settings['title'] ?? 'Keranjang';
     $subtitle = $settings['subtitle'] ?? 'Periksa kembali item pesanan Anda sebelum melanjutkan.';
     $emptyMessage = $settings['empty.message'] ?? 'Keranjang Anda masih kosong.';
@@ -187,7 +181,13 @@
     $hasItems = !empty($cartSummary['items']);
 @endphp
 
-{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), [
+    'brand' => $navigation['brand'],
+    'links' => $navigation['links'],
+    'showCart' => $navigation['show_cart'],
+    'showLogin' => $navigation['show_login'],
+    'cart' => $cartSummary,
+])->render() !!}
 
 <section id="cart">
     <h1>{{ $title }}</h1>
@@ -246,8 +246,7 @@
 </section>
 
 {!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), [
-    'links' => $footerLinks,
-    'copyright' => $settings['footer.copyright'] ?? ('© ' . date('Y') . ' Herbal Green')
+    'footer' => $footerConfig,
 ])->render() !!}
 
 <script>

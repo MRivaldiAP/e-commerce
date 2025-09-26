@@ -1,10 +1,24 @@
 @php
     $cartSummary = $cart ?? ['total_quantity' => 0, 'total_price_formatted' => '0'];
+    $brand = $brand ?? ['visible' => true, 'label' => 'Restoran', 'logo' => null, 'url' => url('/')];
+    $links = $links ?? [];
+    $showCart = $showCart ?? true;
+    $showLogin = $showLogin ?? false;
+    $showIcons = $showCart || $showLogin;
 @endphp
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
-    <a href="{{ url('/') }}" class="navbar-brand p-0">
-        <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>Restoran</h1>
-    </a>
+<nav id="navigation" class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
+    @if ($brand['visible'])
+        <a href="{{ $brand['url'] ?? url('/') }}" class="navbar-brand p-0 d-flex align-items-center gap-2">
+            <span class="text-primary d-inline-flex align-items-center justify-content-center" style="font-size: 1.5rem;">
+                <i class="fa fa-utensils"></i>
+            </span>
+            @if (!empty($brand['logo']))
+                <img src="{{ $brand['logo'] }}" alt="{{ $brand['label'] }}" class="img-fluid" style="max-height: 46px; width: auto;">
+            @else
+                <span class="text-primary fw-bold fs-3 mb-0">{{ $brand['label'] }}</span>
+            @endif
+        </a>
+    @endif
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
         <span class="fa fa-bars"></span>
     </button>
@@ -16,13 +30,23 @@
                 @endif
             @endforeach
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('cart.index') }}" class="btn btn-outline-light cart-indicator position-relative">
-                <i class="bi bi-cart"></i>
-                <span class="badge bg-primary rounded-pill cart-count" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">{{ $cartSummary['total_quantity'] ?? 0 }}</span>
-            </a>
-            <a href="#" class="btn btn-primary py-2 px-4">Book A Table</a>
-        </div>
+        @if ($showIcons)
+            <div class="d-flex align-items-center gap-2">
+                @if ($showLogin)
+                    @auth
+                        <a href="{{ route('orders.index') }}" class="btn btn-outline-light">Akun Saya</a>
+                    @else
+                        <a href="{{ route('login') }}" class="btn btn-primary">Login</a>
+                    @endauth
+                @endif
+                @if ($showCart)
+                    <a href="{{ route('cart.index') }}" class="btn btn-outline-light cart-indicator position-relative">
+                        <i class="bi bi-cart"></i>
+                        <span class="badge bg-primary rounded-pill cart-count" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">{{ $cartSummary['total_quantity'] ?? 0 }}</span>
+                    </a>
+                @endif
+            </div>
+        @endif
     </div>
 </nav>
 

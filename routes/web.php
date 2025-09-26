@@ -145,6 +145,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::patch('pages/product-detail/comments/{comment}', [PageController::class, 'toggleComment'])->name('admin.pages.product-detail.comments.toggle');
         Route::get('pages/cart', [PageController::class, 'cart'])->name('admin.pages.cart');
         Route::post('pages/cart', [PageController::class, 'updateCart'])->name('admin.pages.cart.update');
+        Route::get('pages/layout', [PageController::class, 'layout'])->name('admin.pages.layout');
+        Route::post('pages/layout', [PageController::class, 'updateLayout'])->name('admin.pages.layout.update');
 
         Route::get('payments', [PaymentController::class, 'index'])->name('admin.payments.index');
         Route::post('payments', [PaymentController::class, 'update'])->name('admin.payments.update');

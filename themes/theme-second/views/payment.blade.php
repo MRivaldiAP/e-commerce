@@ -37,15 +37,11 @@
 </head>
 <body>
 @php
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-    ];
-    $footerLinks = [
-        ['label' => 'Privacy Policy', 'href' => '#', 'visible' => true],
-        ['label' => 'Terms & Conditions', 'href' => '#', 'visible' => true],
-    ];
+    use App\Support\LayoutSettings;
+
+    $themeName = $theme ?? 'theme-second';
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
     $items = $cartSummary['items'] ?? [];
     $instructions = $checkoutData['instructions'] ?? [];
     $publicConfig = $checkoutData['publicConfig'] ?? [];
@@ -54,7 +50,13 @@
     $feedbackType = $feedbackStatus['type'] ?? null;
 @endphp
 
-{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
+    'brand' => $navigation['brand'],
+    'links' => $navigation['links'],
+    'showCart' => $navigation['show_cart'],
+    'showLogin' => $navigation['show_login'],
+    'cart' => $cartSummary,
+])->render() !!}
 
 <section class="checkout__section">
     <div class="container">
@@ -130,7 +132,9 @@
     </div>
 </section>
 
-{!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), ['links' => $footerLinks])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/footer.blade.php'), [
+    'footer' => $footerConfig,
+])->render() !!}
 
 <script src="{{ asset('storage/themes/theme-second/js/jquery-3.3.1.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/bootstrap.min.js') }}"></script>

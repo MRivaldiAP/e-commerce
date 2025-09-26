@@ -1,8 +1,21 @@
 @php
     $cartSummary = $cart ?? ['total_quantity' => 0, 'total_price_formatted' => '0'];
+    $brand = $brand ?? ['visible' => true, 'label' => 'TEA', 'logo' => null, 'url' => url('/')];
+    $links = $links ?? [];
+    $showCart = $showCart ?? true;
+    $showLogin = $showLogin ?? false;
+    $showIcons = $showCart || $showLogin;
 @endphp
 <header id="navigation" class="site-header">
-    <div class="logo">TEA</div>
+    @if ($brand['visible'])
+        <a href="{{ $brand['url'] ?? url('/') }}" class="logo">
+            @if (!empty($brand['logo']))
+                <img src="{{ $brand['logo'] }}" alt="{{ $brand['label'] }}" />
+            @else
+                <span>{{ $brand['label'] }}</span>
+            @endif
+        </a>
+    @endif
     <nav class="main-nav">
         <ul>
             @foreach ($links as $link)
@@ -12,18 +25,55 @@
             @endforeach
         </ul>
     </nav>
-    <div class="header-icons">
-        <span>🔍</span>
-        <span>👤</span>
-        <a href="{{ route('cart.index') }}" class="cart-indicator" data-cart-link>
-            <span class="icon">🛒</span>
-            <span class="cart-count" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">{{ $cartSummary['total_quantity'] ?? 0 }}</span>
-        </a>
-    </div>
+    @if ($showIcons)
+        <div class="header-icons">
+            @if ($showLogin)
+                @auth
+                    <a href="{{ route('orders.index') }}" class="login-link">Akun Saya</a>
+                @else
+                    <a href="{{ route('login') }}" class="login-link">Login</a>
+                @endauth
+            @endif
+            @if ($showCart)
+                <a href="{{ route('cart.index') }}" class="cart-indicator" data-cart-link>
+                    <span class="icon">🛒</span>
+                    <span class="cart-count" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">{{ $cartSummary['total_quantity'] ?? 0 }}</span>
+                </a>
+            @endif
+        </div>
+    @endif
 </header>
 
 @once
     <style>
+        .header-icons {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.15rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .login-link {
+            text-decoration: none;
+            font-weight: 600;
+            color: inherit;
+        }
+
         .cart-indicator {
             display: inline-flex;
             align-items: center;

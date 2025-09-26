@@ -1,61 +1,69 @@
-<footer class="footer spad">
+@php
+    $footer = $footer ?? [];
+    $links = $footer['links'] ?? [];
+    $showHotlinks = $footer['show_hotlinks'] ?? false;
+    $address = $footer['address'] ?? ['visible' => false, 'text' => ''];
+    $phone = $footer['phone'] ?? ['visible' => false, 'text' => ''];
+    $email = $footer['email'] ?? ['visible' => false, 'text' => ''];
+    $social = $footer['social'] ?? ['visible' => false, 'text' => ''];
+    $schedule = $footer['schedule'] ?? ['visible' => false, 'text' => ''];
+    $copyright = $footer['copyright'] ?? '';
+@endphp
+<footer id="footer" class="footer spad">
     <div class="container">
         <div class="row">
-            <div class="col-lg-3 col-md-6 col-sm-6">
-                <div class="footer__about">
-                    <div class="footer__about__logo">
-                        <a href="{{ url('/') }}"><img src="{{ asset('storage/themes/theme-second/img/logo.png') }}" alt=""></a>
-                    </div>
-                    <ul>
-                        <li>Address: 60-49 Road 11378 New York</li>
-                        <li>Phone: +65 11.188.888</li>
-                        <li>Email: hello@colorlib.com</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-1">
-                <div class="footer__widget">
-                    <h6>Useful Links</h6>
-                    <ul>
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">About Our Shop</a></li>
-                        <li><a href="#">Secure Shopping</a></li>
-                        <li><a href="#">Delivery infomation</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Our Sitemap</a></li>
-                    </ul>
-                    <ul>
-                        <li><a href="#">Who We Are</a></li>
-                        <li><a href="#">Our Services</a></li>
-                        <li><a href="#">Projects</a></li>
-                        <li><a href="#">Contact</a></li>
-                        <li><a href="#">Innovation</a></li>
-                        <li><a href="#">Testimonials</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-12">
-                <div class="footer__widget">
-                    <h6>Join Our Newsletter Now</h6>
-                    <p>Get E-mail updates about our latest shop and special offers.</p>
-                    <form action="#">
-                        <input type="text" placeholder="Enter your mail">
-                        <button type="submit" class="site-btn">Subscribe</button>
-                    </form>
-                    <div class="footer__widget__social">
-                        <a href="#"><i class="fa fa-facebook"></i></a>
-                        <a href="#"><i class="fa fa-instagram"></i></a>
-                        <a href="#"><i class="fa fa-twitter"></i></a>
-                        <a href="#"><i class="fa fa-pinterest"></i></a>
+            @if (($address['visible'] ?? false) || ($phone['visible'] ?? false) || ($email['visible'] ?? false))
+                <div class="col-lg-4 col-md-6 col-sm-6">
+                    <div class="footer__about">
+                        <h6 class="text-uppercase mb-3">Hubungi Kami</h6>
+                        <ul>
+                            @if ($address['visible'] ?? false)
+                                <li>Alamat: {{ $address['text'] }}</li>
+                            @endif
+                            @if ($phone['visible'] ?? false)
+                                <li>Telepon: <a href="tel:{{ preg_replace('/[^0-9+]/', '', $phone['text']) }}">{{ $phone['text'] }}</a></li>
+                            @endif
+                            @if ($email['visible'] ?? false)
+                                <li>Email: <a href="mailto:{{ $email['text'] }}">{{ $email['text'] }}</a></li>
+                            @endif
+                        </ul>
                     </div>
                 </div>
-            </div>
+            @endif
+            @if ($showHotlinks && count($links))
+                <div class="col-lg-4 col-md-6 col-sm-6">
+                    <div class="footer__widget">
+                        <h6>Hot Links</h6>
+                        <ul>
+                            @foreach ($links as $link)
+                                <li><a href="{{ $link['href'] }}">{{ $link['label'] }}</a></li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
+            @if (($social['visible'] ?? false) || ($schedule['visible'] ?? false))
+                <div class="col-lg-4 col-md-12">
+                    <div class="footer__widget">
+                        @if ($schedule['visible'] ?? false)
+                            <h6>Jam Operasional</h6>
+                            <p>{{ $schedule['text'] }}</p>
+                        @endif
+                        @if ($social['visible'] ?? false)
+                            <div class="footer__widget__social mt-3">
+                                <a href="{{ $social['text'] }}" target="_blank" rel="noopener"><i class="fa fa-instagram"></i></a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
-        <div class="row">
+        <div class="row mt-4">
             <div class="col-lg-12">
-                <div class="footer__copyright">
-                    <div class="footer__copyright__text"><p>{{ $settings['footer.copyright'] ?? 'Copyright &copy; '.date('Y').' All rights reserved' }}@if(($settings['footer.privacy'] ?? '0') == '1') | <a href="#">Privacy Policy</a>@endif @if(($settings['footer.terms'] ?? '0') == '1') | <a href="#">Terms & Conditions</a>@endif</p></div>
-                    <div class="footer__copyright__payment"><img src="{{ asset('storage/themes/theme-second/img/payment-item.png') }}" alt=""></div>
+                <div class="footer__copyright text-center">
+                    @if (!empty($copyright))
+                        <div class="footer__copyright__text"><p>{{ $copyright }}</p></div>
+                    @endif
                 </div>
             </div>
         </div>
