@@ -22,7 +22,9 @@
     use App\Models\Product;
     use App\Models\Category;
     use App\Support\Cart;
-    $settings = PageSetting::where('theme', 'theme-restoran')->where('page', 'product')->pluck('value','key')->toArray();
+    use App\Support\LayoutSettings;
+    $themeName = $theme ?? 'theme-restoran';
+    $settings = PageSetting::where('theme', $themeName)->where('page', 'product')->pluck('value','key')->toArray();
     $query = Product::query();
     if($s = request('search')){ $query->where('name','like',"%$s%"); }
     if($cat = request('category')){ $query->whereHas('categories', fn($q)=>$q->where('slug',$cat)); }
@@ -33,15 +35,18 @@
     }
     $products = $query->paginate(15)->withQueryString();
     $categories = Category::all();
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-    ];
     $cartSummary = Cart::summary();
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
 @endphp
 <div class="container-xxl position-relative p-0">
-    {!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
+        'brand' => $navigation['brand'],
+        'links' => $navigation['links'],
+        'showCart' => $navigation['show_cart'],
+        'showLogin' => $navigation['show_login'],
+        'cart' => $cartSummary,
+    ])->render() !!}
     <div class="container-xxl py-5 bg-dark hero-header mb-5">
         <div class="container text-center my-5 pt-5 pb-4">
             <h1 class="display-3 text-white mb-3">{{ $settings['title'] ?? 'Produk Kami' }}</h1>
@@ -101,7 +106,9 @@
         {{ $products->links() }}
     </div>
 </div>
-{!! view()->file(base_path('themes/theme-restoran/views/components/footer.blade.php'), ['settings' => $settings])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/footer.blade.php'), [
+    'footer' => $footerConfig,
+])->render() !!}
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('storage/themes/theme-restoran/lib/wow/wow.min.js') }}"></script>

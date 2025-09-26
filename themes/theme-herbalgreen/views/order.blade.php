@@ -123,18 +123,23 @@
 </head>
 <body>
 @php
+    use App\Support\Cart;
+    use App\Support\LayoutSettings;
+
     $orders = $orders ?? collect();
     $feedbackStatus = $feedbackStatus ?? null;
-    $cartSummary = App\Support\Cart::summary();
-    $links = [
-        ['label' => 'Home', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-        ['label' => 'Pesanan', 'href' => url('/pesanan'), 'visible' => true],
-    ];
+    $cartSummary = Cart::summary();
+    $navigation = LayoutSettings::navigation($theme);
+    $footerConfig = LayoutSettings::footer($theme);
 @endphp
 
-{!! view()->file(base_path('themes/theme-herbalgreen/views/components/nav-menu.blade.php'), ['links' => $links, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/theme-herbalgreen/views/components/nav-menu.blade.php'), [
+    'brand' => $navigation['brand'],
+    'links' => $navigation['links'],
+    'showCart' => $navigation['show_cart'],
+    'showLogin' => $navigation['show_login'],
+    'cart' => $cartSummary,
+])->render() !!}
 
 <section id="orders">
     <h1>Pesanan</h1>
@@ -232,6 +237,8 @@
     @endif
 </section>
 
-{!! view()->file(base_path('themes/theme-herbalgreen/views/components/footer.blade.php'))->render() !!}
+{!! view()->file(base_path('themes/theme-herbalgreen/views/components/footer.blade.php'), [
+    'footer' => $footerConfig,
+])->render() !!}
 </body>
 </html>

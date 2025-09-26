@@ -19,7 +19,9 @@
     use App\Models\Product;
     use App\Models\Category;
     use App\Support\Cart;
-    $settings = PageSetting::where('theme', 'theme-second')->where('page', 'product')->pluck('value', 'key')->toArray();
+    use App\Support\LayoutSettings;
+    $themeName = $theme ?? 'theme-second';
+    $settings = PageSetting::where('theme', $themeName)->where('page', 'product')->pluck('value', 'key')->toArray();
     $query = Product::query();
     if($s = request('search')){ $query->where('name','like',"%$s%"); }
     if($cat = request('category')){ $query->whereHas('categories', fn($q)=>$q->where('slug',$cat)); }
@@ -32,14 +34,17 @@
     }
     $products = $query->paginate(15)->withQueryString();
     $categories = Category::all();
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-    ];
     $cartSummary = Cart::summary();
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
 @endphp
-{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
+    'brand' => $navigation['brand'],
+    'links' => $navigation['links'],
+    'showCart' => $navigation['show_cart'],
+    'showLogin' => $navigation['show_login'],
+    'cart' => $cartSummary,
+])->render() !!}
 <section class="breadcrumb-section set-bg" data-setbg="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('storage/themes/theme-second/img/breadcrumb.jpg') }}">
     <div class="container">
         <div class="row">
@@ -159,7 +164,9 @@
         </div>
     </div>
 </section>
-{!! view()->file(base_path('themes/theme-second/views/components/footer.blade.php'), ['settings' => $settings])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/footer.blade.php'), [
+    'footer' => $footerConfig,
+])->render() !!}
 <script src="{{ asset('storage/themes/theme-second/js/jquery-3.3.1.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/bootstrap.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/jquery.nice-select.min.js') }}"></script>

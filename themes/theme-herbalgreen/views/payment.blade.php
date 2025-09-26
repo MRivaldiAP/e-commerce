@@ -159,15 +159,10 @@
 </head>
 <body>
 @php
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-    ];
-    $footerLinks = [
-        ['label' => 'Privacy Policy', 'href' => '#', 'visible' => true],
-        ['label' => 'Terms & Conditions', 'href' => '#', 'visible' => true],
-    ];
+    use App\Support\LayoutSettings;
+
+    $navigation = LayoutSettings::navigation($theme);
+    $footerConfig = LayoutSettings::footer($theme);
     $summaryItems = $cartSummary['items'] ?? [];
     $instructions = $checkoutData['instructions'] ?? [];
     $subtitle = $checkoutData['subtitle'] ?? 'Selesaikan pembayaran Anda dengan aman.';
@@ -177,7 +172,13 @@
     $feedbackType = $feedbackStatus['type'] ?? null;
 @endphp
 
-{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), [
+    'brand' => $navigation['brand'],
+    'links' => $navigation['links'],
+    'showCart' => $navigation['show_cart'],
+    'showLogin' => $navigation['show_login'],
+    'cart' => $cartSummary,
+])->render() !!}
 
 <section id="payment">
     <div class="payment-header">
@@ -247,8 +248,7 @@
 </section>
 
 {!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), [
-    'links' => $footerLinks,
-    'copyright' => '© ' . date('Y') . ' Herbal Green'
+    'footer' => $footerConfig,
 ])->render() !!}
 
 <script>

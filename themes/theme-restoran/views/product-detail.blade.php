@@ -33,14 +33,13 @@
     use App\Models\PageSetting;
     use App\Models\Product;
     use App\Support\Cart;
+    use App\Support\LayoutSettings;
 
-    $settings = PageSetting::where('theme', 'theme-restoran')->where('page', 'product-detail')->pluck('value','key')->toArray();
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-    ];
+    $themeName = $theme ?? 'theme-restoran';
+    $settings = PageSetting::where('theme', $themeName)->where('page', 'product-detail')->pluck('value','key')->toArray();
     $cartSummary = Cart::summary();
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
 
     $images = $product->images ?? collect();
     $imageSources = $images->pluck('path')->filter()->map(fn($path) => asset('storage/'.$path))->values();
@@ -65,7 +64,13 @@
     }
 @endphp
 <div class="container-xxl position-relative p-0">
-    {!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
+        'brand' => $navigation['brand'],
+        'links' => $navigation['links'],
+        'showCart' => $navigation['show_cart'],
+        'showLogin' => $navigation['show_login'],
+        'cart' => $cartSummary,
+    ])->render() !!}
     @if(($settings['hero.visible'] ?? '1') == '1')
     <div class="container-xxl py-5 bg-dark hero-header mb-5" @if(!empty($settings['hero.image'])) style="background-image:url('{{ asset('storage/'.$settings['hero.image']) }}'); background-size:cover; background-position:center;" @endif>
         <div class="container text-center my-5 pt-5 pb-4">
@@ -169,7 +174,9 @@
 </div>
 @endif
 
-{!! view()->file(base_path('themes/theme-restoran/views/components/footer.blade.php'), ['settings' => $settings])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/footer.blade.php'), [
+    'footer' => $footerConfig,
+])->render() !!}
 
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>

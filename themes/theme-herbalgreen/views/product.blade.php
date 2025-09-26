@@ -13,6 +13,7 @@
     use App\Models\Product;
     use App\Models\Category;
     use App\Support\Cart;
+    use App\Support\LayoutSettings;
     $settings = PageSetting::where('theme', $theme)->where('page', 'product')->pluck('value', 'key')->toArray();
     $query = Product::query();
     if($s = request('search')){ $query->where('name', 'like', "%$s%"); }
@@ -24,14 +25,17 @@
     }
     $products = $query->paginate(15)->withQueryString();
     $categories = Category::all();
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-    ];
+    $navigation = LayoutSettings::navigation($theme);
+    $footerConfig = LayoutSettings::footer($theme);
     $cartSummary = Cart::summary();
 @endphp
-{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), [
+    'brand' => $navigation['brand'],
+    'links' => $navigation['links'],
+    'showCart' => $navigation['show_cart'],
+    'showLogin' => $navigation['show_login'],
+    'cart' => $cartSummary,
+])->render() !!}
 @if(($settings['hero.visible'] ?? '1') == '1')
 <section id="hero" class="hero" @if(!empty($settings['hero.image'])) style="background-image:url('{{ asset('storage/'.$settings['hero.image']) }}')" @endif>
     <div class="hero-content">
@@ -73,6 +77,8 @@
         {{ $products->links() }}
     </div>
 </section>
-{!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), ['links' => [], 'copyright' => $settings['footer.copyright'] ?? ('© '.date('Y'))])->render() !!}
+{!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), [
+    'footer' => $footerConfig,
+])->render() !!}
 </body>
 </html>

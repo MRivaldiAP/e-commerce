@@ -98,18 +98,24 @@
 </head>
 <body>
 @php
+    use App\Support\Cart;
+    use App\Support\LayoutSettings;
+
+    $themeName = $theme ?? 'theme-restoran';
     $orders = $orders ?? collect();
     $feedbackStatus = $feedbackStatus ?? null;
-    $cartSummary = App\Support\Cart::summary();
-    $menu = [
-        ['label' => 'Home', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-        ['label' => 'Pesanan', 'href' => url('/pesanan'), 'visible' => true],
-    ];
+    $cartSummary = Cart::summary();
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
 @endphp
 
-{!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $menu, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
+    'brand' => $navigation['brand'],
+    'links' => $navigation['links'],
+    'showCart' => $navigation['show_cart'],
+    'showLogin' => $navigation['show_login'],
+    'cart' => $cartSummary,
+])->render() !!}
 
 <div class="container-fluid bg-dark hero-header mb-5">
     <div class="container text-center my-5 pt-5 pb-4">
@@ -218,7 +224,9 @@
     @endif
 </div>
 
-{!! view()->file(base_path('themes/theme-restoran/views/components/footer.blade.php'))->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/footer.blade.php'), [
+    'footer' => $footerConfig,
+])->render() !!}
 
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>

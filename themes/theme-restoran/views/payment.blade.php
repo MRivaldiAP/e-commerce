@@ -48,15 +48,11 @@
 </head>
 <body>
 @php
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Menu', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-    ];
-    $footerLinks = [
-        ['label' => 'Privacy Policy', 'href' => '#', 'visible' => true],
-        ['label' => 'Terms & Conditions', 'href' => '#', 'visible' => true],
-    ];
+    use App\Support\LayoutSettings;
+
+    $themeName = $theme ?? 'theme-restoran';
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
     $items = $cartSummary['items'] ?? [];
     $instructions = $checkoutData['instructions'] ?? [];
     $publicConfig = $checkoutData['publicConfig'] ?? [];
@@ -65,7 +61,13 @@
     $feedbackType = $feedbackStatus['type'] ?? null;
 @endphp
 
-{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
+    'brand' => $navigation['brand'],
+    'links' => $navigation['links'],
+    'showCart' => $navigation['show_cart'],
+    'showLogin' => $navigation['show_login'],
+    'cart' => $cartSummary,
+])->render() !!}
 
 <div class="container-xxl py-5">
     <div class="container">
@@ -151,7 +153,9 @@
     </div>
 </div>
 
-{!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), ['links' => $footerLinks])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/footer.blade.php'), [
+    'footer' => $footerConfig,
+])->render() !!}
 
 <script src="{{ asset('storage/themes/theme-restoran/js/bootstrap.bundle.min.js') }}"></script>
 <script>

@@ -31,21 +31,25 @@
     use App\Models\PageSetting;
     use App\Models\Product;
     use App\Support\Cart;
-    $settings = PageSetting::where('theme', 'theme-restoran')->where('page', 'home')->pluck('value', 'key')->toArray();
+    use App\Support\LayoutSettings;
+    $themeName = $theme ?? 'theme-restoran';
+    $settings = PageSetting::where('theme', $themeName)->where('page', 'home')->pluck('value', 'key')->toArray();
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
     $services = json_decode($settings['services.items'] ?? '[]', true);
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => '#hero', 'visible' => ($settings['navigation.home'] ?? '1') == '1'],
-        ['label' => 'Menu', 'href' => '#products', 'visible' => ($settings['navigation.products'] ?? '1') == '1'],
-        ['label' => 'Testimonials', 'href' => '#testimonials', 'visible' => ($settings['navigation.news'] ?? '1') == '1'],
-        ['label' => 'Contact', 'href' => '#contact', 'visible' => ($settings['navigation.contact'] ?? '1') == '1'],
-    ];
     $aboutImage = $settings['about.image'] ?? null;
     $cartSummary = Cart::summary();
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
 @endphp
 <div class="container-xxl position-relative p-0">
-    {!! view()->file(base_path('themes/theme-restoran/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
+        'brand' => $navigation['brand'],
+        'links' => $navigation['links'],
+        'showCart' => $navigation['show_cart'],
+        'showLogin' => $navigation['show_login'],
+        'cart' => $cartSummary,
+    ])->render() !!}
     @if(($settings['hero.visible'] ?? '1') == '1')
     <div id="hero" class="container-xxl py-5 bg-dark hero-header mb-5">
         <div class="container my-5 py-5">
@@ -214,7 +218,9 @@
     </div>
 </div>
 @endif
-{!! view()->file(base_path('themes/theme-restoran/views/components/footer.blade.php'), ['settings' => $settings])->render() !!}
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/footer.blade.php'), [
+    'footer' => $footerConfig,
+])->render() !!}
 <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>

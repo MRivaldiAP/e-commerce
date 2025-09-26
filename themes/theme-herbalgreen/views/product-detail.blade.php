@@ -33,20 +33,13 @@
     use App\Models\PageSetting;
     use App\Models\Product;
     use App\Support\Cart;
+    use App\Support\LayoutSettings;
 
     $settings = PageSetting::where('theme', $theme)->where('page', 'product-detail')->pluck('value', 'key')->toArray();
 
-    $navLinks = [
-        ['label' => 'Homepage', 'href' => url('/'), 'visible' => true],
-        ['label' => 'Produk', 'href' => url('/produk'), 'visible' => true],
-        ['label' => 'Keranjang', 'href' => url('/keranjang'), 'visible' => true],
-    ];
+    $navigation = LayoutSettings::navigation($theme);
+    $footerConfig = LayoutSettings::footer($theme);
     $cartSummary = Cart::summary();
-
-    $footerLinks = [
-        ['label' => 'Privacy Policy', 'href' => '#', 'visible' => ($settings['footer.privacy'] ?? '0') == '1'],
-        ['label' => 'Terms & Conditions', 'href' => '#', 'visible' => ($settings['footer.terms'] ?? '0') == '1'],
-    ];
 
     $images = $product->images ?? collect();
     $primaryImage = optional($images->first())->path;
@@ -72,7 +65,13 @@
         $recommendations = $recommendations->concat($fallback);
     }
 @endphp
-{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'cart' => $cartSummary])->render() !!}
+{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), [
+    'brand' => $navigation['brand'],
+    'links' => $navigation['links'],
+    'showCart' => $navigation['show_cart'],
+    'showLogin' => $navigation['show_login'],
+    'cart' => $cartSummary,
+])->render() !!}
 
 @if(($settings['hero.visible'] ?? '1') == '1')
 <section id="hero" class="hero" @if(!empty($settings['hero.image'])) style="background-image:url('{{ asset('storage/'.$settings['hero.image']) }}')" @endif>
@@ -149,8 +148,7 @@
 @endif
 
 {!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), [
-    'links' => $footerLinks,
-    'copyright' => $settings['footer.copyright'] ?? ('© '.date('Y') . ' Herbal Green')
+    'footer' => $footerConfig,
 ])->render() !!}
 
 <script>
