@@ -66,3 +66,12 @@ Components - Nav Menu
 A) H1 saying pesananan
 B) List of order items table  : single photo - name - price - status (if shipping enabled, show the shipping status, if shipping not enabled, show confirmed/ not confirmed)
 Components - Footer
+-----------------
+ABOUT US PAGE
+Components - Nav Menu
+A) Header saying tentang kami
+B) section about brief explanation about us (2 columns, 1 clumn for image, other : title & description)
+C) section showing quote
+D) section saying tim kami : row contain several image thumbnail and brief text below it, can be cruded from admin page
+E) section keunggulan kami, row contain seeral cards with icon, title, and description below it can be cruded from admin page inclusing the icon
+Components - Footer
