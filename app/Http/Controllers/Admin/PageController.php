@@ -205,6 +205,96 @@ class PageController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
+    public function about()
+    {
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+        $settings = PageSetting::where('theme', $theme)
+            ->where('page', 'about')
+            ->pluck('value', 'key');
+
+        $sections = [
+            'hero' => [
+                'label' => 'Header',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Seksi', 'id' => 'hero.visible'],
+                    ['type' => 'image', 'label' => 'Gambar Latar', 'id' => 'hero.background'],
+                    ['type' => 'text', 'label' => 'Judul', 'id' => 'hero.heading'],
+                    ['type' => 'textarea', 'label' => 'Deskripsi Singkat', 'id' => 'hero.text'],
+                ],
+            ],
+            'intro' => [
+                'label' => 'Tentang Kami',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Seksi', 'id' => 'intro.visible'],
+                    ['type' => 'image', 'label' => 'Gambar', 'id' => 'intro.image'],
+                    ['type' => 'text', 'label' => 'Judul Seksi', 'id' => 'intro.heading'],
+                    ['type' => 'textarea', 'label' => 'Deskripsi', 'id' => 'intro.description'],
+                ],
+            ],
+            'quote' => [
+                'label' => 'Quote',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Seksi', 'id' => 'quote.visible'],
+                    ['type' => 'textarea', 'label' => 'Teks Quote', 'id' => 'quote.text'],
+                    ['type' => 'text', 'label' => 'Nama Pengutip', 'id' => 'quote.author'],
+                ],
+            ],
+            'team' => [
+                'label' => 'Tim Kami',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Seksi', 'id' => 'team.visible'],
+                    ['type' => 'text', 'label' => 'Judul Seksi', 'id' => 'team.heading'],
+                    ['type' => 'textarea', 'label' => 'Deskripsi Pendek', 'id' => 'team.description'],
+                    ['type' => 'repeatable', 'id' => 'team.members', 'fields' => [
+                        ['name' => 'name', 'placeholder' => 'Nama'],
+                        ['name' => 'title', 'placeholder' => 'Jabatan'],
+                        ['name' => 'photo', 'placeholder' => 'Path Foto'],
+                        ['name' => 'description', 'placeholder' => 'Deskripsi', 'type' => 'textarea'],
+                    ]],
+                ],
+            ],
+            'advantages' => [
+                'label' => 'Keunggulan Kami',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Seksi', 'id' => 'advantages.visible'],
+                    ['type' => 'text', 'label' => 'Judul Seksi', 'id' => 'advantages.heading'],
+                    ['type' => 'textarea', 'label' => 'Deskripsi Pendek', 'id' => 'advantages.description'],
+                    ['type' => 'repeatable', 'id' => 'advantages.items', 'fields' => [
+                        ['name' => 'icon', 'placeholder' => 'Kelas Ikon (contoh: fa fa-leaf)'],
+                        ['name' => 'title', 'placeholder' => 'Judul Keunggulan'],
+                        ['name' => 'text', 'placeholder' => 'Deskripsi', 'type' => 'textarea'],
+                    ]],
+                ],
+            ],
+        ];
+
+        $previewUrl = route('about');
+
+        return view('admin.pages.about', compact('sections', 'settings', 'previewUrl'));
+    }
+
+    public function updateAbout(Request $request)
+    {
+        $request->validate([
+            'key' => 'required',
+            'value' => 'nullable',
+        ]);
+
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+
+        $value = $request->input('value');
+        if ($request->hasFile('value')) {
+            $value = $request->file('value')->store("pages/{$theme}", 'public');
+        }
+
+        PageSetting::updateOrCreate(
+            ['theme' => $theme, 'page' => 'about', 'key' => $request->input('key')],
+            ['value' => $value]
+        );
+
+        return response()->json(['status' => 'ok']);
+    }
+
     public function cart()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
@@ -277,6 +367,7 @@ class PageController extends Controller
                     ['type' => 'text', 'label' => 'Nama Brand', 'id' => 'navigation.brand.text'],
                     ['type' => 'image', 'label' => 'Logo Brand', 'id' => 'navigation.brand.logo'],
                     ['type' => 'checkbox', 'label' => 'Tautan Home', 'id' => 'navigation.link.home'],
+                    ['type' => 'checkbox', 'label' => 'Tautan Tentang Kami', 'id' => 'navigation.link.about'],
                     ['type' => 'checkbox', 'label' => 'Tautan Produk', 'id' => 'navigation.link.products'],
                     ['type' => 'checkbox', 'label' => 'Tautan Pesanan Saya', 'id' => 'navigation.link.orders'],
                     ['type' => 'checkbox', 'label' => 'Ikon Keranjang', 'id' => 'navigation.icon.cart'],

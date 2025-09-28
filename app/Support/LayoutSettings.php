@@ -45,6 +45,12 @@ class LayoutSettings
                 'visible' => ($settings['navigation.link.home'] ?? '1') === '1',
             ],
             [
+                'key' => 'about',
+                'label' => 'Tentang Kami',
+                'href' => route('about'),
+                'visible' => ($settings['navigation.link.about'] ?? '1') === '1',
+            ],
+            [
                 'key' => 'products',
                 'label' => 'Produk',
                 'href' => route('products.index'),
