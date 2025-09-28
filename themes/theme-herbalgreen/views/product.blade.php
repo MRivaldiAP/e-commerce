@@ -14,7 +14,7 @@
     use App\Models\Category;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
-    $settings = PageSetting::where('theme', $theme)->where('page', 'product')->pluck('value', 'key')->toArray();
+    $settings = PageSetting::forPage('product', $theme);
     $query = Product::query();
     if($s = request('search')){ $query->where('name', 'like', "%$s%"); }
     if($cat = request('category')){ $query->whereHas('categories', fn($q) => $q->where('slug', $cat)); }

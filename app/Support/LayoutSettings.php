@@ -17,10 +17,7 @@ class LayoutSettings
     public static function get(string $theme): array
     {
         if (! array_key_exists($theme, self::$settingsCache)) {
-            self::$settingsCache[$theme] = PageSetting::where('theme', $theme)
-                ->where('page', 'layout')
-                ->pluck('value', 'key')
-                ->toArray();
+            self::$settingsCache[$theme] = PageSetting::forPage('layout', $theme);
         }
 
         return self::$settingsCache[$theme];
@@ -133,5 +130,16 @@ class LayoutSettings
             'theme-second' => 'Ogani Store',
             default => 'Storefront',
         };
+    }
+
+    public static function flushCache(?string $theme = null): void
+    {
+        if ($theme === null) {
+            self::$settingsCache = [];
+
+            return;
+        }
+
+        unset(self::$settingsCache[$theme]);
     }
 }
