@@ -24,7 +24,7 @@
     use App\Support\Cart;
     use App\Support\LayoutSettings;
     $themeName = $theme ?? 'theme-restoran';
-    $settings = PageSetting::where('theme', $themeName)->where('page', 'product')->pluck('value','key')->toArray();
+    $settings = PageSetting::forPage('product');
     $query = Product::query();
     if($s = request('search')){ $query->where('name','like',"%$s%"); }
     if($cat = request('category')){ $query->whereHas('categories', fn($q)=>$q->where('slug',$cat)); }

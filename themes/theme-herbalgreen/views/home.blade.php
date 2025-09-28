@@ -13,7 +13,7 @@
     use App\Models\Product;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
-    $settings = PageSetting::where('theme', $theme)->where('page', 'home')->pluck('value', 'key')->toArray();
+    $settings = PageSetting::forPage('home');
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
     $services = json_decode($settings['services.items'] ?? '[]', true);

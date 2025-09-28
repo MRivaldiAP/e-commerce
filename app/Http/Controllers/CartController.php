@@ -15,10 +15,7 @@ class CartController extends Controller
     public function index()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = PageSetting::where('theme', $theme)
-            ->where('page', 'cart')
-            ->pluck('value', 'key')
-            ->toArray();
+        $settings = PageSetting::forPage('cart');
 
         $viewPath = base_path("themes/{$theme}/views/cart.blade.php");
         if (! File::exists($viewPath)) {

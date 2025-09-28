@@ -33,7 +33,7 @@
     use App\Support\LayoutSettings;
 
     $themeName = $theme ?? 'theme-second';
-    $settings = PageSetting::where('theme', $themeName)->where('page', 'product-detail')->pluck('value', 'key')->toArray();
+    $settings = PageSetting::forPage('product-detail');
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
