@@ -10,12 +10,11 @@ return new class extends Migration
     {
         Schema::create('page_settings', function (Blueprint $table) {
             $table->id();
-            $table->string('theme');
             $table->string('page');
             $table->string('key');
             $table->text('value')->nullable();
             $table->timestamps();
-            $table->unique(['theme', 'page', 'key']);
+            $table->unique(['page', 'key']);
         });
     }
 

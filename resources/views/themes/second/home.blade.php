@@ -20,7 +20,7 @@
 @php
     use App\Models\PageSetting;
     use App\Models\Product;
-    $settings = PageSetting::forPage('home', 'theme-second');
+    $settings = PageSetting::forPage('home');
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
     $services = json_decode($settings['services.items'] ?? '[]', true);

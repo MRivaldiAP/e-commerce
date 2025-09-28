@@ -17,7 +17,7 @@ class LayoutSettings
     public static function get(string $theme): array
     {
         if (! array_key_exists($theme, self::$settingsCache)) {
-            self::$settingsCache[$theme] = PageSetting::forPage('layout', $theme);
+            self::$settingsCache[$theme] = PageSetting::forPage('layout');
         }
 
         return self::$settingsCache[$theme];

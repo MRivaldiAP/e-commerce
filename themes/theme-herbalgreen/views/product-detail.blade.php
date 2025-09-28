@@ -35,7 +35,7 @@
     use App\Support\Cart;
     use App\Support\LayoutSettings;
 
-    $settings = PageSetting::forPage('product-detail', $theme);
+    $settings = PageSetting::forPage('product-detail');
 
     $navigation = LayoutSettings::navigation($theme);
     $footerConfig = LayoutSettings::footer($theme);

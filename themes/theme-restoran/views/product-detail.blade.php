@@ -36,7 +36,7 @@
     use App\Support\LayoutSettings;
 
     $themeName = $theme ?? 'theme-restoran';
-    $settings = PageSetting::forPage('product-detail', $themeName);
+    $settings = PageSetting::forPage('product-detail');
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
