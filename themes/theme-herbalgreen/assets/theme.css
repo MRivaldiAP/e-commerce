@@ -187,3 +187,102 @@ footer {
   background-color: var(--color-primary);
   color: #fff;
 }
+
+.about-hero {
+  background-size: cover;
+  background-position: center;
+  min-height: 45vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-intro {
+  padding: 4rem 2rem;
+}
+
+.about-intro__grid {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.about-intro__image img {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.about-quote {
+  background: #e8f5e9;
+  padding: 3rem 2rem;
+  text-align: center;
+  font-style: italic;
+}
+
+.about-quote blockquote {
+  margin: 0 auto;
+  max-width: 720px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.about-team__grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.about-team__card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(17, 97, 45, 0.12);
+}
+
+.about-team__photo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+.about-team__role {
+  display: block;
+  color: var(--color-secondary);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.about-advantages__grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.about-advantages__item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 10px 30px rgba(17, 97, 45, 0.08);
+  text-align: center;
+}
+
+.about-advantages__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  color: var(--color-text);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
