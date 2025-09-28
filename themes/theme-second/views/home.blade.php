@@ -23,7 +23,7 @@
     use App\Support\Cart;
     use App\Support\LayoutSettings;
     $themeName = $theme ?? 'theme-second';
-    $settings = PageSetting::where('theme', $themeName)->where('page', 'home')->pluck('value', 'key')->toArray();
+    $settings = PageSetting::forPage('home', $themeName);
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
     $services = json_decode($settings['services.items'] ?? '[]', true);
