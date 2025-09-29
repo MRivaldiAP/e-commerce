@@ -1,14 +1,25 @@
 @extends('layout.admin')
 
 @section('content')
+@php
+  $isCustomerView = $currentView === 'customers';
+  $pageTitle = $isCustomerView ? 'Konsumen' : 'Tim Saya';
+  $pageDescription = $isCustomerView
+    ? 'Lihat daftar pelanggan dengan peran Basic.'
+    : 'Kelola peran administrator, product manager, dan order manager.';
+  $formAction = route('admin.users.index', array_filter(['view' => $currentView]));
+@endphp
+
 <div class="main-panel">
   <div class="content-wrapper">
     <div class="page-header d-flex align-items-center justify-content-between">
       <div>
-        <h3 class="page-title mb-1">Manajemen Pengguna</h3>
-        <p class="text-muted mb-0">Kelola peran administrator, product manager, dan order manager.</p>
+        <h3 class="page-title mb-1">{{ $pageTitle }}</h3>
+        <p class="text-muted mb-0">{{ $pageDescription }}</p>
       </div>
-      <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Tambah Pengguna</a>
+      @unless($isCustomerView)
+        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Tambah Pengguna</a>
+      @endunless
     </div>
 
     @if(session('success'))
@@ -21,7 +32,10 @@
 
     <div class="card">
       <div class="card-body">
-        <form method="GET" action="{{ route('admin.users.index') }}" class="mb-3">
+        <form method="GET" action="{{ $formAction }}" class="mb-3">
+          @if($currentView)
+            <input type="hidden" name="view" value="{{ $currentView }}">
+          @endif
           <div class="row g-2 align-items-end">
             <div class="col-md-5">
               <label for="search" class="form-label">Pencarian</label>
@@ -32,7 +46,9 @@
               <select name="role" id="role" class="form-control">
                 <option value="">Semua Peran</option>
                 @php
-                  $roleOptions = array_merge($managedRoles, [\App\Models\User::ROLE_BASIC => 'Basic']);
+                  $roleOptions = $isCustomerView
+                    ? [\App\Models\User::ROLE_BASIC => 'Basic']
+                    : $managedRoles;
                 @endphp
                 @foreach($roleOptions as $roleValue => $label)
                   <option value="{{ $roleValue }}" {{ request('role') === $roleValue ? 'selected' : '' }}>{{ $label }}</option>
@@ -41,7 +57,7 @@
             </div>
             <div class="col-md-3 d-flex gap-2">
               <button class="btn btn-primary flex-grow-1">Filter</button>
-              <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">Reset</a>
+              <a href="{{ route('admin.users.index', array_filter(['view' => $currentView])) }}" class="btn btn-outline-secondary">Reset</a>
             </div>
           </div>
         </form>
