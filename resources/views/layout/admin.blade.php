@@ -154,11 +154,17 @@
             </a>
           </li>
           <li class="nav-item nav-category">Alat Marketing</li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/seo')}}">
+          <li class="nav-item {{ request()->routeIs('admin.articles.*') ? 'active' : '' }}">
+            <a class="nav-link" data-toggle="collapse" href="#seo-menu" aria-expanded="{{ request()->routeIs('admin.articles.*') ? 'true' : 'false' }}" aria-controls="seo-menu">
               <i class="mdi mdi-web menu-icon"></i>
               <span class="menu-title">SEO</span>
+              <i class="menu-arrow"></i>
             </a>
+            <div class="collapse {{ request()->routeIs('admin.articles.*') ? 'show' : '' }}" id="seo-menu">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="{{ route('admin.articles.index') }}">Manajemen Artikel</a></li>
+              </ul>
+            </div>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/google-ads')}}">

@@ -10,6 +10,7 @@ use App\Http\Controllers\ThemeAssetController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\ArticleController as FrontArticleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,39 +76,8 @@ Route::get('/produk/{product}', function (Product $product) {
     abort(404);
 })->name('products.show');
 
-Route::get('/artikel', function () {
-    $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
-    $viewPath = base_path("themes/{$activeTheme}/views/article.blade.php");
-
-    if (File::exists($viewPath)) {
-        return view()->file($viewPath, ['theme' => $activeTheme]);
-    }
-
-    abort(404);
-})->name('articles.index');
-
-Route::get('/artikel/{slug}', function (string $slug) {
-    $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
-    $viewPath = base_path("themes/{$activeTheme}/views/article-detail.blade.php");
-
-    if (! File::exists($viewPath)) {
-        abort(404);
-    }
-
-    $articleSettings = collect(PageSetting::forPage('article'));
-    $items = collect(json_decode($articleSettings->get('articles.items', '[]'), true));
-    $article = $items->firstWhere('slug', $slug);
-
-    if (! $article) {
-        abort(404);
-    }
-
-    return view()->file($viewPath, [
-        'theme' => $activeTheme,
-        'article' => $article,
-        'articles' => $items,
-    ]);
-})->name('articles.show');
+Route::get('/artikel', [FrontArticleController::class, 'index'])->name('articles.index');
+Route::get('/artikel/{slug}', [FrontArticleController::class, 'show'])->name('articles.show');
 
 Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
@@ -179,6 +150,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::get('themes/preview/{theme}', [ThemeController::class, 'preview'])->name('admin.themes.preview');
 
         Route::resource('tags', TagController::class)->except(['show'])->names('admin.tags');
+        Route::resource('articles', AdminArticleController::class)->except(['show'])->names('admin.articles');
 
         Route::get('pages/home', [PageController::class, 'home'])->name('admin.pages.home');
         Route::post('pages/home', [PageController::class, 'updateHome'])->name('admin.pages.home.update');

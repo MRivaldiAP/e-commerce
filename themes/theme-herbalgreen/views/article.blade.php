@@ -3,7 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $pageTitle ?? 'Artikel' }}</title>
+    <title>{{ $meta['title'] ?? ($settings['hero.heading'] ?? 'Artikel') }}</title>
+    @if(!empty($meta['description'] ?? ''))
+        <meta name="description" content="{{ $meta['description'] }}">
+        <meta property="og:description" content="{{ $meta['description'] }}">
+    @endif
+    <meta property="og:title" content="{{ $meta['title'] ?? ($settings['hero.heading'] ?? 'Artikel') }}">
+    @php
+        $ogImage = null;
+        $heroImage = $settings['hero.image'] ?? null;
+        if (!empty($heroImage)) {
+            $ogImage = str_starts_with($heroImage, 'http://') || str_starts_with($heroImage, 'https://')
+                ? $heroImage
+                : asset('storage/' . ltrim($heroImage, '/'));
+        } elseif (!empty($articles[0]['image'] ?? null)) {
+            $articleImage = $articles[0]['image'];
+            $ogImage = str_starts_with($articleImage, 'http://') || str_starts_with($articleImage, 'https://')
+                ? $articleImage
+                : asset('storage/' . ltrim($articleImage, '/'));
+        }
+    @endphp
+    @if($ogImage)
+        <meta property="og:image" content="{{ $ogImage }}">
+    @endif
     <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/theme.css') }}">
 </head>
 <body>
@@ -11,69 +33,22 @@
     use App\Models\PageSetting;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
-    use Illuminate\Support\Carbon;
 
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = PageSetting::forPage('article');
-    $rawArticles = collect(json_decode($settings['articles.items'] ?? '[]', true));
-
-    $allArticles = $rawArticles->filter(fn ($item) => !empty($item['slug']))->map(function ($item) {
-        $date = null;
-        if (!empty($item['date'])) {
-            try {
-                $date = Carbon::parse($item['date']);
-            } catch (\Exception $e) {
-                $date = null;
-            }
-        }
-        $item['date_object'] = $date;
-        $item['date_formatted'] = $date ? $date->locale(app()->getLocale())->isoFormat('D MMMM Y') : null;
-        $item['year'] = $date ? (int) $date->format('Y') : null;
-        $item['month'] = $date ? $date->format('m') : null;
-        $item['month_name'] = $date ? $date->locale(app()->getLocale())->isoFormat('MMMM') : null;
-        return $item;
-    });
-
-    $timeline = $allArticles->filter(fn ($item) => $item['year'] && $item['month'])->groupBy('year')->sortKeysDesc()->map(function ($group) {
-        return $group->groupBy('month')->sortKeysDesc()->map(function ($monthGroup) {
-            $first = $monthGroup->first();
-            return [
-                'name' => $first['month_name'] ?? '',
-                'articles' => $monthGroup->sortByDesc(function ($article) {
-                    return optional($article['date_object'])->timestamp ?? 0;
-                })->values(),
-            ];
-        });
-    });
-
-    $articles = $allArticles;
-
-    if ($search = trim(request('search', ''))) {
-        $lower = mb_strtolower($search);
-        $articles = $articles->filter(function ($item) use ($lower) {
-            $haystack = mb_strtolower(($item['title'] ?? '') . ' ' . ($item['excerpt'] ?? '') . ' ' . ($item['content'] ?? ''));
-            return str_contains($haystack, $lower);
-        });
-    }
-
-    if ($yearFilter = request('year')) {
-        $articles = $articles->filter(fn ($item) => (string) ($item['year'] ?? '') === (string) $yearFilter);
-    }
-
-    if ($monthFilter = request('month')) {
-        $monthFilter = str_pad($monthFilter, 2, '0', STR_PAD_LEFT);
-        $articles = $articles->filter(fn ($item) => ($item['month'] ?? '') === $monthFilter);
-    }
-
-    $articles = $articles->sortByDesc(function ($article) {
-        return optional($article['date_object'])->timestamp ?? 0;
-    })->values();
+    $settings = $settings ?? PageSetting::forPage('article');
+    $articles = collect($articles ?? [])->filter(fn ($item) => !empty($item['slug'] ?? null));
+    $timeline = collect($timeline ?? []);
+    $filters = $filters ?? [
+        'search' => request('search'),
+        'year' => request('year'),
+        'month' => request('month'),
+    ];
 
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
     $cartSummary = Cart::summary();
 
-    $pageTitle = $settings['hero.heading'] ?? 'Artikel';
+    $pageTitle = $settings['hero.heading'] ?? ($meta['title'] ?? 'Artikel');
     $buttonLabel = $settings['list.button_label'] ?? 'Baca Selengkapnya';
     $emptyText = $settings['list.empty_text'] ?? 'Belum ada artikel.';
     $searchPlaceholder = $settings['search.placeholder'] ?? 'Cari artikel...';
@@ -138,12 +113,12 @@
         <div id="search" class="sidebar-card">
             <h3>Cari Artikel</h3>
             <form method="GET" class="sidebar-search">
-                <input type="hidden" name="year" value="{{ request('year') }}">
-                <input type="hidden" name="month" value="{{ request('month') }}">
-                <input type="text" name="search" placeholder="{{ $searchPlaceholder }}" value="{{ request('search') }}">
+                <input type="hidden" name="year" value="{{ $filters['year'] ?? '' }}">
+                <input type="hidden" name="month" value="{{ $filters['month'] ?? '' }}">
+                <input type="text" name="search" placeholder="{{ $searchPlaceholder }}" value="{{ $filters['search'] ?? '' }}">
                 <button type="submit">Cari</button>
             </form>
-            @if(request()->filled('search') || request()->filled('year') || request()->filled('month'))
+            @if(!empty($filters['search']) || !empty($filters['year']) || !empty($filters['month']))
                 <a href="{{ route('articles.index') }}" class="sidebar-reset">Reset Filter</a>
             @endif
         </div>
@@ -160,7 +135,7 @@
                             <ul>
                                 @foreach($months as $monthKey => $monthData)
                                     <li>
-                                        <a href="{{ route('articles.index', ['year' => $year, 'month' => $monthKey]) }}">{{ $monthData['name'] ?? $monthKey }} ({{ $monthData['articles']->count() }})</a>
+                                        <a href="{{ route('articles.index', ['year' => $year, 'month' => $monthKey, 'search' => $filters['search'] ?? null]) }}">{{ $monthData['name'] ?? $monthKey }} ({{ $monthData['articles']->count() }})</a>
                                         <ul>
                                             @foreach($monthData['articles'] as $item)
                                                 <li><a href="{{ route('articles.show', ['slug' => $item['slug']]) }}">{{ $item['title'] ?? 'Artikel' }}</a></li>
