@@ -75,3 +75,20 @@ C) section showing quote
 D) section saying tim kami : row contain several image thumbnail and brief text below it, can be cruded from admin page
 E) section keunggulan kami, row contain seeral cards with icon, title, and description below it can be cruded from admin page inclusing the icon
 Components - Footer
+-----------------
+ARTIKEL PAGE (This page have to be SEO Friendly)
+Components - Nav Menu
+A) Header saying artikel
+B) list of articles (image thumbnails/placeholder if not set, title, several line of contents, date made, button to read) - Left Column
+C) search bar - top right column
+D) timeline years -> subbed month -> list of articles made onthat month - right column below search bar
+Components - Footer
+-----------------
+ARTICLE DETAIL PAGE (This page have to be SEO Friendly)
+Components - Nav Menu
+A) Header saying judul of artikel
+B) date of made
+C) article content
+D) Comment section (can be turned of from kelola halaman)
+E) 3 other article recomedation
+Components - Footer
