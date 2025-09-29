@@ -40,6 +40,8 @@ class LayoutSettings
             $brandIcon = $brandIconSettingExists ? null : 'fa fa-utensils';
         }
 
+        $articleDetailUrl = self::firstArticleDetailUrl();
+
         $links = [
             [
                 'key' => 'home',
@@ -58,6 +60,18 @@ class LayoutSettings
                 'label' => 'Produk',
                 'href' => route('products.index'),
                 'visible' => ($settings['navigation.link.products'] ?? '1') === '1',
+            ],
+            [
+                'key' => 'articles',
+                'label' => 'Artikel',
+                'href' => route('articles.index'),
+                'visible' => ($settings['navigation.link.articles'] ?? '1') === '1',
+            ],
+            [
+                'key' => 'article-detail',
+                'label' => 'Detail Artikel',
+                'href' => $articleDetailUrl ?? '#',
+                'visible' => $articleDetailUrl !== null && ($settings['navigation.link.article-detail'] ?? '0') === '1',
             ],
             [
                 'key' => 'orders',
@@ -137,6 +151,24 @@ class LayoutSettings
             'theme-second' => 'Ogani Store',
             default => 'Storefront',
         };
+    }
+
+    protected static function firstArticleDetailUrl(): ?string
+    {
+        $articleSettings = PageSetting::forPage('article');
+        $items = json_decode($articleSettings['articles.items'] ?? '[]', true);
+
+        if (! is_array($items)) {
+            return null;
+        }
+
+        foreach ($items as $item) {
+            if (! empty($item['slug'])) {
+                return route('articles.show', ['slug' => $item['slug']]);
+            }
+        }
+
+        return null;
     }
 
     public static function flushCache(?string $theme = null): void
