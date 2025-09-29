@@ -134,6 +134,8 @@
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/about')}}">Tentang Kami</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/product')}}">Produk</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/product-detail')}}">Detail Produk</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/article')}}">Artikel</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/article-detail')}}">Detail Artikel</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/cart')}}">Keranjang</a></li>
               </ul>
             </div>

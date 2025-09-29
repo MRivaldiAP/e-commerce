@@ -491,6 +491,12 @@ class PageController extends Controller
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('layout'));
+        if (! $settings->has('navigation.link.articles')) {
+            $settings->put('navigation.link.articles', '1');
+        }
+        if (! $settings->has('navigation.link.article-detail')) {
+            $settings->put('navigation.link.article-detail', '0');
+        }
 
         $sections = [
             'navigation' => [
@@ -503,6 +509,8 @@ class PageController extends Controller
                     ['type' => 'checkbox', 'label' => 'Tautan Home', 'id' => 'navigation.link.home'],
                     ['type' => 'checkbox', 'label' => 'Tautan Tentang Kami', 'id' => 'navigation.link.about'],
                     ['type' => 'checkbox', 'label' => 'Tautan Produk', 'id' => 'navigation.link.products'],
+                    ['type' => 'checkbox', 'label' => 'Tautan Artikel', 'id' => 'navigation.link.articles'],
+                    ['type' => 'checkbox', 'label' => 'Tautan Detail Artikel', 'id' => 'navigation.link.article-detail'],
                     ['type' => 'checkbox', 'label' => 'Tautan Pesanan Saya', 'id' => 'navigation.link.orders'],
                     ['type' => 'checkbox', 'label' => 'Ikon Keranjang', 'id' => 'navigation.icon.cart'],
                     ['type' => 'checkbox', 'label' => 'Tombol Login', 'id' => 'navigation.button.login'],
