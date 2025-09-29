@@ -28,6 +28,10 @@
             \App\Models\User::ROLE_ORDER_MANAGER => 'Order Manager',
             \App\Models\User::ROLE_BASIC => 'Basic',
         ];
+        $usersView = request()->input('view');
+        $isUsersRoute = request()->routeIs('admin.users.*');
+        $isCustomersView = $isUsersRoute && $usersView === 'customers';
+        $isTeamView = $isUsersRoute && ! $isCustomersView;
     @endphp
     <div class="container-scroller">
       <nav class="sidebar sidebar-offcanvas" id="sidebar" style="overflow-y: auto;">
@@ -89,10 +93,21 @@
           @endif
           @if($currentUser?->isAdministrator())
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('admin.users.index') }}">
+            <a class="nav-link" data-toggle="collapse" href="#users-menu" aria-expanded="{{ $isUsersRoute ? 'true' : 'false' }}" aria-controls="users-menu">
               <i class="mdi mdi-account-multiple menu-icon"></i>
               <span class="menu-title">Pengguna</span>
+              <i class="menu-arrow"></i>
             </a>
+            <div class="collapse {{ $isUsersRoute ? 'show' : '' }}" id="users-menu">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item">
+                  <a class="nav-link {{ $isTeamView ? 'active' : '' }}" href="{{ route('admin.users.index', ['view' => 'team']) }}">Tim Saya</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link {{ $isCustomersView ? 'active' : '' }}" href="{{ route('admin.users.index', ['view' => 'customers']) }}">Konsumen</a>
+                </li>
+              </ul>
+            </div>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{url('/admin/themes')}}">

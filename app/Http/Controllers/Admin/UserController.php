@@ -18,6 +18,14 @@ class UserController extends Controller
 
         $query = User::query();
 
+        $view = $request->input('view');
+
+        if ($view === 'team') {
+            $query->whereIn('role', array_keys($managedRoles));
+        } elseif ($view === 'customers') {
+            $query->where('role', User::ROLE_BASIC);
+        }
+
         if ($search = trim((string) $request->input('search'))) {
             $query->where(function ($builder) use ($search) {
                 $builder->where('name', 'like', "%{$search}%")
@@ -34,6 +42,7 @@ class UserController extends Controller
         return view('admin.users.index', [
             'users' => $users,
             'managedRoles' => $managedRoles,
+            'currentView' => $view,
         ]);
     }
 
@@ -62,7 +71,9 @@ class UserController extends Controller
             'role' => $data['role'],
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil dibuat.');
+        return redirect()
+            ->route('admin.users.index', ['view' => 'team'])
+            ->with('success', 'Pengguna berhasil dibuat.');
     }
 
     public function edit(User $user): View
@@ -104,7 +115,9 @@ class UserController extends Controller
 
         $user->save();
 
-        return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil diperbarui.');
+        return redirect()
+            ->route('admin.users.index', ['view' => 'team'])
+            ->with('success', 'Pengguna berhasil diperbarui.');
     }
 
     public function destroy(User $user): RedirectResponse
@@ -114,12 +127,16 @@ class UserController extends Controller
         }
 
         if (auth()->id() === $user->getKey()) {
-            return redirect()->route('admin.users.index')->with('error', 'Anda tidak dapat menghapus akun sendiri.');
+            return redirect()
+                ->route('admin.users.index', ['view' => 'team'])
+                ->with('error', 'Anda tidak dapat menghapus akun sendiri.');
         }
 
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil dihapus.');
+        return redirect()
+            ->route('admin.users.index', ['view' => 'team'])
+            ->with('success', 'Pengguna berhasil dihapus.');
     }
 
     /**
