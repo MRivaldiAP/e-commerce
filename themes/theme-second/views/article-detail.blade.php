@@ -3,7 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $pageTitle ?? 'Artikel' }}</title>
+    <title>{{ $meta['title'] ?? ($article['title'] ?? 'Artikel') }}</title>
+    @if(!empty($meta['description'] ?? ''))
+        <meta name="description" content="{{ $meta['description'] }}">
+        <meta property="og:description" content="{{ $meta['description'] }}">
+    @endif
+    <meta property="og:title" content="{{ $meta['title'] ?? ($article['title'] ?? 'Artikel') }}">
+    @php
+        $detailOgImage = null;
+        $primaryImage = $article['image'] ?? null;
+        if (!empty($primaryImage)) {
+            $detailOgImage = str_starts_with($primaryImage, 'http://') || str_starts_with($primaryImage, 'https://')
+                ? $primaryImage
+                : asset('storage/' . ltrim($primaryImage, '/'));
+        } elseif (!empty($settings['hero.image'] ?? null)) {
+            $heroImage = $settings['hero.image'];
+            $detailOgImage = str_starts_with($heroImage, 'http://') || str_starts_with($heroImage, 'https://')
+                ? $heroImage
+                : asset('storage/' . ltrim($heroImage, '/'));
+        }
+    @endphp
+    @if($detailOgImage)
+        <meta property="og:image" content="{{ $detailOgImage }}">
+    @endif
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/bootstrap.min.css') }}" type="text/css">
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/font-awesome.min.css') }}" type="text/css">
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/elegant-icons.css') }}" type="text/css">
@@ -14,59 +36,25 @@
 </head>
 <body>
 @php
-    use App\Models\PageSetting;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
-    use Illuminate\Support\Carbon;
 
     $themeName = $theme ?? 'theme-second';
-    $detailSettings = PageSetting::forPage('article-detail');
-    $listSettings = PageSetting::forPage('article');
+    $detailSettings = $settings ?? [];
+    $listSettings = $listSettings ?? [];
+    $article = $article ?? [];
+    $recommended = collect($recommended ?? []);
+    $meta = $meta ?? [];
 
-    $rawArticles = collect($articles ?? json_decode($listSettings['articles.items'] ?? '[]', true));
-    $preparedArticles = $rawArticles->filter(function ($item) {
-        return !empty($item['slug']);
-    })->map(function ($item) {
-        $date = null;
-        if (!empty($item['date'])) {
-            try {
-                $date = Carbon::parse($item['date']);
-            } catch (\Exception $e) {
-                $date = null;
-            }
-        }
-        $item['date_object'] = $date;
-        $item['date_formatted'] = $date ? $date->locale(app()->getLocale())->isoFormat('D MMMM Y') : null;
-        return $item;
-    });
-
-    $currentSlug = $article['slug'] ?? null;
-    $current = $preparedArticles->firstWhere('slug', $currentSlug) ?? $article;
-
-    if (!is_array($current)) {
-        $current = (array) $current;
-    }
-
-    $dateObject = null;
-    if (!empty($current['date_object'])) {
-        $dateObject = $current['date_object'];
-    } elseif (!empty($current['date'])) {
+    $dateObject = $article['date_object'] ?? null;
+    if (! $dateObject && !empty($article['date'])) {
         try {
-            $dateObject = Carbon::parse($current['date']);
+            $dateObject = \\Illuminate\\Support\\Carbon::parse($article['date']);
         } catch (\Exception $e) {
             $dateObject = null;
         }
     }
-
-    $dateFormatted = $dateObject ? $dateObject->locale(app()->getLocale())->isoFormat('D MMMM Y') : null;
-
-    $pageTitle = $current['title'] ?? 'Artikel';
-
-    $recommended = $preparedArticles->filter(function ($item) use ($currentSlug) {
-        return $item['slug'] !== $currentSlug;
-    })->sortByDesc(function ($item) {
-        return optional($item['date_object'])->timestamp ?? 0;
-    })->take(3);
+    $dateFormatted = $article['date_formatted'] ?? ($dateObject ? $dateObject->locale(app()->getLocale())->isoFormat('D MMMM Y') : null);
 
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
@@ -96,11 +84,11 @@
         <div class="row">
             <div class="col-lg-12 text-center">
                 <div class="breadcrumb__text">
-                    <h2>{{ $current['title'] ?? ($detailSettings['hero.title'] ?? 'Artikel') }}</h2>
+                    <h2>{{ $article['title'] ?? ($detailSettings['hero.title'] ?? 'Artikel') }}</h2>
                     <div class="breadcrumb__option">
                         <a href="{{ url('/') }}">Home</a>
                         <a href="{{ route('articles.index') }}">Artikel</a>
-                        <span>{{ $detailSettings['hero.title'] ?? ($current['title'] ?? 'Detail Artikel') }}</span>
+                        <span>{{ $detailSettings['hero.title'] ?? ($article['title'] ?? 'Detail Artikel') }}</span>
                     </div>
                 </div>
             </div>
@@ -114,21 +102,21 @@
         <div class="row">
             <div class="col-lg-8 col-md-8">
                 <div class="blog__details__text">
-                    @php $image = article_image_path($current['image'] ?? null); @endphp
+                    @php $image = article_image_path($article['image'] ?? null); @endphp
                     @if($image)
-                        <img src="{{ $image }}" alt="{{ $current['title'] ?? 'Artikel' }}" class="img-fluid mb-4">
+                        <img src="{{ $image }}" alt="{{ $article['title'] ?? 'Artikel' }}" class="img-fluid mb-4">
                     @endif
-                    <h2>{{ $current['title'] ?? 'Artikel' }}</h2>
+                    <h2>{{ $article['title'] ?? 'Artikel' }}</h2>
                     <ul class="blog__details__author">
-                        @if(($detailSettings['meta.show_author'] ?? '1') == '1' && !empty($current['author']))
-                            <li><i class="fa fa-user"></i> {{ $current['author'] }}</li>
+                        @if(($detailSettings['meta.show_author'] ?? '1') == '1' && !empty($article['author']))
+                            <li><i class="fa fa-user"></i> {{ $article['author'] }}</li>
                         @endif
                         @if(($detailSettings['meta.show_date'] ?? '1') == '1' && $dateFormatted)
                             <li><i class="fa fa-calendar-o"></i> {{ $dateFormatted }}</li>
                         @endif
                     </ul>
                     <div class="blog__details__content">
-                        {!! $current['content'] ?? '<p>Konten artikel belum tersedia.</p>' !!}
+                        {!! $article['content'] ?? '<p>Konten artikel belum tersedia.</p>' !!}
                     </div>
                 </div>
 

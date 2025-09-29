@@ -3,7 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $pageTitle ?? 'Artikel' }}</title>
+    <title>{{ $meta['title'] ?? ($article['title'] ?? 'Artikel') }}</title>
+    @if(!empty($meta['description'] ?? ''))
+        <meta name="description" content="{{ $meta['description'] }}">
+        <meta property="og:description" content="{{ $meta['description'] }}">
+    @endif
+    <meta property="og:title" content="{{ $meta['title'] ?? ($article['title'] ?? 'Artikel') }}">
+    @php
+        $ogImage = null;
+        if (!empty($article['image'] ?? null)) {
+            $path = $article['image'];
+            $ogImage = str_starts_with($path, 'http://') || str_starts_with($path, 'https://')
+                ? $path
+                : asset('storage/' . ltrim($path, '/'));
+        }
+    @endphp
+    @if($ogImage)
+        <meta property="og:image" content="{{ $ogImage }}">
+    @endif
     <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/theme.css') }}">
 </head>
 <body>
@@ -11,49 +28,15 @@
     use App\Models\PageSetting;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
-    use Illuminate\Support\Carbon;
 
     $themeName = $theme ?? 'theme-herbalgreen';
-    $detailSettings = PageSetting::forPage('article-detail');
-    $listSettings = PageSetting::forPage('article');
-
-    $rawArticles = collect($articles ?? json_decode($listSettings['articles.items'] ?? '[]', true));
-    $prepared = $rawArticles->filter(fn ($item) => !empty($item['slug']))->map(function ($item) {
-        $date = null;
-        if (!empty($item['date'])) {
-            try {
-                $date = Carbon::parse($item['date']);
-            } catch (\Exception $e) {
-                $date = null;
-            }
-        }
-        $item['date_object'] = $date;
-        $item['date_formatted'] = $date ? $date->locale(app()->getLocale())->isoFormat('D MMMM Y') : null;
-        return $item;
-    });
-
-    $currentSlug = $article['slug'] ?? null;
-    $current = $prepared->firstWhere('slug', $currentSlug) ?? $article;
-    if (!is_array($current)) {
-        $current = (array) $current;
-    }
+    $detailSettings = $settings ?? PageSetting::forPage('article-detail');
+    $listSettings = $listSettings ?? PageSetting::forPage('article');
+    $current = $article ?? [];
+    $recommended = collect($recommended ?? []);
 
     $dateObject = $current['date_object'] ?? null;
-    if (!$dateObject && !empty($current['date'])) {
-        try {
-            $dateObject = Carbon::parse($current['date']);
-        } catch (\Exception $e) {
-            $dateObject = null;
-        }
-    }
-
     $dateFormatted = $dateObject ? $dateObject->locale(app()->getLocale())->isoFormat('D MMMM Y') : null;
-
-    $pageTitle = $current['title'] ?? 'Artikel';
-
-    $recommended = $prepared->filter(fn ($item) => $item['slug'] !== $currentSlug)->sortByDesc(function ($item) {
-        return optional($item['date_object'])->timestamp ?? 0;
-    })->take(3);
 
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
