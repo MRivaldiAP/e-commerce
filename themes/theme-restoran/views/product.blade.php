@@ -23,6 +23,7 @@
     use App\Models\Category;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
     $themeName = $theme ?? 'theme-restoran';
     $settings = PageSetting::forPage('product');
     $query = Product::query();
@@ -38,6 +39,22 @@
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
+    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
+    $heroBackground = ThemeMedia::url($settings['hero.image'] ?? null);
+    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+    if (! $heroMaskEnabled) {
+        $heroClasses .= ' hero-no-mask';
+    }
+    $heroStyle = '';
+    if ($heroBackground) {
+        if ($heroMaskEnabled) {
+            $heroStyle = "background-image: linear-gradient(rgba(15, 23, 43, .9), rgba(15, 23, 43, .9)), url('{$heroBackground}'); background-size: cover; background-position: center;";
+        } else {
+            $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+        }
+    } elseif (! $heroMaskEnabled) {
+        $heroStyle = 'background-image: none;';
+    }
 @endphp
 <div class="container-xxl position-relative p-0">
     {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
@@ -47,7 +64,7 @@
         'showLogin' => $navigation['show_login'],
         'cart' => $cartSummary,
     ])->render() !!}
-    <div class="container-xxl py-5 bg-dark hero-header mb-5">
+    <div class="{{ $heroClasses }}" style="{{ $heroStyle }}">
         <div class="container text-center my-5 pt-5 pb-4">
             <h1 class="display-3 text-white mb-3">{{ $settings['title'] ?? 'Produk Kami' }}</h1>
             <nav aria-label="breadcrumb">

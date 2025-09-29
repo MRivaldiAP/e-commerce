@@ -21,6 +21,7 @@ class PageController extends Controller
                 'label' => 'Hero',
                 'elements' => [
                     ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'hero.visible'],
+                    ['type' => 'checkbox', 'label' => 'Use Dark Overlay', 'id' => 'hero.mask'],
                     ['type' => 'image', 'label' => 'Main Image', 'id' => 'hero.image'],
                     ['type' => 'image', 'label' => 'Spinning Image', 'id' => 'hero.spin_image'],
                     ['type' => 'text', 'label' => 'Spinning Text', 'id' => 'hero.spin_text'],
@@ -115,6 +116,7 @@ class PageController extends Controller
                 'label' => 'Hero',
                 'elements' => [
                     ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'hero.visible'],
+                    ['type' => 'checkbox', 'label' => 'Use Dark Overlay', 'id' => 'hero.mask'],
                     ['type' => 'image', 'label' => 'Background Image', 'id' => 'hero.image'],
                     ['type' => 'text', 'label' => 'Title', 'id' => 'title'],
                 ],
@@ -155,6 +157,7 @@ class PageController extends Controller
                 'label' => 'Hero',
                 'elements' => [
                     ['type' => 'checkbox', 'label' => 'Show Section', 'id' => 'hero.visible'],
+                    ['type' => 'checkbox', 'label' => 'Use Dark Overlay', 'id' => 'hero.mask'],
                     ['type' => 'image', 'label' => 'Background Image', 'id' => 'hero.image'],
                     ['type' => 'text', 'label' => 'Breadcrumb Title', 'id' => 'hero.title'],
                 ],
@@ -213,6 +216,7 @@ class PageController extends Controller
                 'label' => 'Header',
                 'elements' => [
                     ['type' => 'checkbox', 'label' => 'Tampilkan Seksi', 'id' => 'hero.visible'],
+                    ['type' => 'checkbox', 'label' => 'Gunakan Masker Gelap', 'id' => 'hero.mask'],
                     ['type' => 'image', 'label' => 'Gambar Latar', 'id' => 'hero.background'],
                     ['type' => 'text', 'label' => 'Judul', 'id' => 'hero.heading'],
                     ['type' => 'textarea', 'label' => 'Deskripsi Singkat', 'id' => 'hero.text'],
@@ -357,6 +361,7 @@ class PageController extends Controller
                     ['type' => 'checkbox', 'label' => 'Tampilkan Brand', 'id' => 'navigation.brand.visible'],
                     ['type' => 'text', 'label' => 'Nama Brand', 'id' => 'navigation.brand.text'],
                     ['type' => 'image', 'label' => 'Logo Brand', 'id' => 'navigation.brand.logo'],
+                    ['type' => 'text', 'label' => 'Kelas Ikon Brand', 'id' => 'navigation.brand.icon'],
                     ['type' => 'checkbox', 'label' => 'Tautan Home', 'id' => 'navigation.link.home'],
                     ['type' => 'checkbox', 'label' => 'Tautan Tentang Kami', 'id' => 'navigation.link.about'],
                     ['type' => 'checkbox', 'label' => 'Tautan Produk', 'id' => 'navigation.link.products'],

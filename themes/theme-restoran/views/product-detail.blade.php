@@ -34,12 +34,29 @@
     use App\Models\Product;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
 
     $themeName = $theme ?? 'theme-restoran';
     $settings = PageSetting::forPage('product-detail');
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
+    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
+    $heroBackground = ThemeMedia::url($settings['hero.image'] ?? null);
+    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+    if (! $heroMaskEnabled) {
+        $heroClasses .= ' hero-no-mask';
+    }
+    $heroStyle = '';
+    if ($heroBackground) {
+        if ($heroMaskEnabled) {
+            $heroStyle = "background-image: linear-gradient(rgba(15, 23, 43, .9), rgba(15, 23, 43, .9)), url('{$heroBackground}'); background-size: cover; background-position: center;";
+        } else {
+            $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+        }
+    } elseif (! $heroMaskEnabled) {
+        $heroStyle = 'background-image: none;';
+    }
 
     $images = $product->images ?? collect();
     $imageSources = $images->pluck('path')->filter()->map(fn($path) => asset('storage/'.$path))->values();
@@ -72,7 +89,7 @@
         'cart' => $cartSummary,
     ])->render() !!}
     @if(($settings['hero.visible'] ?? '1') == '1')
-    <div class="container-xxl py-5 bg-dark hero-header mb-5" @if(!empty($settings['hero.image'])) style="background-image:url('{{ asset('storage/'.$settings['hero.image']) }}'); background-size:cover; background-position:center;" @endif>
+    <div class="{{ $heroClasses }}" style="{{ $heroStyle }}">
         <div class="container text-center my-5 pt-5 pb-4">
             <h1 class="display-3 text-white mb-3">{{ $settings['hero.title'] ?? $product->name }}</h1>
             <nav aria-label="breadcrumb">
