@@ -206,6 +206,144 @@ class PageController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
+    public function article()
+    {
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+        $settings = collect(PageSetting::forPage('article'));
+        $articles = collect(json_decode($settings->get('articles.items', '[]'), true));
+
+        $sections = [
+            'hero' => [
+                'label' => 'Hero',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Seksi', 'id' => 'hero.visible'],
+                    ['type' => 'checkbox', 'label' => 'Gunakan Overlay Gelap', 'id' => 'hero.mask'],
+                    ['type' => 'image', 'label' => 'Gambar Latar', 'id' => 'hero.image'],
+                    ['type' => 'text', 'label' => 'Judul Halaman', 'id' => 'hero.heading'],
+                    ['type' => 'textarea', 'label' => 'Deskripsi Singkat', 'id' => 'hero.description'],
+                    ['type' => 'text', 'label' => 'Placeholder Pencarian', 'id' => 'search.placeholder'],
+                ],
+            ],
+            'list' => [
+                'label' => 'Daftar Artikel',
+                'elements' => [
+                    ['type' => 'text', 'label' => 'Label Tombol Baca', 'id' => 'list.button_label'],
+                    ['type' => 'textarea', 'label' => 'Teks Ketika Kosong', 'id' => 'list.empty_text'],
+                    ['type' => 'repeatable', 'id' => 'articles.items', 'fields' => [
+                        ['name' => 'title', 'placeholder' => 'Judul Artikel'],
+                        ['name' => 'slug', 'placeholder' => 'Slug (misal: tips-merawat-tanaman)'],
+                        ['name' => 'author', 'placeholder' => 'Penulis'],
+                        ['name' => 'date', 'placeholder' => 'Tanggal (YYYY-MM-DD)'],
+                        ['name' => 'image', 'placeholder' => 'Path Gambar (opsional)'],
+                        ['name' => 'excerpt', 'placeholder' => 'Ringkasan Artikel', 'type' => 'textarea'],
+                        ['name' => 'content', 'placeholder' => 'Konten Lengkap', 'type' => 'textarea'],
+                    ]],
+                ],
+            ],
+            'timeline' => [
+                'label' => 'Arsip Artikel',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Arsip', 'id' => 'timeline.visible'],
+                    ['type' => 'text', 'label' => 'Judul Arsip', 'id' => 'timeline.heading'],
+                ],
+            ],
+        ];
+
+        $previewUrl = route('articles.index');
+
+        return view('admin.pages.article', compact('sections', 'settings', 'previewUrl', 'articles'));
+    }
+
+    public function updateArticle(Request $request)
+    {
+        $request->validate([
+            'key' => 'required',
+            'value' => 'nullable',
+        ]);
+
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+
+        $value = $request->input('value');
+        if ($request->hasFile('value')) {
+            $value = $request->file('value')->store("pages/{$theme}", 'public');
+        }
+
+        $key = $request->input('key');
+
+        PageSetting::put('article', $key, $value);
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function articleDetail()
+    {
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+        $settings = collect(PageSetting::forPage('article-detail'));
+        $articleSettings = collect(PageSetting::forPage('article'));
+        $articles = collect(json_decode($articleSettings->get('articles.items', '[]'), true));
+        $previewArticle = $articles->first(function ($item) {
+            return ! empty($item['slug']);
+        });
+        $previewUrl = $previewArticle ? route('articles.show', ['slug' => $previewArticle['slug']]) : null;
+
+        $sections = [
+            'hero' => [
+                'label' => 'Header',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Seksi', 'id' => 'hero.visible'],
+                    ['type' => 'checkbox', 'label' => 'Gunakan Masker Gelap', 'id' => 'hero.mask'],
+                    ['type' => 'image', 'label' => 'Gambar Latar', 'id' => 'hero.image'],
+                    ['type' => 'text', 'label' => 'Judul Breadcrumb', 'id' => 'hero.title'],
+                ],
+            ],
+            'meta' => [
+                'label' => 'Informasi Meta',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Penulis', 'id' => 'meta.show_author'],
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Tanggal', 'id' => 'meta.show_date'],
+                ],
+            ],
+            'comments' => [
+                'label' => 'Komentar',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Komentar', 'id' => 'comments.visible'],
+                    ['type' => 'text', 'label' => 'Judul Seksi Komentar', 'id' => 'comments.heading'],
+                    ['type' => 'textarea', 'label' => 'Pesan Saat Komentar Dimatikan', 'id' => 'comments.disabled_text'],
+                ],
+            ],
+            'recommendations' => [
+                'label' => 'Rekomendasi Artikel',
+                'elements' => [
+                    ['type' => 'checkbox', 'label' => 'Tampilkan Seksi', 'id' => 'recommendations.visible'],
+                    ['type' => 'text', 'label' => 'Judul Seksi', 'id' => 'recommendations.heading'],
+                ],
+            ],
+        ];
+
+        return view('admin.pages.article-detail', compact('sections', 'settings', 'previewUrl', 'articles'));
+    }
+
+    public function updateArticleDetail(Request $request)
+    {
+        $request->validate([
+            'key' => 'required',
+            'value' => 'nullable',
+        ]);
+
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+
+        $value = $request->input('value');
+        if ($request->hasFile('value')) {
+            $value = $request->file('value')->store("pages/{$theme}", 'public');
+        }
+
+        $key = $request->input('key');
+
+        PageSetting::put('article-detail', $key, $value);
+
+        return response()->json(['status' => 'ok']);
+    }
+
     public function about()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');

@@ -2,6 +2,7 @@
 
 use App\Models\Setting;
 use App\Models\Product;
+use App\Models\PageSetting;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,40 @@ Route::get('/produk/{product}', function (Product $product) {
     }
     abort(404);
 })->name('products.show');
+
+Route::get('/artikel', function () {
+    $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
+    $viewPath = base_path("themes/{$activeTheme}/views/article.blade.php");
+
+    if (File::exists($viewPath)) {
+        return view()->file($viewPath, ['theme' => $activeTheme]);
+    }
+
+    abort(404);
+})->name('articles.index');
+
+Route::get('/artikel/{slug}', function (string $slug) {
+    $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
+    $viewPath = base_path("themes/{$activeTheme}/views/article-detail.blade.php");
+
+    if (! File::exists($viewPath)) {
+        abort(404);
+    }
+
+    $articleSettings = collect(PageSetting::forPage('article'));
+    $items = collect(json_decode($articleSettings->get('articles.items', '[]'), true));
+    $article = $items->firstWhere('slug', $slug);
+
+    if (! $article) {
+        abort(404);
+    }
+
+    return view()->file($viewPath, [
+        'theme' => $activeTheme,
+        'article' => $article,
+        'articles' => $items,
+    ]);
+})->name('articles.show');
 
 Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
@@ -154,6 +189,10 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::get('pages/product-detail', [PageController::class, 'productDetail'])->name('admin.pages.product-detail');
         Route::post('pages/product-detail', [PageController::class, 'updateProductDetail'])->name('admin.pages.product-detail.update');
         Route::patch('pages/product-detail/comments/{comment}', [PageController::class, 'toggleComment'])->name('admin.pages.product-detail.comments.toggle');
+        Route::get('pages/article', [PageController::class, 'article'])->name('admin.pages.article');
+        Route::post('pages/article', [PageController::class, 'updateArticle'])->name('admin.pages.article.update');
+        Route::get('pages/article-detail', [PageController::class, 'articleDetail'])->name('admin.pages.article-detail');
+        Route::post('pages/article-detail', [PageController::class, 'updateArticleDetail'])->name('admin.pages.article-detail.update');
         Route::get('pages/cart', [PageController::class, 'cart'])->name('admin.pages.cart');
         Route::post('pages/cart', [PageController::class, 'updateCart'])->name('admin.pages.cart.update');
         Route::get('pages/layout', [PageController::class, 'layout'])->name('admin.pages.layout');
