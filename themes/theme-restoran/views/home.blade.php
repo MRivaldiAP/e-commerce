@@ -32,6 +32,7 @@
     use App\Models\Product;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
     $themeName = $theme ?? 'theme-restoran';
     $settings = PageSetting::forPage('home');
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
@@ -41,6 +42,17 @@
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
+    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
+    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+    if (! $heroMaskEnabled) {
+        $heroClasses .= ' hero-no-mask';
+    }
+    $heroStyle = '';
+    if (! $heroMaskEnabled) {
+        $heroStyle = 'background-image: none;';
+    }
+    $heroImage = ThemeMedia::url($settings['hero.image'] ?? null);
+    $heroSpinImage = ThemeMedia::url($settings['hero.spin_image'] ?? null);
 @endphp
 <div class="container-xxl position-relative p-0">
     {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
@@ -51,7 +63,7 @@
         'cart' => $cartSummary,
     ])->render() !!}
     @if(($settings['hero.visible'] ?? '1') == '1')
-    <div id="hero" class="container-xxl py-5 bg-dark hero-header mb-5">
+    <div id="hero" class="{{ $heroClasses }}" style="{{ $heroStyle }}">
         <div class="container my-5 py-5">
             <div class="row align-items-center g-5">
                 <div class="col-lg-6 text-center text-lg-start">
@@ -63,10 +75,10 @@
                     <a href="{{ $settings['hero.button_link'] ?? '#' }}" class="btn btn-primary py-sm-3 px-sm-5 me-3 animated slideInLeft">{{ $settings['hero.button_label'] ?? 'Book A Table' }}</a>
                 </div>
                 <div class="col-lg-6 text-center text-lg-end overflow-hidden position-relative">
-                    @if(!empty($settings['hero.spin_image']))
-                    <img class="img-fluid position-absolute top-0 start-0 spin" style="width:200px;" src="{{ asset('storage/'.$settings['hero.spin_image']) }}" alt="">
+                    @if($heroSpinImage)
+                    <img class="img-fluid position-absolute top-0 start-0 spin" style="width:200px;" src="{{ $heroSpinImage }}" alt="">
                     @endif
-                    <img class="img-fluid main" src="{{ !empty($settings['hero.image']) ? asset('storage/'.$settings['hero.image']) : asset('storage/themes/theme-restoran/img/hero.png') }}" alt="">
+                    <img class="img-fluid main" src="{{ $heroImage ?: asset('storage/themes/theme-restoran/img/hero.png') }}" alt="">
                     @if(!empty($settings['hero.spin_text']))
                     <span class="text-white position-absolute top-50 start-50 translate-middle spin-text">{{ $settings['hero.spin_text'] }}</span>
                     @endif

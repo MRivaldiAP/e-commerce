@@ -5,13 +5,16 @@
     $showCart = $showCart ?? true;
     $showLogin = $showLogin ?? false;
     $showIcons = $showCart || $showLogin;
+    $brandIcon = $brand['icon'] ?? null;
 @endphp
 <nav id="navigation" class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
     @if ($brand['visible'])
         <a href="{{ $brand['url'] ?? url('/') }}" class="navbar-brand p-0 d-flex align-items-center gap-2">
-            <span class="text-primary d-inline-flex align-items-center justify-content-center" style="font-size: 1.5rem;">
-                <i class="fa fa-utensils"></i>
-            </span>
+            @if (!empty($brandIcon))
+                <span class="text-primary d-inline-flex align-items-center justify-content-center" style="font-size: 1.5rem;">
+                    <i class="{{ $brandIcon }}"></i>
+                </span>
+            @endif
             @if (!empty($brand['logo']))
                 <img src="{{ $brand['logo'] }}" alt="{{ $brand['label'] }}" class="img-fluid" style="max-height: 46px; width: auto;">
             @else

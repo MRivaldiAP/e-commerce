@@ -19,7 +19,6 @@
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
     <style>
         :root{--bs-primary:#FEA116;--bs-primary-rgb:254,161,22;}
-        .navbar {position: sticky; top:0; z-index:1030;}
         .hero-header {background-size: cover; background-position: center;}
     </style>
 </head>
@@ -28,7 +27,7 @@
     use App\Models\PageSetting;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
-    use Illuminate\Support\Str;
+    use App\Support\ThemeMedia;
 
     $themeName = $theme ?? 'theme-restoran';
     $settings = PageSetting::forPage('about');
@@ -43,16 +42,22 @@
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
-
-    $resolveMedia = function (?string $value) {
-        if (! $value) {
-            return null;
+    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
+    $heroBackground = ThemeMedia::url($settings['hero.background'] ?? null);
+    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+    if (! $heroMaskEnabled) {
+        $heroClasses .= ' hero-no-mask';
+    }
+    $heroStyle = '';
+    if ($heroBackground) {
+        if ($heroMaskEnabled) {
+            $heroStyle = "background-image: linear-gradient(rgba(15, 23, 43, .9), rgba(15, 23, 43, .9)), url('{$heroBackground}'); background-size: cover; background-position: center;";
+        } else {
+            $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
         }
-        if (Str::startsWith($value, ['http://', 'https://', '//'])) {
-            return $value;
-        }
-        return asset('storage/' . ltrim($value, '/'));
-    };
+    } elseif (! $heroMaskEnabled) {
+        $heroStyle = 'background-image: none;';
+    }
 @endphp
 <div class="container-xxl position-relative p-0">
     {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
@@ -63,7 +68,7 @@
         'cart' => $cartSummary,
     ])->render() !!}
     @if(($settings['hero.visible'] ?? '1') == '1')
-    <div id="hero" class="container-xxl py-5 bg-dark hero-header mb-5" @if(!empty($settings['hero.background'])) style="background-image:url('{{ $resolveMedia($settings['hero.background']) }}')" @endif>
+    <div id="hero" class="{{ $heroClasses }}" style="{{ $heroStyle }}">
         <div class="container text-center my-5 pt-5 pb-4">
             <h1 class="display-4 text-white mb-3">{{ $settings['hero.heading'] ?? 'Tentang Kami' }}</h1>
             @if(!empty($settings['hero.text']))
@@ -79,7 +84,7 @@
     <div class="container">
         <div class="row g-5 align-items-center">
             <div class="col-lg-6">
-                @php $image = $resolveMedia($settings['intro.image'] ?? null); @endphp
+                @php $image = ThemeMedia::url($settings['intro.image'] ?? null); @endphp
                 <div class="position-relative">
                     <img class="img-fluid rounded w-100" src="{{ $image ?: asset('storage/themes/theme-restoran/img/about-1.jpg') }}" alt="{{ $settings['intro.heading'] ?? 'Tentang Kami' }}">
                     <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-primary px-3 py-2">{{ $settings['hero.heading'] ?? 'Tentang Kami' }}</span>
@@ -119,7 +124,7 @@
         </div>
         <div class="row g-4">
             @foreach($teamMembers as $index => $member)
-            @php $photo = $resolveMedia($member['photo'] ?? null); @endphp
+            @php $photo = ThemeMedia::url($member['photo'] ?? null); @endphp
             <div class="col-lg-3 col-md-6">
                 <div class="team-item text-center rounded overflow-hidden h-100">
                     <div class="rounded-circle overflow-hidden m-4">

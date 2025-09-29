@@ -33,6 +33,12 @@ class LayoutSettings
         $brandVisible = ($settings['navigation.brand.visible'] ?? '1') === '1';
         $brandLabel = $settings['navigation.brand.text'] ?? self::defaultBrandLabel($theme);
         $brandLogo = self::storageAsset($settings['navigation.brand.logo'] ?? null);
+        $brandIconSettingExists = array_key_exists('navigation.brand.icon', $settings);
+        $brandIconRaw = $settings['navigation.brand.icon'] ?? null;
+        $brandIcon = $brandIconRaw !== null ? trim((string) $brandIconRaw) : '';
+        if ($brandIcon === '') {
+            $brandIcon = $brandIconSettingExists ? null : 'fa fa-utensils';
+        }
 
         $links = [
             [
@@ -66,6 +72,7 @@ class LayoutSettings
                 'visible' => $brandVisible,
                 'label' => $brandLabel,
                 'logo' => $brandLogo,
+                'icon' => $brandIcon,
                 'url' => url('/'),
             ],
             'links' => $links,
