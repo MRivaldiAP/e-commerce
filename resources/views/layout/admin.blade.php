@@ -121,6 +121,19 @@
               <span class="menu-title">Tag Tema</span>
             </a>
           </li>
+          <li class="nav-item nav-category">Kecerdasan Buatan</li>
+          <li class="nav-item {{ request()->routeIs('admin.ai-settings.*') ? 'active' : '' }}">
+            <a class="nav-link" data-toggle="collapse" href="#ai-menu" aria-expanded="{{ request()->routeIs('admin.ai-settings.*') ? 'true' : 'false' }}" aria-controls="ai-menu">
+              <i class="mdi mdi-robot menu-icon"></i>
+              <span class="menu-title">AI</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse {{ request()->routeIs('admin.ai-settings.*') ? 'show' : '' }}" id="ai-menu">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="{{ route('admin.ai-settings.index') }}">Pengaturan AI</a></li>
+              </ul>
+            </div>
+          </li>
           <li class="nav-item">
             <a class="nav-link" data-toggle="collapse" href="#pages-menu" aria-expanded="false" aria-controls="pages-menu">
               <i class="mdi mdi-arrange-bring-forward menu-icon"></i>

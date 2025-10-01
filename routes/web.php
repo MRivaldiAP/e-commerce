@@ -10,6 +10,7 @@ use App\Http\Controllers\ThemeAssetController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\Admin\AiSettingController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
@@ -150,7 +151,11 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::get('themes/preview/{theme}', [ThemeController::class, 'preview'])->name('admin.themes.preview');
 
         Route::resource('tags', TagController::class)->except(['show'])->names('admin.tags');
+        Route::post('articles/generate-with-ai', [AdminArticleController::class, 'generateWithAi'])->name('admin.articles.generate-ai');
         Route::resource('articles', AdminArticleController::class)->except(['show'])->names('admin.articles');
+
+        Route::get('ai/settings', [AiSettingController::class, 'index'])->name('admin.ai-settings.index');
+        Route::put('ai/settings/{section}', [AiSettingController::class, 'update'])->name('admin.ai-settings.update');
 
         Route::get('pages/home', [PageController::class, 'home'])->name('admin.pages.home');
         Route::post('pages/home', [PageController::class, 'updateHome'])->name('admin.pages.home.update');
