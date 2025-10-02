@@ -6,21 +6,6 @@
   <div class="col-lg-8">
     <div class="card mb-4">
       <div class="card-body">
-        <h4 class="card-title">Asisten AI</h4>
-        <p class="text-muted">Masukkan kata kunci utama untuk menghasilkan draft artikel dan meta data secara otomatis. Hasil AI akan mengisi kolom formulir ini dan tetap dapat Anda sunting sebelum diterbitkan.</p>
-        <div class="form-group">
-          <label for="ai_keywords">Kata Kunci Target</label>
-          <input type="text" id="ai_keywords" name="ai_keywords" value="{{ old('ai_keywords') }}" class="form-control" placeholder="Contoh: manfaat teh hijau untuk kesehatan kulit">
-          <small class="form-text text-muted">Isi kata kunci utama dan variasinya (dipisahkan koma) untuk menggunakan fitur AI.</small>
-        </div>
-        <button type="button" class="btn btn-outline-primary" id="generate-with-ai">
-          <i class="mdi mdi-robot-outline mr-1"></i> Buat Konten dengan AI
-        </button>
-        <small id="generate-with-ai-status" class="form-text mt-2 text-muted"></small>
-      </div>
-    </div>
-    <div class="card mb-4">
-      <div class="card-body">
         <h4 class="card-title">Konten Artikel</h4>
         <div class="form-group">
           <label for="title">Judul<span class="text-danger">*</span></label>

@@ -11,7 +11,6 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\AIController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\TagController;
-use App\Http\Controllers\Admin\AiSettingController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
@@ -152,7 +151,6 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::get('themes/preview/{theme}', [ThemeController::class, 'preview'])->name('admin.themes.preview');
 
         Route::resource('tags', TagController::class)->except(['show'])->names('admin.tags');
-        Route::post('articles/generate-with-ai', [AdminArticleController::class, 'generateWithAi'])->name('admin.articles.generate-ai');
         Route::resource('articles', AdminArticleController::class)->except(['show'])->names('admin.articles');
 
         Route::get('ai', [AIController::class, 'index'])->name('admin.ai.index');

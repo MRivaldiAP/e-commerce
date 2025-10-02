@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
-use App\Services\AI\ArticleGenerator;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -91,27 +89,6 @@ class ArticleController extends Controller
         return view('admin.articles.edit', [
             'article' => $article,
         ]);
-    }
-
-    public function generateWithAi(Request $request, ArticleGenerator $generator): JsonResponse
-    {
-        $validated = $request->validate([
-            'keywords' => ['required', 'string', 'max:255'],
-        ]);
-
-        try {
-            $data = $generator->generate($validated['keywords']);
-
-            return response()->json([
-                'data' => $data,
-            ]);
-        } catch (\Throwable $exception) {
-            report($exception);
-
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], 422);
-        }
     }
 
     public function update(Request $request, Article $article): RedirectResponse
