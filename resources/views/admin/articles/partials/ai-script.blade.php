@@ -1,57 +1,47 @@
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const generateButton = document.getElementById('generate-with-ai');
-    const keywordsInput = document.getElementById('ai_keywords');
-    const statusElement = document.getElementById('generate-with-ai-status');
-
-    if (!generateButton || !keywordsInput || !statusElement) {
+  (function () {
+    const button = document.getElementById('generate-with-ai');
+    if (!button) {
       return;
     }
 
-    const fields = {
-      title: document.getElementById('title'),
-      slug: document.getElementById('slug'),
-      excerpt: document.getElementById('excerpt'),
-      content: document.getElementById('content'),
-      meta_title: document.getElementById('meta_title'),
-      meta_description: document.getElementById('meta_description'),
+    const keywordsInput = document.getElementById('ai_keywords');
+    const statusEl = document.getElementById('ai-status');
+    const titleInput = document.getElementById('title');
+    const slugInput = document.getElementById('slug');
+    const excerptInput = document.getElementById('excerpt');
+    const contentInput = document.getElementById('content');
+    const metaTitleInput = document.getElementById('meta_title');
+    const metaDescriptionInput = document.getElementById('meta_description');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || document.querySelector('input[name="_token"]').value;
+    const originalHtml = button.innerHTML;
+
+    const showStatus = (type, message) => {
+      if (!statusEl) return;
+      statusEl.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-warning', 'alert-info');
+      statusEl.classList.add('alert', `alert-${type}`);
+      statusEl.textContent = message;
     };
 
-    const defaultButtonLabel = generateButton.innerHTML;
-
-    generateButton.addEventListener('click', async () => {
+    button.addEventListener('click', async () => {
       const keywords = keywordsInput.value.trim();
-
       if (!keywords) {
-        statusElement.textContent = 'Masukkan minimal satu kata kunci untuk menggunakan AI.';
-        statusElement.classList.remove('text-muted', 'text-success');
-        statusElement.classList.add('text-danger');
+        showStatus('warning', 'Mohon isi kata kunci yang ingin digunakan.');
         keywordsInput.focus();
         return;
       }
 
-      const hasExistingContent = Object.values(fields).some((field) => field && field.value.trim().length > 0);
-
-      if (hasExistingContent) {
-        const confirmation = confirm('Konten yang sudah ada akan digantikan oleh hasil AI. Lanjutkan?');
-        if (!confirmation) {
-          return;
-        }
-      }
-
-      generateButton.disabled = true;
-      generateButton.innerHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Meminta AI...';
-      statusElement.textContent = 'Sedang membuat artikel berbasis kata kunci Anda...';
-      statusElement.classList.remove('text-danger', 'text-success');
-      statusElement.classList.add('text-muted');
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span> Menghasilkan...';
+      showStatus('info', 'Meminta AI menyiapkan artikel Anda...');
 
       try {
-        const response = await fetch('{{ route('admin.articles.generate-ai') }}', {
+        const response = await fetch('{{ route('admin.ai.articles.generate') }}', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-CSRF-TOKEN': csrfToken,
           },
           body: JSON.stringify({ keywords }),
         });
@@ -59,26 +49,28 @@
         const payload = await response.json();
 
         if (!response.ok) {
-          throw new Error(payload.message || 'Gagal menghasilkan artikel dengan AI.');
+          const message = payload?.message || 'Gagal menghasilkan artikel.';
+          showStatus('danger', message);
+          return;
         }
 
-        Object.entries(payload.data || {}).forEach(([key, value]) => {
-          if (fields[key]) {
-            fields[key].value = value ?? '';
-          }
-        });
+        const data = payload.data || {};
 
-        statusElement.textContent = 'Konten berhasil dihasilkan. Tinjau dan sesuaikan sebelum menerbitkan.';
-        statusElement.classList.remove('text-muted', 'text-danger');
-        statusElement.classList.add('text-success');
+        if (titleInput) titleInput.value = data.title || '';
+        if (slugInput) slugInput.value = data.slug || '';
+        if (excerptInput) excerptInput.value = data.excerpt || '';
+        if (contentInput) contentInput.value = data.content || '';
+        if (metaTitleInput) metaTitleInput.value = data.meta_title || '';
+        if (metaDescriptionInput) metaDescriptionInput.value = data.meta_description || '';
+
+        showStatus('success', 'Artikel berhasil dihasilkan. Silakan tinjau sebelum dipublikasikan.');
       } catch (error) {
-        statusElement.textContent = error.message || 'Terjadi kesalahan saat berkomunikasi dengan AI.';
-        statusElement.classList.remove('text-muted', 'text-success');
-        statusElement.classList.add('text-danger');
+        console.error(error);
+        showStatus('danger', 'Terjadi kesalahan jaringan saat menghubungi AI.');
       } finally {
-        generateButton.disabled = false;
-        generateButton.innerHTML = defaultButtonLabel;
+        button.disabled = false;
+        button.innerHTML = originalHtml;
       }
     });
-  });
+  })();
 </script>

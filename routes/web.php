@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThemeAssetController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\Admin\AIController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\AiSettingController;
@@ -154,8 +155,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::post('articles/generate-with-ai', [AdminArticleController::class, 'generateWithAi'])->name('admin.articles.generate-ai');
         Route::resource('articles', AdminArticleController::class)->except(['show'])->names('admin.articles');
 
-        Route::get('ai/settings', [AiSettingController::class, 'index'])->name('admin.ai-settings.index');
-        Route::put('ai/settings/{section}', [AiSettingController::class, 'update'])->name('admin.ai-settings.update');
+        Route::get('ai', [AIController::class, 'index'])->name('admin.ai.index');
+        Route::post('ai', [AIController::class, 'update'])->name('admin.ai.update');
+        Route::post('ai/articles/generate', [AIController::class, 'generateArticle'])->name('admin.ai.articles.generate');
 
         Route::get('pages/home', [PageController::class, 'home'])->name('admin.pages.home');
         Route::post('pages/home', [PageController::class, 'updateHome'])->name('admin.pages.home.update');
