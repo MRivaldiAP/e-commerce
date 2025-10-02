@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThemeAssetController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\Admin\AIController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
@@ -151,6 +152,10 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
         Route::resource('tags', TagController::class)->except(['show'])->names('admin.tags');
         Route::resource('articles', AdminArticleController::class)->except(['show'])->names('admin.articles');
+
+        Route::get('ai', [AIController::class, 'index'])->name('admin.ai.index');
+        Route::post('ai', [AIController::class, 'update'])->name('admin.ai.update');
+        Route::post('ai/articles/generate', [AIController::class, 'generateArticle'])->name('admin.ai.articles.generate');
 
         Route::get('pages/home', [PageController::class, 'home'])->name('admin.pages.home');
         Route::post('pages/home', [PageController::class, 'updateHome'])->name('admin.pages.home.update');

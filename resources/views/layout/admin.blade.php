@@ -5,6 +5,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>Breeze Admin</title>
     <link rel="stylesheet" href="{{asset('AdminPage/assets/vendors/mdi/css/materialdesignicons.min.css')}}" />
     <link rel="stylesheet" href="{{asset('AdminPage/assets/vendors/flag-icon-css/css/flag-icon.min.css')}}" />
@@ -151,6 +152,12 @@
             <a class="nav-link" href="{{url('/admin/shipping')}}">
               <i class="mdi mdi-truck menu-icon"></i>
               <span class="menu-title">Pengiriman</span>
+            </a>
+          </li>
+          <li class="nav-item {{ request()->routeIs('admin.ai.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.ai.index') }}">
+              <i class="mdi mdi-robot menu-icon"></i>
+              <span class="menu-title">AI</span>
             </a>
           </li>
           <li class="nav-item nav-category">Alat Marketing</li>

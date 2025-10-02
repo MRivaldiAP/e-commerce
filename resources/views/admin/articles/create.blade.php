@@ -30,3 +30,7 @@
   </div>
 </div>
 @endsection
+
+@section('script')
+  @include('admin.articles.partials.ai-script')
+@endsection

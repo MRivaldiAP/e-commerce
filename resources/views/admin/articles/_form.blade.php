@@ -53,6 +53,23 @@
   <div class="col-lg-4">
     <div class="card mb-4">
       <div class="card-body">
+        <h4 class="card-title">Bantuan AI</h4>
+        <p class="card-description">Masukkan kata kunci utama lalu klik tombol di bawah untuk mengisi seluruh kolom artikel secara otomatis dengan rekomendasi SEO terbaik.</p>
+        <div class="form-group">
+          <label for="ai_keywords">Kata Kunci Target</label>
+          <input type="text" id="ai_keywords" name="ai_keywords" value="{{ old('ai_keywords') }}" class="form-control" placeholder="contoh: suplemen herbal untuk stamina, vitamin alami harian">
+          <small class="form-text text-muted">Pisahkan beberapa kata kunci dengan koma untuk memberikan konteks tambahan.</small>
+        </div>
+        <button type="button" class="btn btn-primary btn-block" id="generate-with-ai">
+          <i class="mdi mdi-robot"></i>
+          <span class="ml-1">Buat dengan AI</span>
+        </button>
+        <div id="ai-status" class="alert d-none mt-3" role="alert"></div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-body">
         <h4 class="card-title">Meta SEO</h4>
         <div class="form-group">
           <label for="meta_title">Meta Title</label>
