@@ -27,6 +27,10 @@
         <button type="submit" class="btn btn-primary">Publikasikan Artikel</button>
       </div>
     </form>
-  </div>
 </div>
+</div>
+@endsection
+
+@section('script')
+  @include('admin.articles.partials.ai-generator-script')
 @endsection
