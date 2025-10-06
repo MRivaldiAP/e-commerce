@@ -14,15 +14,19 @@ class Shipping extends Model
     protected $fillable = [
         'order_id',
         'courier',
+        'service',
         'tracking_number',
         'cost',
         'status',
         'estimated_delivery',
+        'remote_id',
+        'meta',
     ];
 
     protected $casts = [
         'cost' => 'float',
         'estimated_delivery' => 'date',
+        'meta' => 'array',
     ];
 
     public function order(): BelongsTo

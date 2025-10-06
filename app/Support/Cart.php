@@ -37,6 +37,8 @@ class Cart
         $quantity = max(1, $quantity);
         $productId = (int) $product->getKey();
 
+        $weight = (float) ($product->weight ?? config('shipping.default_weight', 1));
+
         if (self::usesDatabase()) {
             $cart = self::resolveUserCart();
             $item = $cart->items()->firstOrNew(['product_id' => $productId]);
@@ -53,6 +55,7 @@ class Cart
                 'price' => (float) $product->price,
                 'quantity' => $item->quantity,
                 'image' => optional($product->images()->first())->path,
+                'weight' => $weight,
             ];
         }
 
@@ -68,6 +71,7 @@ class Cart
                 'price' => (float) $product->price,
                 'quantity' => $quantity,
                 'image' => optional($product->images()->first())->path,
+                'weight' => $weight,
             ];
         }
 
@@ -165,6 +169,7 @@ class Cart
             ->map(function ($item) {
                 $item['price'] = (float) ($item['price'] ?? 0);
                 $item['quantity'] = (int) ($item['quantity'] ?? 0);
+                $item['weight'] = (float) ($item['weight'] ?? config('shipping.default_weight', 1));
                 $item['subtotal'] = $item['price'] * $item['quantity'];
                 $item['price_formatted'] = number_format($item['price'], 0, ',', '.');
                 $item['subtotal_formatted'] = number_format($item['subtotal'], 0, ',', '.');
@@ -177,12 +182,19 @@ class Cart
             ->toArray();
 
         $totalPrice = self::totalPrice();
+        $totalWeightKg = collect($items)->sum(function ($item) {
+            return ($item['weight'] ?? 0) * ($item['quantity'] ?? 0);
+        });
+        $totalWeightGrams = (int) round($totalWeightKg * 1000);
 
         return [
             'items' => $items,
             'total_quantity' => self::totalQuantity(),
             'total_price' => $totalPrice,
             'total_price_formatted' => number_format($totalPrice, 0, ',', '.'),
+            'total_weight' => $totalWeightKg,
+            'total_weight_formatted' => number_format($totalWeightKg, 2, ',', '.'),
+            'total_weight_grams' => max(1, $totalWeightGrams),
         ];
     }
 
@@ -239,6 +251,7 @@ class Cart
                         'price' => (float) $price,
                         'quantity' => (int) $item->quantity,
                         'image' => $imagePath,
+                        'weight' => (float) ($product?->weight ?? config('shipping.default_weight', 1)),
                     ],
                 ];
             })

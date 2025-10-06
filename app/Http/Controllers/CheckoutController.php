@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -33,6 +35,15 @@ class CheckoutController extends Controller
         if (empty($cartSummary['items'])) {
             return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
         }
+
+        $shippingEnabled = Setting::getValue('shipping.enabled', '0') === '1';
+        $shippingData = $shippingEnabled ? $request->session()->get('checkout.shipping') : null;
+
+        if ($shippingEnabled && empty($shippingData)) {
+            return redirect()->route('checkout.shipping')->with('error', 'Lengkapi informasi pengiriman terlebih dahulu.');
+        }
+
+        $totals = $this->buildCheckoutTotals($cartSummary, $shippingData);
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $viewPath = base_path("themes/{$theme}/views/payment.blade.php");
@@ -63,6 +74,9 @@ class CheckoutController extends Controller
             'gatewayLabel' => $gateway->label(),
             'gatewayDescription' => $gateway->description(),
             'cartSummary' => $cartSummary,
+            'checkoutTotals' => $totals,
+            'shippingData' => $shippingData,
+            'shippingEnabled' => $shippingEnabled,
             'methods' => $methods,
             'checkoutData' => $checkoutData,
             'selectedMethod' => $methods[0]['key'] ?? null,
@@ -102,10 +116,26 @@ class CheckoutController extends Controller
             ], 422);
         }
 
+        $shippingEnabled = Setting::getValue('shipping.enabled', '0') === '1';
+        $shippingData = $shippingEnabled ? $request->session()->get('checkout.shipping') : null;
+
+        if ($shippingEnabled && empty($shippingData)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Informasi pengiriman belum lengkap.',
+            ], 422);
+        }
+
         $cartSummary = Cart::summary();
+        $totals = $this->buildCheckoutTotals($cartSummary, $shippingData);
+        $shippingCost = (int) ($totals['shipping_cost'] ?? 0);
+        $grandTotal = (float) ($totals['grand_total'] ?? $cartSummary['total_price']);
+
         $cart = [
             'items' => $cartSummary['items'],
-            'total_price' => $cartSummary['total_price'],
+            'subtotal' => $cartSummary['total_price'],
+            'shipping_cost' => $shippingCost,
+            'total_price' => $grandTotal,
         ];
 
         $orderNumber = 'ORD-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(6));
@@ -114,15 +144,15 @@ class CheckoutController extends Controller
         try {
             DB::beginTransaction();
 
-            $user = $this->resolveCheckoutUser($request);
-            $address = $this->resolveCheckoutAddress($user);
+            $user = $this->resolveCheckoutUser($request, $shippingData);
+            $address = $this->resolveCheckoutAddress($user, $shippingData);
 
             $order = Order::create([
                 'user_id' => $user->getKey(),
                 'address_id' => $address->getKey(),
                 'order_number' => $orderNumber,
                 'status' => 'pending',
-                'total_price' => $cartSummary['total_price'],
+                'total_price' => $grandTotal,
             ]);
 
             foreach ($cartSummary['items'] as $item) {
@@ -137,7 +167,7 @@ class CheckoutController extends Controller
                 'method' => $this->determineStoredPaymentMethod($gateway->key(), $selectedMethod['key'] ?? $data['payment_method']),
                 'status' => 'pending',
                 'transaction_id' => $orderNumber,
-                'amount' => $cartSummary['total_price'],
+                'amount' => $grandTotal,
             ]);
 
             $context = [
@@ -156,6 +186,14 @@ class CheckoutController extends Controller
                 $context['customer'] = $customerContext;
             }
 
+            if ($shippingEnabled && $shippingData) {
+                $context['shipping'] = [
+                    'courier' => Arr::get($shippingData, 'selected_rate.courier'),
+                    'service' => Arr::get($shippingData, 'selected_rate.service'),
+                    'cost' => $shippingCost,
+                ];
+            }
+
             $config = $payments->getGatewayConfig($gateway->key());
             $session = $gateway->createPaymentSession($config, $cart, $context);
 
@@ -165,6 +203,19 @@ class CheckoutController extends Controller
             $paymentRecord->forceFill([
                 'transaction_id' => $transactionId,
             ])->save();
+
+            if ($shippingEnabled && $shippingData) {
+                $order->shipping()->updateOrCreate([], [
+                    'courier' => Arr::get($shippingData, 'selected_rate.courier', 'manual'),
+                    'service' => Arr::get($shippingData, 'selected_rate.service'),
+                    'tracking_number' => Arr::get($shippingData, 'selected_rate.tracking_number'),
+                    'cost' => $shippingCost,
+                    'status' => 'packing',
+                    'estimated_delivery' => $this->resolveEstimatedDelivery(Arr::get($shippingData, 'selected_rate.etd')),
+                    'remote_id' => Arr::get($shippingData, 'rate.remote_id'),
+                    'meta' => $shippingData,
+                ]);
+            }
 
             DB::commit();
         } catch (\Throwable $exception) {
@@ -183,6 +234,10 @@ class CheckoutController extends Controller
 
         if ($order) {
             $this->rememberOrderInSession($request, $order);
+        }
+
+        if ($shippingEnabled) {
+            $request->session()->forget('checkout.shipping');
         }
 
         return response()->json([
@@ -217,26 +272,55 @@ class CheckoutController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
-    protected function resolveCheckoutUser(Request $request): User
+    protected function resolveCheckoutUser(Request $request, ?array $shippingData = null): User
     {
         if ($request->user()) {
             return $request->user();
         }
 
-        $email = (string) $request->input('customer.email', 'guest@local.test');
-        $name = (string) $request->input('customer.first_name', 'Guest Customer');
+        $email = Arr::get($shippingData, 'contact.email')
+            ?: (string) $request->input('customer.email', 'guest@local.test');
+        $name = Arr::get($shippingData, 'contact.name')
+            ?: (string) $request->input('customer.first_name', 'Guest Customer');
+        $phone = Arr::get($shippingData, 'contact.phone')
+            ?: $request->input('customer.phone');
 
-        return User::firstOrCreate(
+        $user = User::firstOrCreate(
             ['email' => $email],
             [
                 'name' => $name,
                 'password' => Hash::make(Str::random(12)),
+                'phone' => $phone,
             ]
         );
+
+        if ($phone && empty($user->phone)) {
+            $user->forceFill(['phone' => $phone])->save();
+        }
+
+        return $user;
     }
 
-    protected function resolveCheckoutAddress(User $user): Address
+    protected function resolveCheckoutAddress(User $user, ?array $shippingData = null): Address
     {
+        if ($shippingData) {
+            $address = $user->addresses()->firstOrNew(['is_default' => true]);
+            $address->fill([
+                'recipient_name' => Arr::get($shippingData, 'contact.name', $user->name ?? 'Pelanggan'),
+                'phone' => Arr::get($shippingData, 'contact.phone', $user->phone ?? '0000000000'),
+                'street' => Arr::get($shippingData, 'address.street', 'Alamat belum diatur'),
+                'village' => Arr::get($shippingData, 'address.village_name', 'Belum diatur'),
+                'subdistrict' => Arr::get($shippingData, 'address.district_name', 'Belum diatur'),
+                'city' => Arr::get($shippingData, 'address.regency_name', 'Belum diatur'),
+                'province' => Arr::get($shippingData, 'address.province_name', 'Belum diatur'),
+                'postal_code' => Arr::get($shippingData, 'address.postal_code', '00000'),
+                'is_default' => true,
+            ]);
+            $address->save();
+
+            return $address;
+        }
+
         $existing = $user->addresses()->first();
         if ($existing) {
             return $existing;
@@ -282,6 +366,43 @@ class CheckoutController extends Controller
             'phone' => $user->phone ?? null,
             'address' => $address->street ?? null,
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $cartSummary
+     * @param  array<string, mixed>|null  $shippingData
+     * @return array<string, mixed>
+     */
+    protected function buildCheckoutTotals(array $cartSummary, ?array $shippingData = null): array
+    {
+        $subtotal = (float) ($cartSummary['total_price'] ?? 0);
+        $shippingCost = (int) Arr::get($shippingData, 'rate.cost', 0);
+        $grandTotal = $subtotal + $shippingCost;
+
+        return [
+            'subtotal' => $subtotal,
+            'subtotal_formatted' => number_format($subtotal, 0, ',', '.'),
+            'shipping_cost' => $shippingCost,
+            'shipping_cost_formatted' => number_format($shippingCost, 0, ',', '.'),
+            'grand_total' => $grandTotal,
+            'grand_total_formatted' => number_format($grandTotal, 0, ',', '.'),
+        ];
+    }
+
+    protected function resolveEstimatedDelivery(?string $etd): ?Carbon
+    {
+        if (! $etd) {
+            return null;
+        }
+
+        if (preg_match('/(\d+)/', $etd, $matches)) {
+            $days = (int) $matches[1];
+            if ($days > 0) {
+                return Carbon::now()->addDays($days);
+            }
+        }
+
+        return null;
     }
 
     protected function rememberOrderInSession(Request $request, Order $order): void
