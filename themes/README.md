@@ -92,3 +92,11 @@ C) article content
 D) Comment section (can be turned of from kelola halaman)
 E) 3 other article recomedation
 Components - Footer
+-----------------
+SHIPPING PAGE
+Components - Nav Menu
+A) without header
+B) forms - for address (address, provinces, kecamatan, kelurahan, name, email, phone, postal code) provinces filter kecamatan, kecamatan filter kelurahan, kelurahan generate postal code
+C) below form right after postal code filled, show available shipping method
+D) right bar, shows prodcut list price from kerangjang page, and after subtotal, add shipping cost which dynamically get from selected shipping method, and belw that add total
+E) payment button under the right sidebar which connect to payment gateway page according to payment gateway selected 

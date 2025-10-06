@@ -49,7 +49,7 @@
     $dateObject = $article['date_object'] ?? null;
     if (! $dateObject && !empty($article['date'])) {
         try {
-            $dateObject = \\Illuminate\\Support\\Carbon::parse($article['date']);
+            $dateObject = \Illuminate\Support\Carbon::parse($article['date']);
         } catch (\Exception $e) {
             $dateObject = null;
         }

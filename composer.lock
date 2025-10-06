@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2fee0c05d82bb08fac59d6b1814f39a4",
+    "content-hash": "805709871c8b04a6fb8dc0db814717b2",
     "packages": [
         {
             "name": "brick/math",
@@ -134,6 +134,82 @@
                 }
             ],
             "time": "2023-12-11T17:09:12+00:00"
+        },
+        {
+            "name": "creasi/laravel-nusa",
+            "version": "v0.1.15",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/creasico/laravel-nusa.git",
+                "reference": "6bf9bfc4c9930954f0c45c4b7d7bae9f0b0fcf7e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/creasico/laravel-nusa/zipball/6bf9bfc4c9930954f0c45c4b7d7bae9f0b0fcf7e",
+                "reference": "6bf9bfc4c9930954f0c45c4b7d7bae9f0b0fcf7e",
+                "shasum": ""
+            },
+            "require": {
+                "ext-sqlite3": "*",
+                "laravel/framework": "^9.0|^10.0|^11.0|^12.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "composer-runtime-api": "*",
+                "laravel/pint": "^1.1",
+                "nunomaduro/collision": "^7.4|^8.0",
+                "orchestra/testbench": "^8.5|^9.0|^10.0",
+                "phpmyadmin/sql-parser": "^5.11",
+                "spatie/fork": "^1.2"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Creasi\\Nusa\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Creasi\\Nusa\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Creasi Developers",
+                    "email": "developers@creasi.co"
+                }
+            ],
+            "description": "A Laravel package that aim to provide Indonesia' Administrative Data",
+            "keywords": [
+                "desa",
+                "indonesia",
+                "kabupaten",
+                "kecamatan",
+                "kelurahan",
+                "kota",
+                "laravel",
+                "package",
+                "provinsi"
+            ],
+            "support": {
+                "docs": "https://nusa.creasi.dev",
+                "forum": "https://github.com/orgs/creasico/discussions",
+                "issues": "https://github.com/creasico/laravel-nusa/issues",
+                "source": "https://github.com/creasico/laravel-nusa"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/creasico",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-07-15T09:59:02+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
