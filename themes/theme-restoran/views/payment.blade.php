@@ -90,10 +90,31 @@
                             </div>
                         @endforeach
                     </div>
-                    <div class="d-flex justify-content-between align-items-center border-top pt-3">
-                        <span class="fs-5 fw-semibold">Total</span>
-                        <span class="fs-4 fw-bold text-primary">Rp {{ $cartSummary['total_price_formatted'] ?? '0' }}</span>
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2 text-muted">
+                            <span>Subtotal</span>
+                            <span>Rp {{ $checkoutTotals['subtotal_formatted'] ?? ($cartSummary['total_price_formatted'] ?? '0') }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2 text-muted">
+                            <span>Ongkir</span>
+                            <span>Rp {{ $checkoutTotals['shipping_cost_formatted'] ?? '0' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fs-5 fw-semibold">Total</span>
+                            <span class="fs-4 fw-bold text-primary">Rp {{ $checkoutTotals['grand_total_formatted'] ?? ($cartSummary['total_price_formatted'] ?? '0') }}</span>
+                        </div>
                     </div>
+                    @if(!empty($shippingData))
+                        <div class="bg-light rounded-3 p-3 mt-3">
+                            <h6 class="fw-semibold mb-2 text-primary">Alamat Pengiriman</h6>
+                            <div class="text-muted small">
+                                <div>{{ $shippingData['contact']['name'] ?? '-' }} &bull; {{ $shippingData['contact']['phone'] ?? '-' }}</div>
+                                <div>{{ $shippingData['address']['street'] ?? '-' }}</div>
+                                <div>{{ $shippingData['address']['village_name'] ?? '' }}, {{ $shippingData['address']['district_name'] ?? '' }}</div>
+                                <div>{{ $shippingData['address']['regency_name'] ?? '' }}, {{ $shippingData['address']['province_name'] ?? '' }} {{ $shippingData['address']['postal_code'] ?? '' }}</div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
             <div class="col-lg-7">

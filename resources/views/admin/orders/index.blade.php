@@ -86,9 +86,52 @@
                               'packing' => 'badge-info',
                               'in_transit' => 'badge-warning',
                               'delivered' => 'badge-success',
+                              'cancelled' => 'badge-danger',
                             ][$shippingStatus] ?? 'badge-secondary';
+                            $shippingData = $order->shipping;
+                            $oldOrderId = old('order_id');
                           @endphp
                           <span class="badge {{ $shippingLabel }} text-capitalize">{{ str_replace('_', ' ', $shippingStatus) }}</span>
+                          <form method="POST" action="{{ route('admin.orders.shipping', $order) }}" class="mt-3">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="order_id" value="{{ $order->id }}">
+                            <div class="form-row align-items-end">
+                              <div class="form-group col-md-4">
+                                <label class="small text-muted d-block">Kurir</label>
+                                <input type="text" name="courier" class="form-control form-control-sm" value="{{ $oldOrderId == $order->id ? old('courier') : ($shippingData->courier ?? '') }}" required>
+                              </div>
+                              <div class="form-group col-md-4">
+                                <label class="small text-muted d-block">Layanan</label>
+                                <input type="text" name="service" class="form-control form-control-sm" value="{{ $oldOrderId == $order->id ? old('service') : ($shippingData->service ?? '') }}">
+                              </div>
+                              <div class="form-group col-md-4">
+                                <label class="small text-muted d-block">No. Resi</label>
+                                <input type="text" name="tracking_number" class="form-control form-control-sm" value="{{ $oldOrderId == $order->id ? old('tracking_number') : ($shippingData->tracking_number ?? '') }}">
+                              </div>
+                            </div>
+                            <div class="form-row align-items-end">
+                              <div class="form-group col-md-4">
+                                <label class="small text-muted d-block">Status</label>
+                                @php
+                                  $statusValue = $oldOrderId == $order->id ? old('status', $shippingStatus) : $shippingStatus;
+                                @endphp
+                                <select name="status" class="form-control form-control-sm">
+                                  <option value="packing" {{ $statusValue === 'packing' ? 'selected' : '' }}>Packing</option>
+                                  <option value="in_transit" {{ $statusValue === 'in_transit' ? 'selected' : '' }}>Dalam Perjalanan</option>
+                                  <option value="delivered" {{ $statusValue === 'delivered' ? 'selected' : '' }}>Terkirim</option>
+                                  <option value="cancelled" {{ $statusValue === 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                                </select>
+                              </div>
+                              <div class="form-group col-md-5">
+                                <label class="small text-muted d-block">Estimasi Tiba</label>
+                                <input type="date" name="estimated_delivery" class="form-control form-control-sm" value="{{ $oldOrderId == $order->id ? old('estimated_delivery') : optional($shippingData?->estimated_delivery)->format('Y-m-d') }}">
+                              </div>
+                              <div class="form-group col-md-3 text-right">
+                                <button type="submit" class="btn btn-sm btn-outline-primary mt-3">Simpan</button>
+                              </div>
+                            </div>
+                          </form>
                         @else
                           <form method="POST" action="{{ route('admin.orders.review', $order) }}">
                             @csrf
