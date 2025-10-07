@@ -20,6 +20,8 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\ArticleController as FrontArticleController;
+use App\Http\Controllers\ShippingController;
+use App\Http\Controllers\Admin\ShippingController as AdminShippingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,6 +92,10 @@ Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
 Route::get('/checkout/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
 Route::post('/checkout/payment/session', [CheckoutController::class, 'createPaymentSession'])->name('checkout.payment.session');
 Route::post('/checkout/payment/webhook/{gateway}', [CheckoutController::class, 'webhook'])->name('checkout.payment.webhook');
+Route::get('/checkout/shipping', [ShippingController::class, 'index'])->name('checkout.shipping');
+Route::post('/checkout/shipping', [ShippingController::class, 'store'])->name('checkout.shipping.store');
+Route::post('/checkout/shipping/rates', [ShippingController::class, 'rates'])->name('checkout.shipping.rates');
+Route::delete('/checkout/shipping', [ShippingController::class, 'destroy'])->name('checkout.shipping.destroy');
 
 Route::get('themes/{theme}/assets/{path}', ThemeAssetController::class)
     ->where('path', '.*')
@@ -143,6 +149,10 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     ]))->group(function () {
         Route::get('order', [AdminOrderController::class, 'index'])->name('admin.orders.index');
         Route::patch('order/{order}/review', [AdminOrderController::class, 'toggleReview'])->name('admin.orders.review');
+        Route::patch('order/{order}/shipping', [AdminOrderController::class, 'updateShipping'])->name('admin.orders.shipping.update');
+        Route::post('order/{order}/shipping/track', [AdminOrderController::class, 'trackShipping'])->name('admin.orders.shipping.track');
+        Route::post('order/{order}/shipping/cancel', [AdminOrderController::class, 'cancelShipping'])->name('admin.orders.shipping.cancel');
+        Route::post('order/{order}/shipping/create', [AdminOrderController::class, 'createShipping'])->name('admin.orders.shipping.create');
     });
 
     Route::middleware('role:' . User::ROLE_ADMINISTRATOR)->group(function () {
@@ -177,6 +187,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
         Route::get('payments', [PaymentController::class, 'index'])->name('admin.payments.index');
         Route::post('payments', [PaymentController::class, 'update'])->name('admin.payments.update');
+
+        Route::get('shipping', [AdminShippingController::class, 'index'])->name('admin.shipping.index');
+        Route::post('shipping', [AdminShippingController::class, 'update'])->name('admin.shipping.update');
 
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except(['show'])->names('admin.users');
     });
