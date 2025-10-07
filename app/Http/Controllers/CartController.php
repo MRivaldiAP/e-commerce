@@ -25,13 +25,14 @@ class CartController extends Controller
         }
 
         $cart = Cart::summary();
-        $shippingEnabled = $shipping->isEnabled();
+        $shippingEnabled = Setting::getValue('shipping.enabled', '0') === '1';
+        $activeProvider = Setting::getValue('shipping.provider', '');
 
         return view()->file($viewPath, [
             'theme' => $theme,
             'settings' => $settings,
             'cartSummary' => $cart,
-            'shippingEnabled' => $shippingEnabled,
+            'shippingEnabled' => $shippingEnabled && ! empty($activeProvider),
         ]);
     }
 
