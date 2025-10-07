@@ -152,11 +152,13 @@
                     $statusLabel = match($shippingStatus) {
                         'delivered' => 'Tiba di tujuan',
                         'in_transit' => 'Dalam Pengiriman',
+                        'cancelled' => 'Dibatalkan',
                         default => 'Sedang Diproses',
                     };
                     $statusClass = match($shippingStatus) {
                         'delivered' => 'success',
                         'in_transit' => 'warning',
+                        'cancelled' => 'danger',
                         default => 'info',
                     };
                 } else {
@@ -215,8 +217,16 @@
                     </table>
                 </div>
 
-                <div class="d-flex justify-content-between flex-wrap align-items-center pt-3 mt-3 border-top">
-                    <p class="mb-0 text-muted">Total Produk: {{ $order->items->sum('quantity') }}</p>
+                <div class="d-flex flex-column flex-md-row justify-content-between flex-wrap align-items-start gap-2 pt-3 mt-3 border-top">
+                    <div>
+                        <p class="mb-1 text-muted">Total Produk: {{ $order->items->sum('quantity') }}</p>
+                        @if($shippingEnabled)
+                            <p class="mb-1 text-muted">Kurir: {{ strtoupper($order->shipping->courier ?? 'Belum ditentukan') }} {{ $order->shipping->service ? '('.$order->shipping->service.')' : '' }}</p>
+                            <p class="mb-1 text-muted">Ongkir: Rp {{ number_format($order->shipping->cost ?? 0, 0, ',', '.') }}</p>
+                            <p class="mb-1 text-muted">Resi: {{ $order->shipping->tracking_number ?? 'Belum tersedia' }}</p>
+                            <p class="mb-0 text-muted">Status Pengiriman: {{ ucfirst(str_replace('_', ' ', $order->shipping->status ?? 'pending')) }}</p>
+                        @endif
+                    </div>
                     <h5 class="mb-0">Total Pembayaran: Rp {{ number_format($order->total_price ?? 0, 0, ',', '.') }}</h5>
                 </div>
             </div>

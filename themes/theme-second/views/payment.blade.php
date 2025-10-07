@@ -160,6 +160,9 @@
                         @if(!empty($publicConfig['va']))
                             <div><strong>Virtual Account:</strong> {{ $publicConfig['va'] }}</div>
                         @endif
+                        @if($shippingEnabled && !empty($shippingData['selection']))
+                            <div><strong>Pengiriman:</strong> {{ strtoupper($shippingData['selection']['courier'] ?? '') }} - {{ $shippingData['selection']['service'] ?? '' }} (Rp {{ $cartSummary['shipping_cost_formatted'] ?? '0' }})</div>
+                        @endif
                     </div>
                     <div class="mt-auto">
                         <button class="btn-pay" data-pay-button>Bayar dengan {{ $gatewayLabel }}</button>

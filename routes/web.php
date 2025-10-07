@@ -103,6 +103,10 @@ Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
 Route::get('/checkout/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
 Route::post('/checkout/payment/session', [CheckoutController::class, 'createPaymentSession'])->name('checkout.payment.session');
 Route::post('/checkout/payment/webhook/{gateway}', [CheckoutController::class, 'webhook'])->name('checkout.payment.webhook');
+Route::get('/checkout/shipping', [ShippingController::class, 'index'])->name('checkout.shipping');
+Route::post('/checkout/shipping', [ShippingController::class, 'store'])->name('checkout.shipping.store');
+Route::post('/checkout/shipping/rates', [ShippingController::class, 'rates'])->name('checkout.shipping.rates');
+Route::delete('/checkout/shipping', [ShippingController::class, 'destroy'])->name('checkout.shipping.destroy');
 
 Route::get('themes/{theme}/assets/{path}', ThemeAssetController::class)
     ->where('path', '.*')

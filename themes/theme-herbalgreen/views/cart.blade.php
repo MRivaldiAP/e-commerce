@@ -107,6 +107,15 @@
 
         .cart-actions .cta {
             border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .cart-actions .cta.is-disabled {
+            pointer-events: none;
+            opacity: 0.5;
         }
 
         .cart-empty {
@@ -178,6 +187,7 @@
     $shippingLabel = $settings['button.shipping'] ?? 'Lanjut ke Pengiriman';
     $paymentLabel = $settings['button.payment'] ?? 'Lanjut ke Pembayaran';
     $primaryButton = $shippingEnabled ? $shippingLabel : $paymentLabel;
+    $actionUrl = $shippingEnabled ? route('checkout.shipping') : route('checkout.payment');
     $hasItems = !empty($cartSummary['items']);
 @endphp
 
@@ -232,10 +242,10 @@
         <div class="cart-summary">
             <div class="cart-feedback" data-cart-status></div>
             <div class="total-line">Total: Rp <span data-cart-grand-total>{{ $cartSummary['total_price_formatted'] }}</span></div>
-            <div class="cart-actions">
-                <a href="{{ url('/produk') }}" class="cta" style="background: transparent; color: var(--color-primary); border:1px solid var(--color-primary);">Lanjut Belanja</a>
-                <button class="cta" data-cart-action {{ empty($cartSummary['items']) ? 'disabled' : '' }}>{{ $primaryButton }}</button>
-            </div>
+                <div class="cart-actions">
+                    <a href="{{ url('/produk') }}" class="cta" style="background: transparent; color: var(--color-primary); border:1px solid var(--color-primary);">Lanjut Belanja</a>
+                    <a href="{{ $actionUrl }}" class="cta {{ empty($cartSummary['items']) ? 'is-disabled' : '' }}" data-cart-action aria-disabled="{{ empty($cartSummary['items']) ? 'true' : 'false' }}">{{ $primaryButton }}</a>
+                </div>
         </div>
     </div>
 
@@ -255,12 +265,15 @@
         const updateUrl = '{{ route('cart.items.update', ['product' => '__ID__']) }}';
         const destroyUrl = '{{ route('cart.items.destroy', ['product' => '__ID__']) }}';
         const paymentUrl = '{{ route('checkout.payment') }}';
+        const shippingUrl = '{{ route('checkout.shipping') }}';
+        const shippingEnabled = {{ $shippingEnabled ? 'true' : 'false' }};
         const cartBody = document.querySelector('[data-cart-body]');
         const cartContent = document.getElementById('cart-content');
         const emptyState = document.getElementById('cart-empty');
         const status = document.querySelector('[data-cart-status]');
         const totalDisplay = document.querySelector('[data-cart-grand-total]');
         const actionButton = document.querySelector('[data-cart-action]');
+        const initialHasItems = {{ $hasItems ? 'true' : 'false' }};
 
         function buildRow(item){
             const tr = document.createElement('tr');
@@ -327,9 +340,7 @@
             if(totalDisplay){
                 totalDisplay.textContent = summary.total_price_formatted || '0';
             }
-            if(actionButton){
-                actionButton.disabled = items.length === 0;
-            }
+            setActionButtonState(items.length > 0);
             if(items.length === 0){
                 if(cartContent){
                     cartContent.classList.add('d-none');
@@ -393,6 +404,24 @@
             .catch(() => showStatus('Gagal menghapus produk.', true));
         }
 
+        function setActionButtonState(isEnabled){
+            if(!actionButton){
+                return;
+            }
+
+            const targetUrl = shippingEnabled ? shippingUrl : paymentUrl;
+
+            if(isEnabled){
+                actionButton.classList.remove('is-disabled');
+                actionButton.setAttribute('aria-disabled', 'false');
+                actionButton.setAttribute('href', targetUrl);
+            }else{
+                actionButton.classList.add('is-disabled');
+                actionButton.setAttribute('aria-disabled', 'true');
+                actionButton.removeAttribute('href');
+            }
+        }
+
         if(cartBody){
             cartBody.addEventListener('click', function(event){
                 const button = event.target.closest('button[data-action]');
@@ -430,12 +459,13 @@
             });
         }
 
+        setActionButtonState(initialHasItems);
+
         if(actionButton){
-            actionButton.addEventListener('click', function(){
-                if(actionButton.disabled){
-                    return;
+            actionButton.addEventListener('click', function(event){
+                if(actionButton.classList.contains('is-disabled')){
+                    event.preventDefault();
                 }
-                window.location.href = paymentUrl;
             });
         }
     })();

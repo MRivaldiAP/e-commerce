@@ -9,10 +9,13 @@ use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Payments\PaymentGatewayManager;
+use App\Services\Shipping\ShippingGatewayManager;
 use App\Support\Cart;
+use App\Support\ShippingSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
@@ -24,7 +27,7 @@ use Illuminate\View\View;
 
 class CheckoutController extends Controller
 {
-    public function payment(Request $request, PaymentGatewayManager $payments): View|RedirectResponse
+    public function payment(Request $request, PaymentGatewayManager $payments, ShippingGatewayManager $shipping): View|RedirectResponse
     {
         $gateway = $payments->getActive();
         if (! $gateway) {
@@ -68,6 +71,12 @@ class CheckoutController extends Controller
 
         $feedbackStatus = $this->resolveStatusMessage($request->query('status'));
 
+        $shippingCost = (float) Arr::get($shippingData, 'cost', 0);
+        $cartSummary['shipping_cost'] = $shippingCost;
+        $cartSummary['shipping_cost_formatted'] = number_format($shippingCost, 0, ',', '.');
+        $cartSummary['grand_total'] = $cartSummary['total_price'] + $shippingCost;
+        $cartSummary['grand_total_formatted'] = number_format($cartSummary['grand_total'], 0, ',', '.');
+
         return view()->file($viewPath, [
             'theme' => $theme,
             'gatewayKey' => $gateway->key(),
@@ -81,10 +90,12 @@ class CheckoutController extends Controller
             'checkoutData' => $checkoutData,
             'selectedMethod' => $methods[0]['key'] ?? null,
             'feedbackStatus' => $feedbackStatus,
+            'shippingEnabled' => $shippingEnabled,
+            'shippingData' => $shippingData,
         ]);
     }
 
-    public function createPaymentSession(Request $request, PaymentGatewayManager $payments): JsonResponse
+    public function createPaymentSession(Request $request, PaymentGatewayManager $payments, ShippingGatewayManager $shipping): JsonResponse
     {
         $gateway = $payments->getActive();
         if (! $gateway) {
@@ -103,6 +114,16 @@ class CheckoutController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Keranjang Anda kosong.',
+            ], 422);
+        }
+
+        $shippingEnabled = $shipping->isEnabled();
+        $shippingData = ShippingSession::get();
+
+        if ($shippingEnabled && ! ShippingSession::isReady()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Informasi pengiriman belum lengkap.',
             ], 422);
         }
 
@@ -169,6 +190,21 @@ class CheckoutController extends Controller
                 'transaction_id' => $orderNumber,
                 'amount' => $grandTotal,
             ]);
+
+            if ($shippingEnabled) {
+                $order->shipping()->create([
+                    'provider' => Arr::get($shippingData, 'provider', 'manual'),
+                    'courier' => Arr::get($shippingData, 'selection.courier'),
+                    'service' => Arr::get($shippingData, 'selection.service'),
+                    'cost' => $shippingCost,
+                    'status' => 'pending',
+                    'metadata' => [
+                        'selection' => Arr::get($shippingData, 'selection', []),
+                        'contact' => Arr::get($shippingData, 'contact', []),
+                        'address' => Arr::get($shippingData, 'address', []),
+                    ],
+                ]);
+            }
 
             $context = [
                 'selected_method' => $selectedMethod['key'] ?? $data['payment_method'],
@@ -323,20 +359,12 @@ class CheckoutController extends Controller
 
         $existing = $user->addresses()->first();
         if ($existing) {
+            $existing->fill($payload)->save();
+
             return $existing;
         }
 
-        return $user->addresses()->create([
-            'recipient_name' => $user->name ?? 'Pelanggan',
-            'phone' => $user->phone ?? '0000000000',
-            'street' => 'Alamat belum diatur',
-            'village' => 'Belum diatur',
-            'subdistrict' => 'Belum diatur',
-            'city' => 'Belum diatur',
-            'province' => 'Belum diatur',
-            'postal_code' => '00000',
-            'is_default' => true,
-        ]);
+        return $user->addresses()->create($payload);
     }
 
     protected function determineStoredPaymentMethod(string $gatewayKey, ?string $methodKey): string

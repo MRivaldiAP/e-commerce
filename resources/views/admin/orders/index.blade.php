@@ -81,9 +81,11 @@
                       <td>
                         @if($shippingEnabled)
                           @php
-                            $shippingStatus = optional($order->shipping)->status ?? 'packing';
+                            $shippingData = $order->shipping;
+                            $shippingStatus = optional($shippingData)->status ?? 'packing';
                             $shippingLabel = [
                               'packing' => 'badge-info',
+                              'pending' => 'badge-info',
                               'in_transit' => 'badge-warning',
                               'delivered' => 'badge-success',
                               'cancelled' => 'badge-danger',

@@ -163,18 +163,21 @@
         @else
             @foreach($orders as $order)
                 @php
-                    $shippingStatus = optional($order->shipping)->status ?? 'packing';
+                    $shippingData = optional($order->shipping);
+                    $shippingStatus = $shippingData->status ?? 'packing';
                     $statusLabel = 'Menunggu Konfirmasi';
                     $statusClass = 'status-badge--info';
                     if($shippingEnabled) {
                         $statusLabel = match($shippingStatus) {
                             'delivered' => 'Selesai',
                             'in_transit' => 'Sedang Dikirim',
+                            'cancelled' => 'Dibatalkan',
                             default => 'Sedang Diproses',
                         };
                         $statusClass = match($shippingStatus) {
                             'delivered' => 'status-badge--success',
                             'in_transit' => 'status-badge--warning',
+                            'cancelled' => 'status-badge--danger',
                             default => 'status-badge--info',
                         };
                     } else {
@@ -232,7 +235,15 @@
                         </table>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div class="text-muted">Total Item: {{ $order->items->sum('quantity') }}</div>
+                        <div>
+                            <div class="text-muted">Total Item: {{ $order->items->sum('quantity') }}</div>
+                            @if($shippingEnabled)
+                                <div class="text-muted">Kurir: {{ strtoupper($shippingData->courier ?? 'Belum ditentukan') }} {{ $shippingData->service ? '(' . $shippingData->service . ')' : '' }}</div>
+                                <div class="text-muted">Ongkir: Rp {{ number_format($shippingData->cost ?? 0, 0, ',', '.') }}</div>
+                                <div class="text-muted">Nomor Resi: {{ $shippingData->tracking_number ?? 'Belum tersedia' }}</div>
+                                <div class="text-muted">Status Pengiriman: {{ ucfirst(str_replace('_', ' ', $shippingData->status ?? 'pending')) }}</div>
+                            @endif
+                        </div>
                         <div class="h5 mb-0">Total Pembayaran: Rp {{ number_format($order->total_price ?? 0, 0, ',', '.') }}</div>
                     </div>
                 </div>

@@ -36,6 +36,7 @@ class Cart
     {
         $quantity = max(1, $quantity);
         $productId = (int) $product->getKey();
+        $weight = (float) ($product->weight ?? 0);
 
         $weight = (float) ($product->weight ?? config('shipping.default_weight', 1));
 
@@ -76,6 +77,11 @@ class Cart
         }
 
         self::storeItems($items);
+
+        if (isset($items[$productId]) && ! array_key_exists('weight', $items[$productId])) {
+            $items[$productId]['weight'] = $weight;
+            self::storeItems($items);
+        }
 
         return $items[$productId];
     }

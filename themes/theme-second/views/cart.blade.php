@@ -118,6 +118,11 @@
         .cart-empty p {
             margin-bottom: 1.5rem;
         }
+
+        .primary-btn.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body>
@@ -137,6 +142,7 @@
     $shippingLabel = $settings['button.shipping'] ?? 'Lanjut ke Pengiriman';
     $paymentLabel = $settings['button.payment'] ?? 'Lanjut ke Pembayaran';
     $primaryButton = $shippingEnabled ? $shippingLabel : $paymentLabel;
+    $actionUrl = $shippingEnabled ? route('checkout.shipping') : route('checkout.payment');
     $hasItems = !empty($cartSummary['items']);
 @endphp
 
@@ -218,7 +224,7 @@
                         <span>Total</span>
                         <span>Rp <span data-cart-grand-total>{{ $cartSummary['total_price_formatted'] }}</span></span>
                     </div>
-                    <button class="primary-btn" data-cart-action {{ empty($cartSummary['items']) ? 'disabled' : '' }}>{{ $primaryButton }}</button>
+                    <a href="{{ $actionUrl }}" class="primary-btn {{ empty($cartSummary['items']) ? 'disabled' : '' }}" data-cart-action aria-disabled="{{ empty($cartSummary['items']) ? 'true' : 'false' }}">{{ $primaryButton }}</a>
                 </div>
             </div>
         </div>
@@ -249,12 +255,15 @@
         const updateUrl = '{{ route('cart.items.update', ['product' => '__ID__']) }}';
         const destroyUrl = '{{ route('cart.items.destroy', ['product' => '__ID__']) }}';
         const paymentUrl = '{{ route('checkout.payment') }}';
+        const shippingUrl = '{{ route('checkout.shipping') }}';
+        const shippingEnabled = {{ $shippingEnabled ? 'true' : 'false' }};
         const cartBody = document.querySelector('[data-cart-body]');
         const cartContent = document.getElementById('cart-content');
         const emptyState = document.getElementById('cart-empty');
         const status = document.querySelector('[data-cart-status]');
         const totalDisplay = document.querySelector('[data-cart-grand-total]');
         const actionButton = document.querySelector('[data-cart-action]');
+        const initialHasItems = {{ $hasItems ? 'true' : 'false' }};
 
         function buildRow(item){
             const tr = document.createElement('tr');
@@ -327,9 +336,7 @@
             if(totalDisplay){
                 totalDisplay.textContent = summary.total_price_formatted || '0';
             }
-            if(actionButton){
-                actionButton.disabled = items.length === 0;
-            }
+            setActionButtonState(items.length > 0);
             if(items.length === 0){
                 if(cartContent){
                     cartContent.classList.add('d-none');
@@ -393,6 +400,24 @@
             .catch(() => showStatus('Gagal menghapus produk.', true));
         }
 
+        function setActionButtonState(isEnabled){
+            if(!actionButton){
+                return;
+            }
+
+            const targetUrl = shippingEnabled ? shippingUrl : paymentUrl;
+
+            if(isEnabled){
+                actionButton.classList.remove('disabled');
+                actionButton.setAttribute('aria-disabled', 'false');
+                actionButton.setAttribute('href', targetUrl);
+            }else{
+                actionButton.classList.add('disabled');
+                actionButton.setAttribute('aria-disabled', 'true');
+                actionButton.removeAttribute('href');
+            }
+        }
+
         if(cartBody){
             cartBody.addEventListener('click', function(event){
                 const button = event.target.closest('button[data-action]');
@@ -430,12 +455,13 @@
             });
         }
 
+        setActionButtonState(initialHasItems);
+
         if(actionButton){
-            actionButton.addEventListener('click', function(){
-                if(actionButton.disabled){
-                    return;
+            actionButton.addEventListener('click', function(event){
+                if(actionButton.classList.contains('disabled')){
+                    event.preventDefault();
                 }
-                window.location.href = paymentUrl;
             });
         }
     })();
