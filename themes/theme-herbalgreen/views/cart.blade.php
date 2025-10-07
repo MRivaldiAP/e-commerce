@@ -109,6 +109,11 @@
             border-radius: 30px;
         }
 
+        .cart-actions .cta.is-disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
         .cart-empty {
             text-align: center;
             padding: 3rem;
@@ -178,6 +183,9 @@
     $shippingLabel = $settings['button.shipping'] ?? 'Lanjut ke Pengiriman';
     $paymentLabel = $settings['button.payment'] ?? 'Lanjut ke Pembayaran';
     $primaryButton = $shippingEnabled ? $shippingLabel : $paymentLabel;
+    $shippingHref = route('checkout.shipping');
+    $paymentHref = route('checkout.payment');
+    $primaryHref = $shippingEnabled ? $shippingHref : $paymentHref;
     $hasItems = !empty($cartSummary['items']);
 @endphp
 
@@ -234,7 +242,18 @@
             <div class="total-line">Total: Rp <span data-cart-grand-total>{{ $cartSummary['total_price_formatted'] }}</span></div>
             <div class="cart-actions">
                 <a href="{{ url('/produk') }}" class="cta" style="background: transparent; color: var(--color-primary); border:1px solid var(--color-primary);">Lanjut Belanja</a>
-                <button class="cta" data-cart-action {{ empty($cartSummary['items']) ? 'disabled' : '' }}>{{ $primaryButton }}</button>
+                <a
+                    href="{{ $primaryHref }}"
+                    class="cta"
+                    data-cart-action
+                    data-shipping-enabled="{{ $shippingEnabled ? 'true' : 'false' }}"
+                    data-shipping-url="{{ $shippingHref }}"
+                    data-payment-url="{{ $paymentHref }}"
+                    aria-disabled="{{ empty($cartSummary['items']) ? 'true' : 'false' }}"
+                    @class(['is-disabled' => empty($cartSummary['items'])])
+                >
+                    {{ $primaryButton }}
+                </a>
             </div>
         </div>
     </div>
@@ -254,13 +273,13 @@
         const csrf = '{{ csrf_token() }}';
         const updateUrl = '{{ route('cart.items.update', ['product' => '__ID__']) }}';
         const destroyUrl = '{{ route('cart.items.destroy', ['product' => '__ID__']) }}';
-        const paymentUrl = '{{ route('checkout.payment') }}';
         const cartBody = document.querySelector('[data-cart-body]');
         const cartContent = document.getElementById('cart-content');
         const emptyState = document.getElementById('cart-empty');
         const status = document.querySelector('[data-cart-status]');
         const totalDisplay = document.querySelector('[data-cart-grand-total]');
         const actionButton = document.querySelector('[data-cart-action]');
+        const shippingEnabled = actionButton?.dataset.shippingEnabled === 'true';
 
         function buildRow(item){
             const tr = document.createElement('tr');
@@ -328,7 +347,9 @@
                 totalDisplay.textContent = summary.total_price_formatted || '0';
             }
             if(actionButton){
-                actionButton.disabled = items.length === 0;
+                const isDisabled = items.length === 0;
+                actionButton.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
+                actionButton.classList.toggle('is-disabled', isDisabled);
             }
             if(items.length === 0){
                 if(cartContent){
@@ -431,11 +452,18 @@
         }
 
         if(actionButton){
-            actionButton.addEventListener('click', function(){
-                if(actionButton.disabled){
+            actionButton.addEventListener('click', function(event){
+                if(actionButton.getAttribute('aria-disabled') === 'true'){
+                    event.preventDefault();
                     return;
                 }
-                window.location.href = paymentUrl;
+                const shippingUrl = actionButton.dataset.shippingUrl;
+                const paymentUrl = actionButton.dataset.paymentUrl;
+                const targetUrl = shippingEnabled ? shippingUrl : paymentUrl;
+                if(targetUrl){
+                    event.preventDefault();
+                    window.location.href = targetUrl;
+                }
             });
         }
     })();

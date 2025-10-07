@@ -198,10 +198,21 @@
                         <span>Rp {{ $item['subtotal_formatted'] }}</span>
                     </div>
                 @endforeach
+                @if($shippingEnabled)
+                    <div class="summary-item">
+                        <div>
+                            <h4>Ongkos Kirim</h4>
+                            @if(!empty($shippingData['selection']))
+                                <small>{{ strtoupper($shippingData['selection']['courier'] ?? '') }} • {{ $shippingData['selection']['service'] ?? '' }}</small>
+                            @endif
+                        </div>
+                        <span>Rp {{ $cartSummary['shipping_cost_formatted'] ?? '0' }}</span>
+                    </div>
+                @endif
             </div>
             <div class="summary-total">
                 <span>Total Pembayaran</span>
-                <span>Rp {{ $cartSummary['total_price_formatted'] ?? '0' }}</span>
+                <span>Rp {{ $cartSummary['grand_total_formatted'] ?? ($cartSummary['total_price_formatted'] ?? '0') }}</span>
             </div>
         </div>
         <div class="card-box">
@@ -238,6 +249,12 @@
                 @endif
                 @if(!empty($publicConfig['va']))
                     <div>Virtual Account: {{ $publicConfig['va'] }}</div>
+                @endif
+                @if($shippingEnabled && !empty($shippingData['selection']))
+                    <div class="mt-2"><strong>Pengiriman:</strong> {{ strtoupper($shippingData['selection']['courier'] ?? '') }} - {{ $shippingData['selection']['service'] ?? '' }} (Rp {{ $cartSummary['shipping_cost_formatted'] ?? '0' }})</div>
+                    @if(!empty($shippingData['address']['street']))
+                        <div class="small">Alamat: {{ $shippingData['address']['street'] }}</div>
+                    @endif
                 @endif
             </div>
             <button class="cta-button" data-pay-button>Bayar dengan {{ $gatewayLabel }}</button>

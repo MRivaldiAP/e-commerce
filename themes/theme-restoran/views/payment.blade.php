@@ -89,10 +89,21 @@
                                 <span class="fw-semibold">Rp {{ $item['subtotal_formatted'] }}</span>
                             </div>
                         @endforeach
+                        @if($shippingEnabled)
+                            <div class="list-group-item d-flex justify-content-between align-items-start px-0">
+                                <div>
+                                    <h6 class="mb-1">Ongkos Kirim</h6>
+                                    @if(!empty($shippingData['selection']))
+                                        <small class="text-muted">{{ strtoupper($shippingData['selection']['courier'] ?? '') }} • {{ $shippingData['selection']['service'] ?? '' }}</small>
+                                    @endif
+                                </div>
+                                <span class="fw-semibold">Rp {{ $cartSummary['shipping_cost_formatted'] ?? '0' }}</span>
+                            </div>
+                        @endif
                     </div>
                     <div class="d-flex justify-content-between align-items-center border-top pt-3">
                         <span class="fs-5 fw-semibold">Total</span>
-                        <span class="fs-4 fw-bold text-primary">Rp {{ $cartSummary['total_price_formatted'] ?? '0' }}</span>
+                        <span class="fs-4 fw-bold text-primary">Rp {{ $cartSummary['grand_total_formatted'] ?? ($cartSummary['total_price_formatted'] ?? '0') }}</span>
                     </div>
                 </div>
             </div>
@@ -137,6 +148,9 @@
                         @endif
                         @if(!empty($publicConfig['va']))
                             <div><strong>Virtual Account:</strong> {{ $publicConfig['va'] }}</div>
+                        @endif
+                        @if($shippingEnabled && !empty($shippingData['selection']))
+                            <div><strong>Pengiriman:</strong> {{ strtoupper($shippingData['selection']['courier'] ?? '') }} - {{ $shippingData['selection']['service'] ?? '' }} (Rp {{ $cartSummary['shipping_cost_formatted'] ?? '0' }})</div>
                         @endif
                     </div>
                     <div class="mt-auto">

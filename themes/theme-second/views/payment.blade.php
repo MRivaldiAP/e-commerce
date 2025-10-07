@@ -77,9 +77,20 @@
                             <span>Rp {{ $item['subtotal_formatted'] }}</span>
                         </div>
                     @endforeach
+                    @if($shippingEnabled)
+                        <div class="summary__item">
+                            <div>
+                                <h6>Ongkos Kirim</h6>
+                                @if(!empty($shippingData['selection']))
+                                    <small class="text-muted">{{ strtoupper($shippingData['selection']['courier'] ?? '') }} • {{ $shippingData['selection']['service'] ?? '' }}</small>
+                                @endif
+                            </div>
+                            <span>Rp {{ $cartSummary['shipping_cost_formatted'] ?? '0' }}</span>
+                        </div>
+                    @endif
                     <div class="summary__total">
                         <span>Total Pembayaran</span>
-                        <span>Rp {{ $cartSummary['total_price_formatted'] ?? '0' }}</span>
+                        <span>Rp {{ $cartSummary['grand_total_formatted'] ?? ($cartSummary['total_price_formatted'] ?? '0') }}</span>
                     </div>
                 </div>
             </div>
@@ -119,6 +130,9 @@
                         @endif
                         @if(!empty($publicConfig['va']))
                             <div><strong>Virtual Account:</strong> {{ $publicConfig['va'] }}</div>
+                        @endif
+                        @if($shippingEnabled && !empty($shippingData['selection']))
+                            <div><strong>Pengiriman:</strong> {{ strtoupper($shippingData['selection']['courier'] ?? '') }} - {{ $shippingData['selection']['service'] ?? '' }} (Rp {{ $cartSummary['shipping_cost_formatted'] ?? '0' }})</div>
                         @endif
                     </div>
                     <div class="mt-auto">
