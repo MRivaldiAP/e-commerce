@@ -100,6 +100,12 @@
         .cart-empty p {
             margin-bottom: 1.5rem;
         }
+
+        .btn.disabled,
+        .btn[aria-disabled="true"] {
+            pointer-events: none;
+            opacity: 0.65;
+        }
     </style>
 </head>
 <body>

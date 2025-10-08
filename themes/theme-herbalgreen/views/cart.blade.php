@@ -118,6 +118,11 @@
             opacity: 0.5;
         }
 
+        .cart-actions .cta.is-disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
         .cart-empty {
             text-align: center;
             padding: 3rem;
