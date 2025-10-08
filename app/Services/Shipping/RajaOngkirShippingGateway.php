@@ -293,19 +293,43 @@ class RajaOngkirShippingGateway implements ShippingGateway
         }
 
         $cities = $this->getCities($config);
-        $provinceSlug = $this->normalizeName($provinceName);
+        $provinceSlug = $this->normalizeProvinceName($provinceName);
         $citySlug = $this->normalizeName($cityName);
 
+        $fallbackMatches = [];
+
         foreach ($cities as $city) {
-            if ($this->normalizeName($city['province']) !== $provinceSlug) {
-                continue;
+            $cityProvinceSlug = $this->normalizeProvinceName((string) Arr::get($city, 'province', ''));
+
+            if ($provinceSlug !== '' && $provinceSlug === $cityProvinceSlug && $this->cityMatchesSlug($city, $citySlug)) {
+                return (string) Arr::get($city, 'city_id');
             }
 
-            $candidateSlug = $this->normalizeName(trim($city['type'].' '.$city['city_name']));
-            $cityNameSlug = $this->normalizeName($city['city_name']);
+            if ($provinceSlug === $cityProvinceSlug) {
+                $fallbackMatches[] = $city;
+            }
+        }
 
-            if ($candidateSlug === $citySlug || $cityNameSlug === $citySlug) {
-                return (string) $city['city_id'];
+        // If no city was found using province matching, attempt to locate a
+        // single match using the city name alone. This mirrors the behaviour of
+        // the RajaOngkir dashboard when users search for a destination.
+        if ($provinceSlug === '' || empty($fallbackMatches)) {
+            $matches = [];
+
+            foreach ($cities as $city) {
+                if ($this->cityMatchesSlug($city, $citySlug)) {
+                    $matches[(string) Arr::get($city, 'city_id')] = $city;
+                }
+            }
+
+            if (count($matches) === 1) {
+                return (string) array_key_first($matches);
+            }
+        }
+
+        foreach ($fallbackMatches as $city) {
+            if ($this->cityMatchesSlug($city, $citySlug)) {
+                return (string) Arr::get($city, 'city_id');
             }
         }
 
@@ -340,9 +364,66 @@ class RajaOngkirShippingGateway implements ShippingGateway
     protected function normalizeName(string $value): string
     {
         $value = Str::lower($value);
-        $value = str_replace(['kab.', 'kabupaten', 'kota', ' '], '', $value);
-        $value = str_replace(['(', ')', '-'], '', $value);
+        $value = str_replace([
+            'kab.',
+            'kabupaten',
+            'kota',
+            'adm.',
+            'administrasi',
+        ], '', $value);
 
-        return $value;
+        // Remove non-alphanumeric characters to make the comparison resilient to
+        // punctuation differences between local datasets and RajaOngkir.
+        $normalized = preg_replace('/[^a-z0-9]/', '', $value);
+
+        return is_string($normalized) ? $normalized : '';
+    }
+
+    /**
+     * @param  array<string, mixed>  $city
+     */
+    protected function cityMatchesSlug(array $city, string $slug): bool
+    {
+        if ($slug === '') {
+            return false;
+        }
+
+        $candidateSlug = $this->normalizeName(trim(sprintf('%s %s', Arr::get($city, 'type', ''), Arr::get($city, 'city_name', ''))));
+        $cityNameSlug = $this->normalizeName((string) Arr::get($city, 'city_name', ''));
+
+        return $candidateSlug === $slug || $cityNameSlug === $slug;
+    }
+
+    protected function normalizeProvinceName(string $value): string
+    {
+        $value = Str::lower($value);
+        $value = str_replace([
+            'provinsi',
+            'propinsi',
+            'province',
+            'prov.',
+            'prov',
+        ], '', $value);
+
+        $normalized = preg_replace('/[^a-z0-9]/', '', $value) ?: '';
+
+        $aliases = [
+            'daerahistimewayogyakarta' => 'diyogyakarta',
+            'istimewayogyakarta' => 'diyogyakarta',
+            'yogyakarta' => 'diyogyakarta',
+            'daerahkhususibukotajakarta' => 'dkijakarta',
+            'khususibukotajakarta' => 'dkijakarta',
+            'ibukotajakarta' => 'dkijakarta',
+            'jakarta' => 'dkijakarta',
+            'bangkabelitung' => 'kepulauanbangkabelitung',
+            'bangkabelitungislands' => 'kepulauanbangkabelitung',
+            'riauislands' => 'kepulauanriau',
+        ];
+
+        if (isset($aliases[$normalized])) {
+            return $aliases[$normalized];
+        }
+
+        return $normalized;
     }
 }
