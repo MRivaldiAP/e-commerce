@@ -21,13 +21,14 @@ class Shipping extends Model
         'cost',
         'status',
         'estimated_delivery',
-        'metadata',
+        'remote_id',
+        'meta',
     ];
 
     protected $casts = [
         'cost' => 'float',
         'estimated_delivery' => 'date',
-        'metadata' => 'array',
+        'meta' => 'array',
     ];
 
     public function order(): BelongsTo

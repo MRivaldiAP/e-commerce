@@ -107,6 +107,15 @@
 
         .cart-actions .cta {
             border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .cart-actions .cta.is-disabled {
+            pointer-events: none;
+            opacity: 0.5;
         }
 
         .cart-actions .cta.is-disabled {
@@ -183,9 +192,7 @@
     $shippingLabel = $settings['button.shipping'] ?? 'Lanjut ke Pengiriman';
     $paymentLabel = $settings['button.payment'] ?? 'Lanjut ke Pembayaran';
     $primaryButton = $shippingEnabled ? $shippingLabel : $paymentLabel;
-    $shippingHref = route('checkout.shipping');
-    $paymentHref = route('checkout.payment');
-    $primaryHref = $shippingEnabled ? $shippingHref : $paymentHref;
+    $actionUrl = $shippingEnabled ? route('checkout.shipping') : route('checkout.payment');
     $hasItems = !empty($cartSummary['items']);
 @endphp
 
@@ -240,21 +247,10 @@
         <div class="cart-summary">
             <div class="cart-feedback" data-cart-status></div>
             <div class="total-line">Total: Rp <span data-cart-grand-total>{{ $cartSummary['total_price_formatted'] }}</span></div>
-            <div class="cart-actions">
-                <a href="{{ url('/produk') }}" class="cta" style="background: transparent; color: var(--color-primary); border:1px solid var(--color-primary);">Lanjut Belanja</a>
-                <a
-                    href="{{ $primaryHref }}"
-                    class="cta"
-                    data-cart-action
-                    data-shipping-enabled="{{ $shippingEnabled ? 'true' : 'false' }}"
-                    data-shipping-url="{{ $shippingHref }}"
-                    data-payment-url="{{ $paymentHref }}"
-                    aria-disabled="{{ empty($cartSummary['items']) ? 'true' : 'false' }}"
-                    @class(['is-disabled' => empty($cartSummary['items'])])
-                >
-                    {{ $primaryButton }}
-                </a>
-            </div>
+                <div class="cart-actions">
+                    <a href="{{ url('/produk') }}" class="cta" style="background: transparent; color: var(--color-primary); border:1px solid var(--color-primary);">Lanjut Belanja</a>
+                    <a href="{{ $actionUrl }}" class="cta {{ empty($cartSummary['items']) ? 'is-disabled' : '' }}" data-cart-action aria-disabled="{{ empty($cartSummary['items']) ? 'true' : 'false' }}">{{ $primaryButton }}</a>
+                </div>
         </div>
     </div>
 
@@ -273,13 +269,16 @@
         const csrf = '{{ csrf_token() }}';
         const updateUrl = '{{ route('cart.items.update', ['product' => '__ID__']) }}';
         const destroyUrl = '{{ route('cart.items.destroy', ['product' => '__ID__']) }}';
+        const paymentUrl = '{{ route('checkout.payment') }}';
+        const shippingUrl = '{{ route('checkout.shipping') }}';
+        const shippingEnabled = {{ $shippingEnabled ? 'true' : 'false' }};
         const cartBody = document.querySelector('[data-cart-body]');
         const cartContent = document.getElementById('cart-content');
         const emptyState = document.getElementById('cart-empty');
         const status = document.querySelector('[data-cart-status]');
         const totalDisplay = document.querySelector('[data-cart-grand-total]');
         const actionButton = document.querySelector('[data-cart-action]');
-        const shippingEnabled = actionButton?.dataset.shippingEnabled === 'true';
+        const initialHasItems = {{ $hasItems ? 'true' : 'false' }};
 
         function buildRow(item){
             const tr = document.createElement('tr');
@@ -346,11 +345,7 @@
             if(totalDisplay){
                 totalDisplay.textContent = summary.total_price_formatted || '0';
             }
-            if(actionButton){
-                const isDisabled = items.length === 0;
-                actionButton.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
-                actionButton.classList.toggle('is-disabled', isDisabled);
-            }
+            setActionButtonState(items.length > 0);
             if(items.length === 0){
                 if(cartContent){
                     cartContent.classList.add('d-none');
@@ -414,6 +409,24 @@
             .catch(() => showStatus('Gagal menghapus produk.', true));
         }
 
+        function setActionButtonState(isEnabled){
+            if(!actionButton){
+                return;
+            }
+
+            const targetUrl = shippingEnabled ? shippingUrl : paymentUrl;
+
+            if(isEnabled){
+                actionButton.classList.remove('is-disabled');
+                actionButton.setAttribute('aria-disabled', 'false');
+                actionButton.setAttribute('href', targetUrl);
+            }else{
+                actionButton.classList.add('is-disabled');
+                actionButton.setAttribute('aria-disabled', 'true');
+                actionButton.removeAttribute('href');
+            }
+        }
+
         if(cartBody){
             cartBody.addEventListener('click', function(event){
                 const button = event.target.closest('button[data-action]');
@@ -451,18 +464,12 @@
             });
         }
 
+        setActionButtonState(initialHasItems);
+
         if(actionButton){
             actionButton.addEventListener('click', function(event){
-                if(actionButton.getAttribute('aria-disabled') === 'true'){
+                if(actionButton.classList.contains('is-disabled')){
                     event.preventDefault();
-                    return;
-                }
-                const shippingUrl = actionButton.dataset.shippingUrl;
-                const paymentUrl = actionButton.dataset.paymentUrl;
-                const targetUrl = shippingEnabled ? shippingUrl : paymentUrl;
-                if(targetUrl){
-                    event.preventDefault();
-                    window.location.href = targetUrl;
                 }
             });
         }

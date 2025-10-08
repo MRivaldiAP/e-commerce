@@ -90,78 +90,50 @@
                               'delivered' => 'badge-success',
                               'cancelled' => 'badge-danger',
                             ][$shippingStatus] ?? 'badge-secondary';
+                            $shippingData = $order->shipping;
+                            $oldOrderId = old('order_id');
                           @endphp
-                          <div class="mb-2">
-                            <span class="badge {{ $shippingLabel }} text-capitalize">{{ str_replace('_', ' ', $shippingStatus) }}</span>
-                          </div>
-                          <div class="small text-muted">Kurir: {{ strtoupper($shippingData->courier ?? '-') }} {{ $shippingData?->service ? '(' . $shippingData->service . ')' : '' }}</div>
-                          <div class="small text-muted">Nomor Resi: {{ $shippingData?->tracking_number ?? 'Belum diatur' }}</div>
-                          <div class="small text-muted">ID Eksternal: {{ $shippingData?->external_id ?? 'Tidak ada' }}</div>
-                          <div class="small text-muted">Ongkir: Rp {{ number_format($shippingData?->cost ?? 0, 0, ',', '.') }}</div>
-                          @php
-                            $activeOrderOld = (int) old('order_id', 0) === $order->id;
-                          @endphp
-                          <details class="mt-2">
-                            <summary class="small font-weight-semibold text-primary" style="cursor: pointer;">Kelola Pengiriman</summary>
-                            <div class="mt-2 p-2 bg-light rounded">
-                              <form method="POST" action="{{ route('admin.orders.shipping.update', $order) }}">
-                                @csrf
-                                @method('PATCH')
-                                <input type="hidden" name="order_id" value="{{ $order->id }}">
-                                <div class="form-group mb-2">
-                                  <label class="small text-muted mb-1" for="tracking_number_{{ $order->id }}">Nomor Resi</label>
-                                  <input type="text" class="form-control form-control-sm" id="tracking_number_{{ $order->id }}" name="tracking_number" value="{{ $activeOrderOld ? old('tracking_number') : $shippingData?->tracking_number }}" placeholder="Masukkan nomor resi">
-                                </div>
-                                <div class="form-group mb-2">
-                                  <label class="small text-muted mb-1" for="external_id_{{ $order->id }}">ID Eksternal</label>
-                                  <input type="text" class="form-control form-control-sm" id="external_id_{{ $order->id }}" name="external_id" value="{{ $activeOrderOld ? old('external_id') : $shippingData?->external_id }}" placeholder="ID dari gateway (opsional)">
-                                </div>
-                                <div class="form-group mb-2">
-                                  <label class="small text-muted mb-1" for="courier_{{ $order->id }}">Kurir</label>
-                                  <input type="text" class="form-control form-control-sm" id="courier_{{ $order->id }}" name="courier" value="{{ $activeOrderOld ? old('courier') : $shippingData?->courier }}" placeholder="Kode kurir">
-                                </div>
-                                <div class="form-group mb-2">
-                                  <label class="small text-muted mb-1" for="service_{{ $order->id }}">Layanan</label>
-                                  <input type="text" class="form-control form-control-sm" id="service_{{ $order->id }}" name="service" value="{{ $activeOrderOld ? old('service') : $shippingData?->service }}" placeholder="Nama layanan">
-                                </div>
-                                <div class="form-group mb-2">
-                                  <label class="small text-muted mb-1" for="status_{{ $order->id }}">Status</label>
-                                  <select id="status_{{ $order->id }}" class="form-control form-control-sm" name="status">
-                                    <option value="">-- Pilih status --</option>
-                                    @foreach(['pending' => 'Menunggu', 'packing' => 'Sedang diproses', 'in_transit' => 'Sedang dikirim', 'delivered' => 'Terkirim', 'cancelled' => 'Dibatalkan'] as $value => $label)
-                                      <option value="{{ $value }}" {{ ($activeOrderOld ? old('status') : $shippingStatus) === $value ? 'selected' : '' }}>{{ $label }}</option>
-                                    @endforeach
-                                  </select>
-                                </div>
-                                <div class="form-group mb-2">
-                                  <label class="small text-muted mb-1" for="cost_{{ $order->id }}">Biaya Kirim</label>
-                                  <input type="number" class="form-control form-control-sm" id="cost_{{ $order->id }}" name="cost" value="{{ $activeOrderOld ? old('cost') : $shippingData?->cost }}" min="0" step="0.01">
-                                </div>
-                                <div class="form-group mb-3">
-                                  <label class="small text-muted mb-1" for="estimated_delivery_{{ $order->id }}">Estimasi Tiba</label>
-                                  <input type="date" class="form-control form-control-sm" id="estimated_delivery_{{ $order->id }}" name="estimated_delivery" value="{{ $activeOrderOld ? old('estimated_delivery') : optional($shippingData?->estimated_delivery)->format('Y-m-d') }}">
-                                </div>
-                                <button type="submit" class="btn btn-sm btn-primary btn-block">Simpan Perubahan</button>
-                              </form>
-
-                              <div class="d-flex flex-wrap mt-3" style="gap: .5rem;">
-                                <form method="POST" action="{{ route('admin.orders.shipping.create', $order) }}">
-                                  @csrf
-                                  <button type="submit" class="btn btn-sm btn-outline-primary">Buat Pengiriman</button>
-                                </form>
-                                <form method="POST" action="{{ route('admin.orders.shipping.track', $order) }}">
-                                  @csrf
-                                  <input type="hidden" name="tracking_number" value="{{ $shippingData?->tracking_number }}">
-                                  <input type="hidden" name="courier" value="{{ $shippingData?->courier }}">
-                                  <button type="submit" class="btn btn-sm btn-outline-info" {{ empty($shippingData?->tracking_number) ? 'disabled' : '' }}>Lacak</button>
-                                </form>
-                                <form method="POST" action="{{ route('admin.orders.shipping.cancel', $order) }}">
-                                  @csrf
-                                  <button type="submit" class="btn btn-sm btn-outline-danger">Batalkan</button>
-                                </form>
+                          <span class="badge {{ $shippingLabel }} text-capitalize">{{ str_replace('_', ' ', $shippingStatus) }}</span>
+                          <form method="POST" action="{{ route('admin.orders.shipping', $order) }}" class="mt-3">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="order_id" value="{{ $order->id }}">
+                            <div class="form-row align-items-end">
+                              <div class="form-group col-md-4">
+                                <label class="small text-muted d-block">Kurir</label>
+                                <input type="text" name="courier" class="form-control form-control-sm" value="{{ $oldOrderId == $order->id ? old('courier') : ($shippingData->courier ?? '') }}" required>
+                              </div>
+                              <div class="form-group col-md-4">
+                                <label class="small text-muted d-block">Layanan</label>
+                                <input type="text" name="service" class="form-control form-control-sm" value="{{ $oldOrderId == $order->id ? old('service') : ($shippingData->service ?? '') }}">
+                              </div>
+                              <div class="form-group col-md-4">
+                                <label class="small text-muted d-block">No. Resi</label>
+                                <input type="text" name="tracking_number" class="form-control form-control-sm" value="{{ $oldOrderId == $order->id ? old('tracking_number') : ($shippingData->tracking_number ?? '') }}">
                               </div>
                             </div>
-                          </details>
+                            <div class="form-row align-items-end">
+                              <div class="form-group col-md-4">
+                                <label class="small text-muted d-block">Status</label>
+                                @php
+                                  $statusValue = $oldOrderId == $order->id ? old('status', $shippingStatus) : $shippingStatus;
+                                @endphp
+                                <select name="status" class="form-control form-control-sm">
+                                  <option value="packing" {{ $statusValue === 'packing' ? 'selected' : '' }}>Packing</option>
+                                  <option value="in_transit" {{ $statusValue === 'in_transit' ? 'selected' : '' }}>Dalam Perjalanan</option>
+                                  <option value="delivered" {{ $statusValue === 'delivered' ? 'selected' : '' }}>Terkirim</option>
+                                  <option value="cancelled" {{ $statusValue === 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                                </select>
+                              </div>
+                              <div class="form-group col-md-5">
+                                <label class="small text-muted d-block">Estimasi Tiba</label>
+                                <input type="date" name="estimated_delivery" class="form-control form-control-sm" value="{{ $oldOrderId == $order->id ? old('estimated_delivery') : optional($shippingData?->estimated_delivery)->format('Y-m-d') }}">
+                              </div>
+                              <div class="form-group col-md-3 text-right">
+                                <button type="submit" class="btn btn-sm btn-outline-primary mt-3">Simpan</button>
+                              </div>
+                            </div>
+                          </form>
                         @else
                           <form method="POST" action="{{ route('admin.orders.review', $order) }}">
                             @csrf

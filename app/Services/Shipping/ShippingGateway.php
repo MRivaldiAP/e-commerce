@@ -16,30 +16,26 @@ interface ShippingGateway
     public function configFields(): array;
 
     /**
-     * @param  array<string, mixed>  $config
-     * @param  array<string, mixed>  $payload
-     * @return array<int, array<string, mixed>>
-     */
-    public function fetchRates(array $config, array $payload): array;
-
-    /**
-     * @param  array<string, mixed>  $config
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    public function createShipment(array $config, array $payload): array;
+    public function checkRates(array $payload): array;
 
     /**
-     * @param  array<string, mixed>  $config
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    public function cancelShipment(array $config, array $payload): array;
+    public function createOrder(array $payload): array;
 
     /**
-     * @param  array<string, mixed>  $config
      * @param  array<string, mixed>  $context
      * @return array<string, mixed>
      */
-    public function trackShipment(array $config, array $context): array;
+    public function track(string $trackingNumber, array $context = []): array;
+
+    /**
+     * @param  array<string, mixed>  $context
+     * @return array<string, mixed>
+     */
+    public function cancel(string $remoteId, array $context = []): array;
 }

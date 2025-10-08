@@ -3,29 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Models\PageSetting;
 use App\Services\Shipping\Exceptions\ShippingException;
 use App\Services\Shipping\ShippingGatewayManager;
 use App\Support\Cart;
-use App\Support\ShippingSession;
+use Illuminate\Support\Arr;
+use Creasi\Nusa\Models\District;
 use Creasi\Nusa\Models\Province;
+use Creasi\Nusa\Models\Regency;
+use Creasi\Nusa\Models\Village;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class ShippingController extends Controller
 {
     public function index(Request $request, ShippingGatewayManager $shipping): View|RedirectResponse
     {
-        if (! $shipping->isEnabled()) {
+        if (Setting::getValue('shipping.enabled', '0') !== '1') {
             return redirect()->route('checkout.payment');
         }
 
         $gateway = $shipping->getActive();
         if (! $gateway) {
-            return redirect()->route('checkout.payment');
+            return redirect()->route('checkout.payment')->with('error', 'Gateway pengiriman belum dikonfigurasi.');
         }
 
         $cartSummary = Cart::summary();
@@ -34,71 +38,94 @@ class ShippingController extends Controller
         }
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $gatewayKey = $gateway->key();
-        $viewCandidates = [
-            base_path("themes/{$theme}/views/shipping/{$gatewayKey}.blade.php"),
-            base_path("themes/{$theme}/views/shipping/default.blade.php"),
-            base_path("themes/{$theme}/views/shipping.blade.php"),
-        ];
+        $viewPath = base_path("themes/{$theme}/views/shipping.blade.php");
 
-        $viewPath = collect($viewCandidates)->first(fn ($path) => File::exists($path));
-
-        if (! $viewPath) {
+        if (! File::exists($viewPath)) {
             abort(404);
         }
 
-        $provinces = Province::query()->orderBy('name')->get(['code', 'name'])->map(function ($province) {
-            return [
-                'code' => $province->code,
-                'name' => $province->name,
-            ];
-        });
+        $pageSettings = PageSetting::forPage('shipping');
+        $shippingData = $request->session()->get('checkout.shipping', []);
+        $shippingCost = (int) Arr::get($shippingData, 'selected_rate.cost', Arr::get($shippingData, 'rate.cost', 0));
+        $totals = [
+            'subtotal' => $cartSummary['total_price'],
+            'subtotal_formatted' => $cartSummary['total_price_formatted'],
+            'shipping_cost' => $shippingCost,
+            'shipping_cost_formatted' => number_format($shippingCost, 0, ',', '.'),
+            'grand_total' => $cartSummary['total_price'] + $shippingCost,
+            'grand_total_formatted' => number_format($cartSummary['total_price'] + $shippingCost, 0, ',', '.'),
+        ];
+
+        $provinces = Province::query()->orderBy('name')->get(['code', 'name']);
 
         return view()->file($viewPath, [
             'theme' => $theme,
-            'gatewayKey' => $gatewayKey,
+            'settings' => $pageSettings,
             'cartSummary' => $cartSummary,
             'provinces' => $provinces,
-            'shippingData' => ShippingSession::get(),
+            'shippingData' => $shippingData,
+            'gatewayKey' => $gateway->key(),
+            'gatewayLabel' => $gateway->label(),
+            'gatewayDescription' => $gateway->description(),
+            'shippingConfig' => $shipping->getGatewayConfig($gateway->key()),
+            'checkoutTotals' => $totals,
         ]);
     }
 
-    public function rates(Request $request, ShippingGatewayManager $shipping): JsonResponse
+    public function quote(Request $request, ShippingGatewayManager $shipping): JsonResponse
     {
-        if (! $shipping->isEnabled()) {
-            return response()->json(['status' => 'error', 'message' => 'Pengiriman tidak aktif.'], 404);
+        $gateway = $shipping->getActive();
+        if (! $gateway) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gateway pengiriman belum dikonfigurasi.',
+            ], 422);
         }
 
         $data = $request->validate([
             'province_code' => ['required', 'string'],
             'regency_code' => ['required', 'string'],
-            'district_code' => ['nullable', 'string'],
-            'postal_code' => ['nullable', 'string'],
+            'district_code' => ['required', 'string'],
+            'village_code' => ['required', 'string'],
+            'postal_code' => ['required', 'string'],
+            'couriers' => ['nullable', 'array'],
+            'couriers.*' => ['string'],
         ]);
 
-        $cartSummary = Cart::summary();
-        if (empty($cartSummary['items'])) {
-            return response()->json(['status' => 'error', 'message' => 'Keranjang kosong.'], 422);
-        }
+        $province = Province::find($data['province_code']);
+        $regency = Regency::find($data['regency_code']);
+        $district = District::find($data['district_code']);
+        $village = Village::find($data['village_code']);
 
-        $gateway = $shipping->getActive();
-        if (! $gateway) {
-            return response()->json(['status' => 'error', 'message' => 'Gateway pengiriman tidak tersedia.'], 404);
+        if (! $province || ! $regency || ! $district || ! $village) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Lokasi pengiriman tidak valid.',
+            ], 422);
         }
 
         $config = $shipping->getGatewayConfig($gateway->key());
-        $destinationCode = $data['district_code'] ?: $data['regency_code'];
-        $destinationType = $data['district_code'] ? 'subdistrict' : 'city';
+        $cartSummary = Cart::summary();
 
         try {
-            $rates = $gateway->fetchRates($config, [
+            $result = $gateway->checkRates([
+                'config' => $config,
                 'destination' => [
-                    'code' => $destinationCode,
-                    'type' => $destinationType,
+                    'province' => $province->name,
+                    'regency' => $regency->name,
+                    'district' => $district->name,
+                    'village' => $village->name,
+                    'postal_code' => $data['postal_code'],
                 ],
-                'weight' => max(1, (int) ($cartSummary['total_weight_grams'] ?? 1)),
+                'weight' => $cartSummary['total_weight_grams'] ?? 0,
+                'couriers' => $data['couriers'] ?? null,
             ]);
         } catch (ShippingException $exception) {
+            Log::warning('Gagal mengambil ongkir RajaOngkir', [
+                'message' => $exception->getMessage(),
+                'context' => $exception->context(),
+            ]);
+
             return response()->json([
                 'status' => 'error',
                 'message' => $exception->getMessage(),
@@ -107,118 +134,157 @@ class ShippingController extends Controller
 
         return response()->json([
             'status' => 'ok',
-            'rates' => $rates,
+            'data' => $result,
         ]);
     }
 
-    public function store(Request $request, ShippingGatewayManager $shipping): RedirectResponse
+    public function store(Request $request, ShippingGatewayManager $shipping): RedirectResponse|JsonResponse
     {
-        if (! $shipping->isEnabled()) {
-            return redirect()->route('checkout.payment');
+        $gateway = $shipping->getActive();
+        if (! $gateway) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gateway pengiriman belum dikonfigurasi.',
+            ], 422);
         }
 
         $cartSummary = Cart::summary();
         if (empty($cartSummary['items'])) {
-            return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Keranjang Anda kosong.',
+            ], 422);
         }
 
         $data = $request->validate([
-            'contact_name' => ['required', 'string', 'max:255'],
-            'contact_email' => ['required', 'email', 'max:255'],
-            'contact_phone' => ['required', 'string', 'max:32'],
+            'recipient_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+            'phone' => ['required', 'string', 'max:32'],
             'address' => ['required', 'string', 'max:500'],
-            'province_code' => ['required', 'string', 'max:10'],
-            'province_name' => ['required', 'string', 'max:255'],
-            'regency_code' => ['required', 'string', 'max:10'],
-            'regency_name' => ['required', 'string', 'max:255'],
-            'district_code' => ['nullable', 'string', 'max:10'],
-            'district_name' => ['nullable', 'string', 'max:255'],
-            'village_code' => ['nullable', 'string', 'max:10'],
-            'village_name' => ['nullable', 'string', 'max:255'],
-            'postal_code' => ['required', 'string', 'max:10'],
-            'shipping_courier' => ['required', 'string', 'max:50'],
-            'shipping_service' => ['required', 'string', 'max:100'],
-            'shipping_cost' => ['required', 'numeric', 'min:0'],
-            'shipping_description' => ['nullable', 'string', 'max:255'],
-            'shipping_etd' => ['nullable', 'string', 'max:100'],
+            'province_code' => ['required', 'string'],
+            'regency_code' => ['required', 'string'],
+            'district_code' => ['required', 'string'],
+            'village_code' => ['required', 'string'],
+            'postal_code' => ['required', 'string'],
+            'selected.courier' => ['required', 'string'],
+            'selected.service' => ['required', 'string'],
+            'selected.description' => ['nullable', 'string'],
+            'selected.cost' => ['required', 'numeric', 'min:0'],
+            'selected.etd' => ['nullable', 'string'],
+            'selected.courier_name' => ['nullable', 'string'],
         ]);
 
-        $gateway = $shipping->getActive();
-        if (! $gateway) {
-            return redirect()->route('checkout.payment')->with('error', 'Gateway pengiriman tidak tersedia.');
+        $province = Province::find($data['province_code']);
+        $regency = Regency::find($data['regency_code']);
+        $district = District::find($data['district_code']);
+        $village = Village::find($data['village_code']);
+
+        if (! $province || ! $regency || ! $district || ! $village) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Lokasi pengiriman tidak valid.',
+            ], 422);
         }
 
         $config = $shipping->getGatewayConfig($gateway->key());
-        $destinationCode = $data['district_code'] ?: $data['regency_code'];
-        $destinationType = $data['district_code'] ? 'subdistrict' : 'city';
+
+        $rate = [
+            'courier' => strtolower($data['selected']['courier']),
+            'courier_name' => $data['selected']['courier_name'] ?? $data['selected']['courier'],
+            'service' => $data['selected']['service'],
+            'description' => $data['selected']['description'] ?? '',
+            'cost' => (int) $data['selected']['cost'],
+            'etd' => $data['selected']['etd'] ?? '',
+            'currency' => 'IDR',
+        ];
 
         try {
-            $rates = $gateway->fetchRates($config, [
-                'destination' => [
-                    'code' => $destinationCode,
-                    'type' => $destinationType,
-                ],
-                'weight' => max(1, (int) ($cartSummary['total_weight_grams'] ?? 1)),
+            $orderData = $gateway->createOrder([
+                'config' => $config,
+                'rate' => $rate,
             ]);
         } catch (ShippingException $exception) {
-            return back()->withInput()->withErrors(['shipping_courier' => $exception->getMessage()]);
+            Log::warning('Gagal membuat pesanan pengiriman', [
+                'message' => $exception->getMessage(),
+                'context' => $exception->context(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $exception->getMessage(),
+            ], 422);
         }
 
-        $selectedRate = collect($rates)->first(function ($rate) use ($data) {
-            return strtolower(Arr::get($rate, 'courier')) === strtolower($data['shipping_courier'])
-                && (string) Arr::get($rate, 'service') === (string) $data['shipping_service'];
-        });
-
-        if (! $selectedRate) {
-            return back()->withInput()->withErrors(['shipping_service' => 'Layanan pengiriman yang dipilih tidak tersedia.']);
-        }
-
-        $cost = (float) Arr::get($selectedRate, 'cost', $data['shipping_cost']);
-        $total = (float) $cartSummary['total_price'] + $cost;
-
-        ShippingSession::store([
+        $shippingData = [
             'provider' => $gateway->key(),
+            'config' => $config,
             'contact' => [
-                'name' => $data['contact_name'],
-                'email' => $data['contact_email'],
-                'phone' => $data['contact_phone'],
+                'name' => $data['recipient_name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
             ],
             'address' => [
                 'street' => $data['address'],
-                'province_code' => $data['province_code'],
-                'province_name' => $data['province_name'],
-                'regency_code' => $data['regency_code'],
-                'regency_name' => $data['regency_name'],
-                'district_code' => $data['district_code'],
-                'district_name' => $data['district_name'],
-                'village_code' => $data['village_code'],
-                'village_name' => $data['village_name'],
+                'province_code' => $province->code,
+                'province_name' => $province->name,
+                'regency_code' => $regency->code,
+                'regency_name' => $regency->name,
+                'district_code' => $district->code,
+                'district_name' => $district->name,
+                'village_code' => $village->code,
+                'village_name' => $village->name,
                 'postal_code' => $data['postal_code'],
-                'recipient' => $data['contact_name'],
-                'phone' => $data['contact_phone'],
             ],
-            'selection' => [
-                'courier' => Arr::get($selectedRate, 'courier'),
-                'courier_name' => Arr::get($selectedRate, 'courier_name'),
-                'service' => Arr::get($selectedRate, 'service'),
-                'description' => Arr::get($selectedRate, 'description'),
-                'etd' => Arr::get($selectedRate, 'etd'),
-                'cost' => $cost,
-            ],
-            'cost' => $cost,
-            'total' => $total,
-            'metadata' => [
-                'requested_at' => now()->toIso8601String(),
-            ],
-        ]);
+            'rate' => $orderData,
+            'selected_rate' => $rate,
+            'weight_grams' => $cartSummary['total_weight_grams'] ?? 0,
+        ];
 
-        return redirect()->route('checkout.payment');
+        $request->session()->put('checkout.shipping', $shippingData);
+
+        return response()->json([
+            'status' => 'ok',
+            'redirect' => route('checkout.payment'),
+        ]);
     }
 
-    public function destroy(): RedirectResponse
+    public function track(Request $request, ShippingGatewayManager $shipping): JsonResponse
     {
-        ShippingSession::clear();
+        $gateway = $shipping->getActive();
+        if (! $gateway) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gateway pengiriman belum dikonfigurasi.',
+            ], 422);
+        }
 
-        return redirect()->route('checkout.shipping');
+        $data = $request->validate([
+            'tracking_number' => ['required', 'string'],
+            'courier' => ['nullable', 'string'],
+        ]);
+
+        $config = $shipping->getGatewayConfig($gateway->key());
+
+        try {
+            $result = $gateway->track($data['tracking_number'], [
+                'courier' => $data['courier'] ?? null,
+                'config' => $config,
+            ]);
+        } catch (ShippingException $exception) {
+            Log::warning('Gagal melacak pengiriman', [
+                'message' => $exception->getMessage(),
+                'context' => $exception->context(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $exception->getMessage(),
+            ], 422);
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'data' => $result,
+        ]);
     }
 }

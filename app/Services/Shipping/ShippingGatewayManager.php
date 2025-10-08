@@ -32,12 +32,8 @@ class ShippingGatewayManager
         return $this->gateways;
     }
 
-    public function get(?string $key = null): ?ShippingGateway
+    public function get(string $key): ?ShippingGateway
     {
-        if (! $key) {
-            return null;
-        }
-
         return $this->gateways[$key] ?? null;
     }
 
@@ -53,15 +49,6 @@ class ShippingGatewayManager
         $key = $this->getActiveKey();
 
         return $key ? $this->get($key) : null;
-    }
-
-    public function isEnabled(): bool
-    {
-        if (Setting::getValue('shipping.enabled', '0') !== '1') {
-            return false;
-        }
-
-        return $this->getActive() !== null;
     }
 
     /**
@@ -94,7 +81,14 @@ class ShippingGatewayManager
             $value = Setting::getValue($this->configKey($gatewayKey, $fieldKey), $default);
 
             if ($this->isBooleanField($field)) {
-                $config[$fieldKey] = $this->castBoolean($value, $default);
+                $config[$fieldKey] = $this->castToBool($value, $default);
+            } elseif ($this->isArrayField($field)) {
+                if (is_array($value)) {
+                    $config[$fieldKey] = $value;
+                } else {
+                    $decoded = json_decode((string) $value, true);
+                    $config[$fieldKey] = is_array($decoded) ? $decoded : (is_array($default) ? $default : []);
+                }
             } else {
                 $config[$fieldKey] = $value;
             }
@@ -103,19 +97,11 @@ class ShippingGatewayManager
         return $config;
     }
 
-    public function storeProvider(string $gatewayKey): void
+    public function storeGateway(string $gatewayKey): void
     {
         Setting::updateOrCreate(
             ['key' => 'shipping.provider'],
             ['value' => $gatewayKey]
-        );
-    }
-
-    public function storeEnabled(bool $enabled): void
-    {
-        Setting::updateOrCreate(
-            ['key' => 'shipping.enabled'],
-            ['value' => $enabled ? '1' : '0']
         );
     }
 
@@ -128,10 +114,12 @@ class ShippingGatewayManager
 
         foreach ($gateway->configFields() as $field) {
             $fieldKey = $field['key'];
-            $value = Arr::get($values, $fieldKey, $field['default'] ?? null);
+            $value = $values[$fieldKey] ?? ($field['default'] ?? null);
 
             if ($this->isBooleanField($field)) {
                 $value = $value ? '1' : '0';
+            } elseif ($this->isArrayField($field)) {
+                $value = json_encode(array_values(Arr::wrap($value)));
             }
 
             Setting::updateOrCreate(
@@ -141,31 +129,45 @@ class ShippingGatewayManager
         }
     }
 
-    protected function configKey(string $gatewayKey, string $fieldKey): string
-    {
-        return "shipping.{$gatewayKey}.{$fieldKey}";
-    }
-
     /**
      * @param  array<string, mixed>  $field
      */
     protected function isBooleanField(array $field): bool
     {
-        $type = $field['type'] ?? 'text';
+        $type = $field['type'] ?? null;
 
-        return in_array($type, ['toggle', 'boolean', 'checkbox'], true);
+        return in_array($type, ['boolean', 'toggle', 'checkbox'], true);
     }
 
-    protected function castBoolean($value, $default = null): bool
+    /**
+     * @param  array<string, mixed>  $field
+     */
+    protected function isArrayField(array $field): bool
     {
-        if ($value === null) {
-            return (bool) $default;
+        if (($field['multiple'] ?? false) === true) {
+            return true;
         }
 
+        $type = $field['type'] ?? null;
+
+        return in_array($type, ['array', 'list', 'multiselect'], true);
+    }
+
+    protected function configKey(string $gatewayKey, string $fieldKey): string
+    {
+        return "shipping.{$gatewayKey}.{$fieldKey}";
+    }
+
+    protected function castToBool(mixed $value, mixed $default = null): bool
+    {
         if (is_bool($value)) {
             return $value;
         }
 
-        return in_array((string) $value, ['1', 'true', 'on'], true);
+        if (is_null($value) && ! is_null($default)) {
+            return $this->castToBool($default);
+        }
+
+        return in_array((string) $value, ['1', 'true', 'on', 'yes'], true);
     }
 }

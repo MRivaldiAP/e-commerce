@@ -21,7 +21,9 @@
         .summary__item { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
         .summary__item h6 { margin: 0 0 .35rem; font-weight: 600; }
         .summary__item span { font-weight: 600; color: #7fad39; }
-        .summary__total { border-top: 1px solid #f2f2f2; padding-top: 1.5rem; display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700; }
+        .summary__details { border-top: 1px solid #f2f2f2; padding-top: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: .75rem; }
+        .summary__line { display: flex; justify-content: space-between; color: #6c757d; font-size: .95rem; }
+        .summary__total { margin-top: 1rem; display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700; }
         .method__card { border: 1px solid #ececec; border-radius: 12px; padding: 1rem 1.25rem; display: flex; gap: .75rem; cursor: pointer; transition: all .2s ease; }
         .method__card.active { border-color: #7fad39; box-shadow: 0 10px 25px rgba(127,173,57,0.25); }
         .method__card input { margin-top: .3rem; }
@@ -33,6 +35,10 @@
         .payment-feedback.success { color: #7fad39; }
         .payment-feedback.error { color: #d9534f; }
         .payment-feedback.info { color: #0d6efd; }
+        .address-card { background: #f8fdf6; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; color: #495057; }
+        .address-card__title { font-weight: 700; font-size: 1rem; color: #7fad39; margin-bottom: .75rem; text-transform: uppercase; letter-spacing: .04em; }
+        .address-card__meta { margin-top: 1rem; font-size: .9rem; color: #6c757d; }
+        .address-card__meta span { display: inline-flex; align-items: center; gap: .35rem; margin-right: 1rem; text-transform: uppercase; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -48,6 +54,10 @@
     $selected = $selectedMethod ?? ($methods[0]['key'] ?? null);
     $feedbackMessage = $feedbackStatus['message'] ?? null;
     $feedbackType = $feedbackStatus['type'] ?? null;
+    $totals = $checkoutTotals ?? [];
+    $shippingInfo = $shippingData ?? null;
+    $shippingEnabled = $shippingEnabled ?? false;
+    $selectedRate = $shippingInfo['selected_rate'] ?? null;
 @endphp
 
 {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
@@ -77,21 +87,40 @@
                             <span>Rp {{ $item['subtotal_formatted'] }}</span>
                         </div>
                     @endforeach
-                    @if($shippingEnabled)
-                        <div class="summary__item">
-                            <div>
-                                <h6>Ongkos Kirim</h6>
-                                @if(!empty($shippingData['selection']))
-                                    <small class="text-muted">{{ strtoupper($shippingData['selection']['courier'] ?? '') }} • {{ $shippingData['selection']['service'] ?? '' }}</small>
-                                @endif
-                            </div>
-                            <span>Rp {{ $cartSummary['shipping_cost_formatted'] ?? '0' }}</span>
+                    <div class="summary__details">
+                        <div class="summary__line">
+                            <span>Subtotal</span>
+                            <span>Rp {{ $totals['subtotal_formatted'] ?? ($cartSummary['total_price_formatted'] ?? '0') }}</span>
                         </div>
-                    @endif
+                        <div class="summary__line">
+                            <span>Ongkir</span>
+                            <span>Rp {{ $totals['shipping_cost_formatted'] ?? '0' }}</span>
+                        </div>
+                    </div>
                     <div class="summary__total">
                         <span>Total Pembayaran</span>
-                        <span>Rp {{ $cartSummary['grand_total_formatted'] ?? ($cartSummary['total_price_formatted'] ?? '0') }}</span>
+                        <span>Rp {{ $totals['grand_total_formatted'] ?? ($cartSummary['total_price_formatted'] ?? '0') }}</span>
                     </div>
+                    @if($shippingEnabled && !empty($shippingInfo))
+                        <div class="address-card">
+                            <div class="address-card__title">Alamat Pengiriman</div>
+                            <div>
+                                <div>{{ $shippingInfo['contact']['name'] ?? '-' }} &bull; {{ $shippingInfo['contact']['phone'] ?? '-' }}</div>
+                                <div>{{ $shippingInfo['address']['street'] ?? '-' }}</div>
+                                <div>{{ $shippingInfo['address']['village_name'] ?? '' }}, {{ $shippingInfo['address']['district_name'] ?? '' }}</div>
+                                <div>{{ $shippingInfo['address']['regency_name'] ?? '' }}, {{ $shippingInfo['address']['province_name'] ?? '' }} {{ $shippingInfo['address']['postal_code'] ?? '' }}</div>
+                            </div>
+                            @if(!empty($selectedRate))
+                                <div class="address-card__meta">
+                                    <span><i class="fa fa-truck"></i>{{ strtoupper($selectedRate['courier'] ?? '') }}</span>
+                                    <span><i class="fa fa-tag"></i>{{ $selectedRate['service'] ?? '' }}</span>
+                                    @if(!empty($selectedRate['etd']))
+                                        <span><i class="fa fa-clock-o"></i>{{ $selectedRate['etd'] }} hari</span>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
             <div class="col-lg-7">

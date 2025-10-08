@@ -2,6 +2,8 @@
 
 return [
     'gateways' => [
-        \App\Services\Shipping\Gateways\RajaOngkirGateway::class,
+        App\Services\Shipping\RajaOngkirShippingGateway::class,
     ],
+
+    'default_weight' => 1.0,
 ];

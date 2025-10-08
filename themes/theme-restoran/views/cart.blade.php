@@ -125,9 +125,7 @@
     $shippingLabel = $settings['button.shipping'] ?? 'Lanjut ke Pengiriman';
     $paymentLabel = $settings['button.payment'] ?? 'Lanjut ke Pembayaran';
     $primaryButton = $shippingEnabled ? $shippingLabel : $paymentLabel;
-    $shippingHref = route('checkout.shipping');
-    $paymentHref = route('checkout.payment');
-    $primaryHref = $shippingEnabled ? $shippingHref : $paymentHref;
+    $actionUrl = $shippingEnabled ? route('checkout.shipping') : route('checkout.payment');
     $hasItems = !empty($cartSummary['items']);
 @endphp
 
@@ -194,17 +192,7 @@
             <div class="col-lg-6 text-lg-end">
                 <div class="d-inline-flex flex-column align-items-end gap-3">
                     <div class="fs-4 fw-bold">Total: Rp <span data-cart-grand-total>{{ $cartSummary['total_price_formatted'] }}</span></div>
-                    <a
-                        href="{{ $primaryHref }}"
-                        class="btn btn-primary btn-lg {{ empty($cartSummary['items']) ? 'disabled' : '' }}"
-                        data-cart-action
-                        data-shipping-enabled="{{ $shippingEnabled ? 'true' : 'false' }}"
-                        data-shipping-url="{{ $shippingHref }}"
-                        data-payment-url="{{ $paymentHref }}"
-                        aria-disabled="{{ empty($cartSummary['items']) ? 'true' : 'false' }}"
-                    >
-                        {{ $primaryButton }}
-                    </a>
+                    <a href="{{ $actionUrl }}" class="btn btn-primary btn-lg {{ empty($cartSummary['items']) ? 'disabled' : '' }}" data-cart-action aria-disabled="{{ empty($cartSummary['items']) ? 'true' : 'false' }}" tabindex="{{ empty($cartSummary['items']) ? '-1' : '0' }}">{{ $primaryButton }}</a>
                 </div>
             </div>
         </div>
@@ -237,13 +225,16 @@
         const csrf = '{{ csrf_token() }}';
         const updateUrl = '{{ route('cart.items.update', ['product' => '__ID__']) }}';
         const destroyUrl = '{{ route('cart.items.destroy', ['product' => '__ID__']) }}';
+        const paymentUrl = '{{ route('checkout.payment') }}';
+        const shippingUrl = '{{ route('checkout.shipping') }}';
+        const shippingEnabled = {{ $shippingEnabled ? 'true' : 'false' }};
         const cartBody = document.querySelector('[data-cart-body]');
         const cartContent = document.getElementById('cart-content');
         const emptyState = document.getElementById('cart-empty');
         const status = document.querySelector('[data-cart-status]');
         const totalDisplay = document.querySelector('[data-cart-grand-total]');
         const actionButton = document.querySelector('[data-cart-action]');
-        const shippingEnabled = actionButton?.dataset.shippingEnabled === 'true';
+        const initialHasItems = {{ $hasItems ? 'true' : 'false' }};
 
         function buildRow(item){
             const tr = document.createElement('tr');
@@ -313,11 +304,7 @@
             if(totalDisplay){
                 totalDisplay.textContent = summary.total_price_formatted || '0';
             }
-            if(actionButton){
-                const isDisabled = items.length === 0;
-                actionButton.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
-                actionButton.classList.toggle('disabled', isDisabled);
-            }
+            setActionButtonState(items.length > 0);
             if(items.length === 0){
                 if(cartContent){
                     cartContent.classList.add('d-none');
@@ -381,6 +368,26 @@
             .catch(() => showStatus('Gagal menghapus produk.', true));
         }
 
+        function setActionButtonState(isEnabled){
+            if(!actionButton){
+                return;
+            }
+
+            const targetUrl = shippingEnabled ? shippingUrl : paymentUrl;
+
+            if(isEnabled){
+                actionButton.classList.remove('disabled');
+                actionButton.setAttribute('aria-disabled', 'false');
+                actionButton.setAttribute('href', targetUrl);
+                actionButton.setAttribute('tabindex', '0');
+            }else{
+                actionButton.classList.add('disabled');
+                actionButton.setAttribute('aria-disabled', 'true');
+                actionButton.removeAttribute('href');
+                actionButton.setAttribute('tabindex', '-1');
+            }
+        }
+
         if(cartBody){
             cartBody.addEventListener('click', function(event){
                 const button = event.target.closest('button[data-action]');
@@ -418,18 +425,12 @@
             });
         }
 
+        setActionButtonState(initialHasItems);
+
         if(actionButton){
             actionButton.addEventListener('click', function(event){
-                if(actionButton.getAttribute('aria-disabled') === 'true'){
+                if(actionButton.classList.contains('disabled')){
                     event.preventDefault();
-                    return;
-                }
-                const shippingUrl = actionButton.dataset.shippingUrl;
-                const paymentUrl = actionButton.dataset.paymentUrl;
-                const targetUrl = shippingEnabled ? shippingUrl : paymentUrl;
-                if(targetUrl){
-                    event.preventDefault();
-                    window.location.href = targetUrl;
                 }
             });
         }

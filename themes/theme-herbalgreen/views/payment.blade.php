@@ -210,10 +210,33 @@
                     </div>
                 @endif
             </div>
-            <div class="summary-total">
-                <span>Total Pembayaran</span>
-                <span>Rp {{ $cartSummary['grand_total_formatted'] ?? ($cartSummary['total_price_formatted'] ?? '0') }}</span>
+            <div class="summary-total" style="justify-content: space-between;">
+                <div style="width:100%;">
+                    <div style="display:flex; justify-content: space-between; margin-bottom: 0.75rem; color:#455a64;">
+                        <span>Subtotal</span>
+                        <span>Rp {{ $checkoutTotals['subtotal_formatted'] ?? ($cartSummary['total_price_formatted'] ?? '0') }}</span>
+                    </div>
+                    <div style="display:flex; justify-content: space-between; margin-bottom: 0.75rem; color:#455a64;">
+                        <span>Ongkir</span>
+                        <span>Rp {{ $checkoutTotals['shipping_cost_formatted'] ?? '0' }}</span>
+                    </div>
+                    <div style="display:flex; justify-content: space-between; font-size:1.3rem; font-weight:700; color:var(--color-primary);">
+                        <span>Total Pembayaran</span>
+                        <span>Rp {{ $checkoutTotals['grand_total_formatted'] ?? ($cartSummary['total_price_formatted'] ?? '0') }}</span>
+                    </div>
+                </div>
             </div>
+            @if(!empty($shippingData))
+                <div style="margin-top:1.5rem; padding:1rem; background:#f1f8e9; border-radius:12px;">
+                    <strong style="display:block; margin-bottom:0.5rem; color:var(--color-primary);">Alamat Pengiriman</strong>
+                    <div style="color:#455a64;">
+                        <div>{{ $shippingData['contact']['name'] ?? '-' }} &bull; {{ $shippingData['contact']['phone'] ?? '-' }}</div>
+                        <div>{{ $shippingData['address']['street'] ?? '-' }}</div>
+                        <div>{{ $shippingData['address']['village_name'] ?? '' }}, {{ $shippingData['address']['district_name'] ?? '' }}</div>
+                        <div>{{ $shippingData['address']['regency_name'] ?? '' }}, {{ $shippingData['address']['province_name'] ?? '' }} {{ $shippingData['address']['postal_code'] ?? '' }}</div>
+                    </div>
+                </div>
+            @endif
         </div>
         <div class="card-box">
             <h3 class="mb-3">Metode Pembayaran {{ $gatewayLabel }}</h3>

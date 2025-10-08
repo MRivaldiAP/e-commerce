@@ -8,7 +8,7 @@
           <div class="card">
             <div class="card-body">
               <h4 class="card-title">Pengaturan Pengiriman</h4>
-              <p class="card-description mb-4">Aktifkan layanan pengiriman toko, pilih gateway yang tersedia, dan simpan kredensial yang dibutuhkan untuk menghitung ongkos kirim.</p>
+              <p class="card-description mb-4">Aktifkan layanan pengiriman dan konfigurasi gateway yang tersedia.</p>
 
               @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
@@ -28,92 +28,96 @@
                 @csrf
 
                 <div class="form-group">
-                  <div class="form-check form-check-flat form-check-primary">
-                    <label class="form-check-label" for="shipping-enabled">
-                      <input type="checkbox" class="form-check-input" id="shipping-enabled" name="enabled" value="1" {{ old('enabled', $enabled ? 1 : 0) ? 'checked' : '' }}>
-                      Aktifkan Pengiriman
-                      <i class="input-helper"></i>
-                    </label>
+                  <div class="form-check form-switch">
+                    <input type="hidden" name="shipping_enabled" value="0">
+                    <input type="checkbox" class="form-check-input" id="shipping-enabled" name="shipping_enabled" value="1" {{ old('shipping_enabled', $shippingEnabled ? '1' : '0') === '1' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="shipping-enabled">Aktifkan Pengiriman</label>
                   </div>
-                  <small class="form-text text-muted">Saat dinonaktifkan, pelanggan akan langsung diarahkan ke halaman pembayaran tanpa langkah pengiriman.</small>
                 </div>
 
-                <div class="form-group">
-                  <label for="shipping-provider">Penyedia Pengiriman</label>
-                  <select id="shipping-provider" name="provider" class="form-control">
-                    <option value="">-- Pilih Gateway --</option>
-                    @foreach($gateways as $key => $gateway)
-                      <option value="{{ $key }}" {{ old('provider', $activeKey) === $key ? 'selected' : '' }}>{{ $gateway->label() }}</option>
-                    @endforeach
-                  </select>
-                  <small class="form-text text-muted">Pilih gateway yang ingin diintegrasikan. Untuk saat ini hanya RajaOngkir yang tersedia.</small>
-                </div>
+                <div id="shipping-config-wrapper" style="display: {{ old('shipping_enabled', $shippingEnabled ? '1' : '0') === '1' ? 'block' : 'none' }};">
+                  <div class="form-group">
+                    <label for="shipping-gateway">Gateway Pengiriman</label>
+                    <select id="shipping-gateway" name="gateway" class="form-control">
+                      @foreach($gateways as $key => $gateway)
+                        <option value="{{ $key }}" {{ old('gateway', $activeGatewayKey ?? $defaultGatewayKey) === $key ? 'selected' : '' }}>
+                          {{ $gateway->label() }}
+                        </option>
+                      @endforeach
+                    </select>
+                  </div>
 
-                @foreach($gateways as $key => $gateway)
-                  @php
-                    $sectionConfig = $configs[$key] ?? [];
-                  @endphp
-                  <div class="shipping-gateway-section" data-shipping-gateway="{{ $key }}" style="display:none;">
-                    <div class="mb-4">
-                      <h5 class="font-weight-semibold mb-1">{{ $gateway->label() }}</h5>
-                      <p class="text-muted mb-0">{{ $gateway->description() }}</p>
-                    </div>
+                  @foreach($gateways as $key => $gateway)
+                    @php
+                      $sectionConfig = $configs[$key] ?? [];
+                    @endphp
+                    <div class="shipping-gateway-section" data-shipping-section="{{ $key }}" style="display: none;">
+                      <div class="mb-4">
+                        <h5 class="font-weight-semibold mb-2">{{ $gateway->label() }}</h5>
+                        <p class="text-muted">{{ $gateway->description() }}</p>
+                      </div>
 
-                    <div class="row">
-                      @foreach($gateway->configFields() as $field)
-                        @php
-                          $fieldName = 'config[' . $field['key'] . ']';
-                          $inputId = $key . '_' . $field['key'];
-                          $value = old('provider') === $key
-                            ? old('config.' . $field['key'], $sectionConfig[$field['key']] ?? ($field['default'] ?? null))
-                            : ($sectionConfig[$field['key']] ?? ($field['default'] ?? null));
-                        @endphp
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label for="{{ $inputId }}">{{ $field['label'] }}</label>
-                            @switch($field['type'] ?? 'text')
-                              @case('select')
+                      <div class="row">
+                        @foreach($gateway->configFields() as $field)
+                          @php
+                            $fieldKey = $field['key'];
+                            $fieldName = 'config[' . $fieldKey . ']';
+                            $inputId = $key . '_' . $fieldKey;
+                            $value = old('gateway') === $key
+                              ? old('config.' . $fieldKey, $sectionConfig[$fieldKey] ?? null)
+                              : ($sectionConfig[$fieldKey] ?? null);
+                            $type = $field['type'] ?? 'text';
+                            $options = $field['options'] ?? [];
+                          @endphp
+                          <div class="col-md-6">
+                            <div class="form-group">
+                              <label class="d-block" for="{{ $inputId }}">{{ $field['label'] }}</label>
+                              @if($type === 'select')
                                 <select name="{{ $fieldName }}" id="{{ $inputId }}" class="form-control">
-                                  @foreach($field['options'] ?? [] as $optionValue => $optionLabel)
+                                  @foreach($options as $option)
+                                    @php
+                                      $optionValue = is_array($option) ? ($option['value'] ?? $option[0] ?? '') : $option;
+                                      $optionLabel = is_array($option) ? ($option['label'] ?? $optionValue) : $option;
+                                    @endphp
                                     <option value="{{ $optionValue }}" {{ (string) $value === (string) $optionValue ? 'selected' : '' }}>{{ $optionLabel }}</option>
                                   @endforeach
                                 </select>
-                                @break
-
-                              @case('toggle')
-                              @case('checkbox')
-                              @case('boolean')
+                              @elseif($type === 'multiselect' || ($field['multiple'] ?? false))
+                                <div class="border rounded p-3">
+                                  @php
+                                    $selected = collect((array) $value)->map(fn($item) => (string) $item)->all();
+                                  @endphp
+                                  @foreach($options as $option)
+                                    @php
+                                      $optionValue = is_array($option) ? ($option['value'] ?? '') : $option;
+                                      $optionLabel = is_array($option) ? ($option['label'] ?? $optionValue) : $option;
+                                    @endphp
+                                    <div class="form-check">
+                                      <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" name="{{ $fieldName }}[]" value="{{ $optionValue }}" {{ in_array((string) $optionValue, $selected, true) ? 'checked' : '' }}>
+                                        {{ $optionLabel }}
+                                      </label>
+                                    </div>
+                                  @endforeach
+                                </div>
+                              @elseif($type === 'toggle' || $type === 'checkbox' || $type === 'boolean')
                                 <div class="form-check form-switch">
                                   <input type="hidden" name="{{ $fieldName }}" value="0">
                                   <input type="checkbox" class="form-check-input" id="{{ $inputId }}" name="{{ $fieldName }}" value="1" {{ $value ? 'checked' : '' }}>
                                 </div>
-                                @break
-
-                              @case('password')
-                                <input type="password" class="form-control" id="{{ $inputId }}" name="{{ $fieldName }}" value="{{ $value }}" autocomplete="new-password">
-                                @break
-
-                              @default
-                                <input type="{{ $field['type'] ?? 'text' }}" class="form-control" id="{{ $inputId }}" name="{{ $fieldName }}" value="{{ $value }}">
-                            @endswitch
-                            @if(!empty($field['help']))
-                              <small class="form-text text-muted">{{ $field['help'] }}</small>
-                            @endif
-                            @if($field['key'] === 'origin')
-                              <small class="form-text text-muted">Gunakan kode kota/kecamatan dari RajaOngkir sesuai dengan tipe origin yang dipilih.</small>
-                            @endif
+                              @else
+                                <input type="{{ $type }}" class="form-control" id="{{ $inputId }}" name="{{ $fieldName }}" value="{{ $value }}" autocomplete="off">
+                              @endif
+                              @if(!empty($field['help']))
+                                <small class="form-text text-muted">{{ $field['help'] }}</small>
+                              @endif
+                            </div>
                           </div>
-                        </div>
-                      @endforeach
+                        @endforeach
+                      </div>
                     </div>
-
-                    <div class="alert alert-light border mt-3" role="alert">
-                      <h6 class="font-weight-semibold mb-2">Tips menentukan origin RajaOngkir</h6>
-                      <p class="mb-2">Kode origin mengikuti data resmi RajaOngkir. Anda dapat menggunakan endpoint wilayah yang disediakan Laravel Nusa pada halaman pengiriman pelanggan untuk mengetahui kode kota/kecamatan terlebih dahulu.</p>
-                      <small class="text-muted d-block">Contoh endpoint: <code>/nusa/provinces</code>, <code>/nusa/provinces/{kode}/regencies</code>, <code>/nusa/regencies/{kode}/districts</code>.</small>
-                    </div>
-                  </div>
-                @endforeach
+                  @endforeach
+                </div>
 
                 <div class="mt-4">
                   <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
@@ -130,13 +134,14 @@
 @section('script')
   <script>
     (function() {
-      const enabledToggle = document.getElementById('shipping-enabled');
-      const providerSelect = document.getElementById('shipping-provider');
-      const sections = document.querySelectorAll('[data-shipping-gateway]');
+      const toggle = document.getElementById('shipping-enabled');
+      const wrapper = document.getElementById('shipping-config-wrapper');
+      const select = document.getElementById('shipping-gateway');
+      const sections = document.querySelectorAll('[data-shipping-section]');
 
-      function toggleSections(providerKey, enabled) {
+      function toggleSections(active) {
         sections.forEach(section => {
-          const isActive = enabled && section.getAttribute('data-shipping-gateway') === providerKey;
+          const isActive = section.getAttribute('data-shipping-section') === active;
           section.style.display = isActive ? 'block' : 'none';
           const inputs = section.querySelectorAll('input, select, textarea');
           inputs.forEach(input => {
@@ -147,25 +152,28 @@
             }
           });
         });
-        if (providerSelect) {
-          providerSelect.disabled = !enabled;
+      }
+
+      function toggleWrapper() {
+        if (!wrapper) return;
+        if (toggle && toggle.checked) {
+          wrapper.style.display = 'block';
+        } else {
+          wrapper.style.display = 'none';
         }
       }
 
-      function refresh() {
-        const enabled = enabledToggle ? enabledToggle.checked : false;
-        const providerKey = providerSelect ? providerSelect.value : '';
-        toggleSections(providerKey, enabled && !!providerKey);
+      if (toggle) {
+        toggle.addEventListener('change', toggleWrapper);
+        toggleWrapper();
       }
 
-      if (enabledToggle) {
-        enabledToggle.addEventListener('change', refresh);
+      if (select) {
+        select.addEventListener('change', function() {
+          toggleSections(this.value);
+        });
+        toggleSections(select.value);
       }
-      if (providerSelect) {
-        providerSelect.addEventListener('change', refresh);
-      }
-
-      refresh();
     })();
   </script>
 @endsection
