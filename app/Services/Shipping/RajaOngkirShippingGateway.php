@@ -340,9 +340,16 @@ class RajaOngkirShippingGateway implements ShippingGateway
     protected function normalizeName(string $value): string
     {
         $value = Str::lower($value);
-        $value = str_replace(['kab.', 'kabupaten', 'kota', ' '], '', $value);
-        $value = str_replace(['(', ')', '-'], '', $value);
+        $value = str_replace([
+            'kab.',
+            'kabupaten',
+            'kota',
+            'adm.',
+            'administrasi',
+        ], '', $value);
 
-        return $value;
+        // Remove non-alphanumeric characters to make the comparison resilient to
+        // punctuation differences between local datasets and RajaOngkir.
+        return preg_replace('/[^a-z0-9]/', '', $value);
     }
 }
