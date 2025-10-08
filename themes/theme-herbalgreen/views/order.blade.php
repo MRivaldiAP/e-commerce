@@ -231,6 +231,12 @@
                 <div class="order-summary">
                     <div class="order-meta">Total Produk: {{ $order->items->sum('quantity') }}</div>
                     <div class="order-meta">Total Pembayaran: <strong>Rp {{ number_format($order->total_price ?? 0, 0, ',', '.') }}</strong></div>
+                    @if($shippingEnabled)
+                        <div class="order-meta">Kurir: {{ strtoupper($order->shipping->courier ?? 'Belum ditentukan') }} {{ $order->shipping->service ? '('.$order->shipping->service.')' : '' }}</div>
+                        <div class="order-meta">Ongkir: Rp {{ number_format($order->shipping->cost ?? 0, 0, ',', '.') }}</div>
+                        <div class="order-meta">Nomor Resi: {{ $order->shipping->tracking_number ?? 'Belum tersedia' }}</div>
+                        <div class="order-meta">Status Pengiriman: {{ ucfirst(str_replace('_', ' ', $order->shipping->status ?? 'pending')) }}</div>
+                    @endif
                 </div>
             </div>
         @endforeach

@@ -36,6 +36,7 @@ class Cart
     {
         $quantity = max(1, $quantity);
         $productId = (int) $product->getKey();
+        $weight = (float) ($product->weight ?? 0);
 
         if (self::usesDatabase()) {
             $cart = self::resolveUserCart();
@@ -53,6 +54,7 @@ class Cart
                 'price' => (float) $product->price,
                 'quantity' => $item->quantity,
                 'image' => optional($product->images()->first())->path,
+                'weight' => $weight,
             ];
         }
 
@@ -68,10 +70,16 @@ class Cart
                 'price' => (float) $product->price,
                 'quantity' => $quantity,
                 'image' => optional($product->images()->first())->path,
+                'weight' => $weight,
             ];
         }
 
         self::storeItems($items);
+
+        if (isset($items[$productId]) && ! array_key_exists('weight', $items[$productId])) {
+            $items[$productId]['weight'] = $weight;
+            self::storeItems($items);
+        }
 
         return $items[$productId];
     }
@@ -165,6 +173,7 @@ class Cart
             ->map(function ($item) {
                 $item['price'] = (float) ($item['price'] ?? 0);
                 $item['quantity'] = (int) ($item['quantity'] ?? 0);
+                $item['weight'] = (float) ($item['weight'] ?? 0);
                 $item['subtotal'] = $item['price'] * $item['quantity'];
                 $item['price_formatted'] = number_format($item['price'], 0, ',', '.');
                 $item['subtotal_formatted'] = number_format($item['subtotal'], 0, ',', '.');
@@ -177,12 +186,34 @@ class Cart
             ->toArray();
 
         $totalPrice = self::totalPrice();
+        $totalWeight = array_sum(array_map(function ($item) {
+            $quantity = (int) ($item['quantity'] ?? 0);
+            $weight = (float) ($item['weight'] ?? 0);
+
+            return $quantity * $weight;
+        }, $items));
+
+        $totalWeightGrams = (int) round(max(0, $totalWeight) * 1000);
+
+        if ($totalWeightGrams === 0 && ! empty($items)) {
+            $totalWeightGrams = array_sum(array_map(function ($item) {
+                $quantity = (int) ($item['quantity'] ?? 0);
+
+                return max(1, $quantity * 1000);
+            }, $items));
+
+            $totalWeight = $totalWeightGrams / 1000;
+        }
+
+        $hasItems = ! empty($items);
 
         return [
             'items' => $items,
             'total_quantity' => self::totalQuantity(),
             'total_price' => $totalPrice,
             'total_price_formatted' => number_format($totalPrice, 0, ',', '.'),
+            'total_weight' => $hasItems ? $totalWeight : 0.0,
+            'total_weight_grams' => $hasItems ? max(1, $totalWeightGrams) : 0,
         ];
     }
 
@@ -239,6 +270,7 @@ class Cart
                         'price' => (float) $price,
                         'quantity' => (int) $item->quantity,
                         'image' => $imagePath,
+                        'weight' => (float) ($product?->weight ?? 0),
                     ],
                 ];
             })
