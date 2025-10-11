@@ -100,6 +100,10 @@ class ShippingController extends Controller
         $shipping->storeGateway($selectedGatewayKey);
         $shipping->storeConfig($selectedGatewayKey, $configValues);
 
+        if (method_exists($gateway, 'afterConfigUpdated')) {
+            $gateway->afterConfigUpdated($configValues);
+        }
+
         return redirect()->route('admin.shipping.index')->with('success', 'Pengaturan pengiriman diperbarui.');
     }
 }

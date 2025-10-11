@@ -112,9 +112,13 @@ class ShippingController extends Controller
                 'config' => $config,
                 'destination' => [
                     'province' => $province->name,
+                    'province_code' => $province->code,
                     'regency' => $regency->name,
+                    'regency_code' => $regency->code,
                     'district' => $district->name,
+                    'district_code' => $district->code,
                     'village' => $village->name,
+                    'village_code' => $village->code,
                     'postal_code' => $data['postal_code'],
                 ],
                 'weight' => $cartSummary['total_weight_grams'] ?? 0,
