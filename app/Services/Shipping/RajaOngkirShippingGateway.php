@@ -2,9 +2,9 @@
 
 namespace App\Services\Shipping;
 
+use App\Models\RajaOngkirLocation;
 use App\Services\Shipping\Exceptions\ShippingException;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -30,6 +30,8 @@ class RajaOngkirShippingGateway implements ShippingGateway
      */
     public function configFields(): array
     {
+        $originOptions = $this->originLocationOptions();
+
         return [
             [
                 'key' => 'api_key',
@@ -59,12 +61,17 @@ class RajaOngkirShippingGateway implements ShippingGateway
                     ['value' => 'subdistrict', 'label' => 'Kecamatan (Pro)'],
                 ],
                 'rules' => 'required|string|in:city,subdistrict',
+                'help' => 'Sesuaikan dengan lokasi origin yang dipilih di bawah. Opsi kecamatan tersedia untuk akun Pro.',
             ],
             [
                 'key' => 'origin_id',
-                'label' => 'ID Origin RajaOngkir',
-                'type' => 'text',
+                'label' => 'Lokasi Origin RajaOngkir',
+                'type' => empty($originOptions) ? 'text' : 'select',
+                'options' => $originOptions,
                 'rules' => 'required|string',
+                'help' => empty($originOptions)
+                    ? 'Sinkronkan data lokasi dengan menjalankan perintah: php artisan rajaongkir:sync-locations'
+                    : 'Pilih lokasi yang sesuai dengan tipe origin di atas. ID akan tersimpan otomatis.',
             ],
             [
                 'key' => 'couriers',
@@ -107,26 +114,32 @@ class RajaOngkirShippingGateway implements ShippingGateway
             throw new ShippingException('Tidak ada kurir yang diaktifkan.');
         }
 
-        $destinationCityId = $payload['destination_city_id'] ?? null;
-        if (! $destinationCityId) {
-            $provinceName = (string) ($destination['province'] ?? '');
-            $cityName = (string) ($destination['regency'] ?? '');
-            $destinationCityId = $this->resolveCityId($provinceName, $cityName, $config);
+        $destinationId = $payload['destination_city_id'] ?? null;
+        $destinationType = $payload['destination_type'] ?? null;
+
+        if (! $destinationId) {
+            $resolved = $this->resolveDestinationLocation($destination, $config);
+            if ($resolved) {
+                $destinationId = $resolved['id'];
+                $destinationType ??= $resolved['type'];
+            }
         }
 
-        if (! $destinationCityId) {
+        if (! $destinationId) {
             throw (new ShippingException('Tidak dapat menentukan kota tujuan.'))->withContext([
                 'destination' => $destination,
             ]);
         }
+
+        $destinationType = $destinationType ?: 'city';
 
         $response = Http::withHeaders([
             'key' => $config['api_key'],
         ])->asForm()->post($this->baseUrl($config).'/cost', [
             'origin' => $config['origin_id'],
             'originType' => $config['origin_type'] ?? 'city',
-            'destination' => $destinationCityId,
-            'destinationType' => 'city',
+            'destination' => $destinationId,
+            'destinationType' => $destinationType,
             'weight' => $weight,
             'courier' => implode(':', array_map('strtolower', $couriers)),
         ]);
@@ -164,7 +177,10 @@ class RajaOngkirShippingGateway implements ShippingGateway
         }
 
         return [
-            'destination' => $destination,
+            'destination' => array_merge($destination, [
+                'rajaongkir_id' => $destinationId,
+                'rajaongkir_type' => $destinationType,
+            ]),
             'origin' => [
                 'id' => $config['origin_id'],
                 'type' => $config['origin_type'] ?? 'city',
@@ -256,6 +272,45 @@ class RajaOngkirShippingGateway implements ShippingGateway
     /**
      * @return array<int, array<string, string>>
      */
+    protected function originLocationOptions(): array
+    {
+        return RajaOngkirLocation::query()
+            ->orderBy('location_type')
+            ->orderBy('province')
+            ->orderBy('city_name')
+            ->orderBy('name')
+            ->get()
+            ->map(function (RajaOngkirLocation $location) {
+                $kind = $location->location_type === 'subdistrict'
+                    ? 'Kecamatan'
+                    : ($location->type ? Str::title($location->type) : 'Kota/Kabupaten');
+
+                $regionParts = [$location->name];
+                if ($location->location_type === 'subdistrict' && $location->city_name) {
+                    $regionParts[] = $location->city_name;
+                }
+                if ($location->province) {
+                    $regionParts[] = $location->province;
+                }
+
+                $region = implode(', ', array_filter($regionParts));
+
+                return [
+                    'value' => $location->external_id,
+                    'label' => sprintf('[%s] %s – %s (ID %s)',
+                        strtoupper($location->location_type),
+                        $kind,
+                        $region,
+                        $location->external_id
+                    ),
+                ];
+            })
+            ->all();
+    }
+
+    /**
+     * @return array<int, array<string, string>>
+     */
     protected function courierOptions(): array
     {
         return [
@@ -284,65 +339,83 @@ class RajaOngkirShippingGateway implements ShippingGateway
     }
 
     /**
+     * @param  array<string, mixed>  $destination
      * @param  array<string, mixed>  $config
+     * @return array{id: string, type: string, city: RajaOngkirLocation}|null
      */
-    protected function resolveCityId(string $provinceName, string $cityName, array $config): ?string
+    protected function resolveDestinationLocation(array $destination, array $config): ?array
     {
-        if ($provinceName === '' || $cityName === '') {
+        $provinceName = (string) ($destination['province'] ?? '');
+        $regencyName = (string) ($destination['regency'] ?? '');
+
+        if ($provinceName === '' || $regencyName === '') {
             return null;
         }
 
-        $cities = $this->getCities($config);
-        $provinceSlug = $this->normalizeName($provinceName);
-        $citySlug = $this->normalizeName($cityName);
+        $provinceSlug = RajaOngkirLocation::normalizeProvince($provinceName);
+        $citySlug = RajaOngkirLocation::normalizeName($regencyName);
+        $fullSlug = RajaOngkirLocation::fullSlugFromName($regencyName);
 
-        foreach ($cities as $city) {
-            if ($this->normalizeName($city['province']) !== $provinceSlug) {
-                continue;
-            }
+        $cityQuery = RajaOngkirLocation::cities()->where('slug', $citySlug);
 
-            $candidateSlug = $this->normalizeName(trim($city['type'].' '.$city['city_name']));
-            $cityNameSlug = $this->normalizeName($city['city_name']);
+        if ($provinceSlug !== '') {
+            $cityQuery->where('province_slug', $provinceSlug);
+        }
 
-            if ($candidateSlug === $citySlug || $cityNameSlug === $citySlug) {
-                return (string) $city['city_id'];
+        $city = $cityQuery->first();
+
+        if (! $city && $provinceSlug !== '') {
+            $city = RajaOngkirLocation::cities()
+                ->where('full_slug', $fullSlug)
+                ->where('province_slug', $provinceSlug)
+                ->first();
+        }
+
+        if (! $city) {
+            $city = RajaOngkirLocation::cities()->where('slug', $citySlug)->first();
+        }
+
+        if (! $city) {
+            return null;
+        }
+
+        $locationType = 'city';
+        $locationId = $city->external_id;
+
+        if (($config['account_type'] ?? 'starter') === 'pro') {
+            $districtName = (string) ($destination['district'] ?? '');
+            if ($districtName !== '') {
+                $districtSlug = RajaOngkirLocation::normalizeName($districtName);
+                $districtFullSlug = RajaOngkirLocation::fullSlugFromName($districtName);
+
+                $subdistrict = RajaOngkirLocation::subdistricts()
+                    ->where('city_external_id', $city->external_id)
+                    ->where(function ($query) use ($districtSlug, $districtFullSlug) {
+                        $query->where('slug', $districtSlug);
+                        if ($districtFullSlug !== '') {
+                            $query->orWhere('full_slug', $districtFullSlug);
+                        }
+                    })
+                    ->first();
+
+                if (! $subdistrict) {
+                    $subdistrict = RajaOngkirLocation::subdistricts()
+                        ->where('slug', $districtSlug)
+                        ->where('province_slug', $city->province_slug)
+                        ->first();
+                }
+
+                if ($subdistrict) {
+                    $locationType = 'subdistrict';
+                    $locationId = $subdistrict->external_id;
+                }
             }
         }
 
-        return null;
-    }
-
-    /**
-     * @param  array<string, mixed>  $config
-     * @return array<int, array<string, mixed>>
-     */
-    protected function getCities(array $config): array
-    {
-        $cacheKey = 'shipping.rajaongkir.cities.'.($config['account_type'] ?? 'starter');
-
-        return Cache::remember($cacheKey, now()->addDay(), function () use ($config) {
-            if (empty($config['api_key'])) {
-                return [];
-            }
-
-            $response = Http::withHeaders([
-                'key' => $config['api_key'],
-            ])->get($this->baseUrl($config).'/city');
-
-            if ($response->failed()) {
-                return [];
-            }
-
-            return Arr::get($response->json(), 'rajaongkir.results', []);
-        });
-    }
-
-    protected function normalizeName(string $value): string
-    {
-        $value = Str::lower($value);
-        $value = str_replace(['kab.', 'kabupaten', 'kota', ' '], '', $value);
-        $value = str_replace(['(', ')', '-'], '', $value);
-
-        return $value;
+        return [
+            'id' => $locationId,
+            'type' => $locationType,
+            'city' => $city,
+        ];
     }
 }
