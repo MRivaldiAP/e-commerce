@@ -203,23 +203,34 @@
         const formFeedback = document.querySelector('[data-form-feedback]');
         const csrf = '{{ csrf_token() }}';
         const couriers = @json($couriers);
-        const initialSelection = @json([
-            'regency' => $addressData['regency_code'] ?? null,
-            'district' => $addressData['district_code'] ?? null,
-            'village' => $addressData['village_code'] ?? null,
+        const initialSelection = {{ Illuminate\Support\Js::from([
+            'regency'     => $addressData['regency_code'] ?? null,
+            'district'    => $addressData['district_code'] ?? null,
+            'village'     => $addressData['village_code'] ?? null,
             'postal_code' => $addressData['postal_code'] ?? null,
-            'rate' => $selectedRate,
-        ]);
+            'rate'        => $selectedRate,
+            ]) }};
         let selectedRate = initialSelection.rate || null;
 
-        function setSubmitState(){ if (submitButton) submitButton.disabled = !selectedRate; }
-        function updateTotals(cost){
-            const shippingCost = parseInt(cost || 0, 10);
-            if (summaryShipping) summaryShipping.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(shippingCost);
-            const subtotal = {{ (int) $cartSummary['total_price'] }};
-            if (summaryTotal) summaryTotal.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(subtotal + shippingCost);
+        function setSubmitState() {
+            if (submitButton) {
+                submitButton.disabled = !selectedRate;
+            }
         }
-        function showRateFeedback(message, isError = false){
+
+        function updateTotals(cost) {
+            const shippingCost = parseInt(cost || 0, 10);
+            if (summaryShipping) {
+                summaryShipping.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(shippingCost);
+            }
+            const subtotal = {{ (int) $cartSummary['total_price'] }};
+            const total = subtotal + shippingCost;
+            if (summaryTotal) {
+                summaryTotal.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+            }
+        }
+
+        function showRateFeedback(message, isError = false) {
             if (!rateFeedback) return;
             rateFeedback.textContent = message;
             rateFeedback.classList.remove('visible', 'error');
@@ -228,7 +239,8 @@
                 if (isError) rateFeedback.classList.add('error');
             }
         }
-        function showFormFeedback(message, type = 'error'){
+
+        function showFormFeedback(message, type = 'error') {
             if (!formFeedback) return;
             formFeedback.textContent = message;
             formFeedback.classList.remove('visible', 'error', 'success');
@@ -237,7 +249,8 @@
                 formFeedback.classList.add(type === 'success' ? 'success' : 'error');
             }
         }
-        function clearSelect(select, placeholder){
+
+        function clearSelect(select, placeholder) {
             if (!select) return;
             select.innerHTML = '';
             const option = document.createElement('option');
@@ -245,42 +258,52 @@
             option.textContent = placeholder;
             select.appendChild(option);
         }
-        function populateSelect(select, items, selectedValue){
+
+        function populateSelect(select, items, selectedValue) {
             if (!select) return;
             items.forEach(item => {
                 const option = document.createElement('option');
                 option.value = item.code;
                 option.textContent = item.name;
-                if (String(selectedValue || '') === String(item.code)) option.selected = true;
-                if (typeof item.postal_code !== 'undefined') option.dataset.postal = item.postal_code;
+                if (String(selectedValue || '') === String(item.code)) {
+                    option.selected = true;
+                }
+                if (typeof item.postal_code !== 'undefined') {
+                    option.dataset.postal = item.postal_code;
+                }
                 select.appendChild(option);
             });
             select.dispatchEvent(new Event('change'));
         }
-        function fetchLocations(url, params, select, placeholder, selectedValue){
+
+        function fetchLocations(url, params, select, placeholder, selectedValue) {
             if (!select) return Promise.resolve();
             clearSelect(select, placeholder);
             if (!params) return Promise.resolve();
             const query = new URLSearchParams(params).toString();
             return fetch(url + '?' + query)
-                .then(res => res.json())
+                .then(response => response.json())
                 .then(data => {
-                    if ((data.status || '') !== 'ok') return [];
+                    if ((data.status || '') !== 'ok') {
+                        return [];
+                    }
                     populateSelect(select, data.data || [], selectedValue);
                     return data.data || [];
                 })
                 .catch(() => []);
         }
-        function renderMethods(rates){
+
+        function renderMethods(rates) {
             if (!methodsContainer) return;
             methodsContainer.innerHTML = '';
-            if (!rates || rates.length === 0){
-                methodsContainer.innerHTML = '<p class="text-muted">Tidak ada metode pengiriman untuk lokasi ini.</p>';
+            if (!rates || rates.length === 0) {
+                methodsContainer.innerHTML = '<p class="text-muted">Tidak ada metode pengiriman tersedia.</p>';
                 selectedRate = null;
                 updateTotals(0);
                 setSubmitState();
                 return;
             }
+
             let preselectedKey = null;
             if (selectedRate) {
                 preselectedKey = selectedRate.courier + '|' + selectedRate.service;
@@ -288,19 +311,20 @@
                 selectedRate = rates[0];
                 preselectedKey = selectedRate.courier + '|' + selectedRate.service;
             }
+
             rates.forEach(rate => {
                 const key = rate.courier + '|' + rate.service;
                 const option = document.createElement('label');
-                option.className = 'shipping-method';
+                option.className = 'method-option';
                 option.dataset.rateKey = key;
                 option.innerHTML = `
                     <input type="radio" name="shipping_rate" value="${key}">
                     <div>
-                        <div class="fw-bold text-uppercase" style="color:#1c1c1c;">${rate.courier_name || rate.courier} - ${rate.service}</div>
+                        <strong>${rate.courier_name || rate.courier} - ${rate.service}</strong>
                         <small class="text-muted">${rate.description || ''}</small>
                     </div>
                     <div class="text-end">
-                        <div class="fw-bold" style="color:#7fad39;">Rp ${new Intl.NumberFormat('id-ID').format(rate.cost)}</div>
+                        <div class="fw-bold">Rp ${new Intl.NumberFormat('id-ID').format(rate.cost)}</div>
                         <small class="text-muted">${rate.etd ? rate.etd + ' hari' : ''}</small>
                     </div>
                 `;
@@ -310,7 +334,7 @@
                     updateTotals(rate.cost);
                 }
                 option.addEventListener('click', () => {
-                    methodsContainer.querySelectorAll('.shipping-method').forEach(el => el.classList.remove('active'));
+                    methodsContainer.querySelectorAll('.method-option').forEach(el => el.classList.remove('active'));
                     option.classList.add('active');
                     option.querySelector('input').checked = true;
                     selectedRate = rate;
@@ -319,9 +343,11 @@
                 });
                 methodsContainer.appendChild(option);
             });
+
             setSubmitState();
         }
-        function collectAddress(){
+
+        function collectAddress() {
             return {
                 province_code: provincesSelect?.value || '',
                 regency_code: regencySelect?.value || '',
@@ -330,13 +356,14 @@
                 postal_code: postalInput?.value || '',
             };
         }
-        function fetchRates(){
+
+        function fetchRates() {
             const address = collectAddress();
-            if (!address.province_code || !address.regency_code || !address.district_code || !address.village_code || !address.postal_code){
+            if (!address.province_code || !address.regency_code || !address.district_code || !address.village_code || !address.postal_code) {
                 showRateFeedback('Lengkapi alamat pengiriman terlebih dahulu.', true);
                 return;
             }
-            showRateFeedback('Mengambil data ongkir...', false);
+            showRateFeedback('Mengambil ongkir...', false);
             const payload = Object.assign({}, address, { couriers: couriers });
             fetch(routes.quote, {
                 method: 'POST',
@@ -347,7 +374,7 @@
                 },
                 body: JSON.stringify(payload)
             })
-            .then(res => res.json())
+            .then(response => response.json())
             .then(data => {
                 if ((data.status || '') !== 'ok') {
                     throw new Error(data.message || 'Gagal mengambil ongkir');
@@ -360,39 +387,55 @@
                 showRateFeedback(error.message || 'Tidak dapat memuat ongkir.', true);
             });
         }
-        if (fetchButton) fetchButton.addEventListener('click', fetchRates);
-        if (provincesSelect) provincesSelect.addEventListener('change', () => {
-            const province = provincesSelect.value;
-            clearSelect(regencySelect, 'Pilih Kota/Kabupaten');
-            clearSelect(districtSelect, 'Pilih Kecamatan');
-            clearSelect(villageSelect, 'Pilih Kelurahan');
-            if (!province) return;
-            fetchLocations(routes.regencies, { province: province }, regencySelect, 'Pilih Kota/Kabupaten', null);
-        });
-        if (regencySelect) regencySelect.addEventListener('change', () => {
-            const regency = regencySelect.value;
-            clearSelect(districtSelect, 'Pilih Kecamatan');
-            clearSelect(villageSelect, 'Pilih Kelurahan');
-            if (!regency) return;
-            fetchLocations(routes.districts, { regency: regency }, districtSelect, 'Pilih Kecamatan', null);
-        });
-        if (districtSelect) districtSelect.addEventListener('change', () => {
-            const district = districtSelect.value;
-            clearSelect(villageSelect, 'Pilih Kelurahan');
-            if (!district) return;
-            fetchLocations(routes.villages, { district: district }, villageSelect, 'Pilih Kelurahan', null);
-        });
-        if (villageSelect) villageSelect.addEventListener('change', () => {
-            const selected = villageSelect.selectedOptions[0];
-            if (selected && selected.dataset.postal && !postalInput.value) {
-                postalInput.value = selected.dataset.postal;
-            }
-        });
+
+        if (fetchButton) {
+            fetchButton.addEventListener('click', fetchRates);
+        }
+
+        if (provincesSelect) {
+            provincesSelect.addEventListener('change', () => {
+                const province = provincesSelect.value;
+                clearSelect(regencySelect, 'Pilih Kota/Kabupaten');
+                clearSelect(districtSelect, 'Pilih Kecamatan');
+                clearSelect(villageSelect, 'Pilih Kelurahan');
+                if (!province) return;
+                fetchLocations(routes.regencies, { province: province }, regencySelect, 'Pilih Kota/Kabupaten', null);
+            });
+        }
+
+        if (regencySelect) {
+            regencySelect.addEventListener('change', () => {
+                const regency = regencySelect.value;
+                clearSelect(districtSelect, 'Pilih Kecamatan');
+                clearSelect(villageSelect, 'Pilih Kelurahan');
+                if (!regency) return;
+                fetchLocations(routes.districts, { regency: regency }, districtSelect, 'Pilih Kecamatan', null);
+            });
+        }
+
+        if (districtSelect) {
+            districtSelect.addEventListener('change', () => {
+                const district = districtSelect.value;
+                clearSelect(villageSelect, 'Pilih Kelurahan');
+                if (!district) return;
+                fetchLocations(routes.villages, { district: district }, villageSelect, 'Pilih Kelurahan', null);
+            });
+        }
+
+        if (villageSelect) {
+            villageSelect.addEventListener('change', () => {
+                const selected = villageSelect.selectedOptions[0];
+                if (selected && selected.dataset.postal && !postalInput.value) {
+                    postalInput.value = selected.dataset.postal;
+                }
+            });
+        }
+
         if (form) {
-            form.addEventListener('submit', event => {
+            form.addEventListener('submit', (event) => {
                 event.preventDefault();
                 if (!selectedRate) {
-                    showFormFeedback('Silakan pilih metode pengiriman.', 'error');
+                    showFormFeedback('Silakan pilih metode pengiriman terlebih dahulu.', 'error');
                     return;
                 }
                 showFormFeedback('Menyimpan informasi pengiriman...', 'success');
@@ -408,7 +451,7 @@
                     },
                     body: JSON.stringify(payload)
                 })
-                .then(res => res.json())
+                .then(response => response.json())
                 .then(data => {
                     if ((data.status || '') !== 'ok') {
                         throw new Error(data.message || 'Gagal menyimpan pengiriman');
@@ -420,7 +463,8 @@
                 });
             });
         }
-        function initializeSelections(){
+
+        function initializeSelections() {
             if (!provincesSelect) return;
             const provinceValue = provincesSelect.value;
             if (provinceValue) {
@@ -445,6 +489,7 @@
                     });
             }
         }
+
         initializeSelections();
         setSubmitState();
         updateTotals(selectedRate ? selectedRate.cost : ({{ $checkoutTotals['shipping_cost'] ?? 0 }}));

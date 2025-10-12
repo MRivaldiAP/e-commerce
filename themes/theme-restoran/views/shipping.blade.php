@@ -261,12 +261,12 @@
         const csrf = '{{ csrf_token() }}';
         const couriers = @json($couriers);
         const initialSelection = {{ Illuminate\Support\Js::from([
-  'regency'     => $addressData['regency_code'] ?? null,
-  'district'    => $addressData['district_code'] ?? null,
-  'village'     => $addressData['village_code'] ?? null,
-  'postal_code' => $addressData['postal_code'] ?? null,
-  'rate'        => $selectedRate,
-]) }};
+            'regency'     => $addressData['regency_code'] ?? null,
+            'district'    => $addressData['district_code'] ?? null,
+            'village'     => $addressData['village_code'] ?? null,
+            'postal_code' => $addressData['postal_code'] ?? null,
+            'rate'        => $selectedRate,
+            ]) }};
         let selectedRate = initialSelection.rate || null;
 
         function setSubmitState() {
