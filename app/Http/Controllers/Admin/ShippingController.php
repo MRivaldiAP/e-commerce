@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\Shipping\RajaOngkirLocationImporter;
+use App\Services\Shipping\RajaOngkirShippingGateway;
 use App\Services\Shipping\ShippingGatewayManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Throwable;
 
 class ShippingController extends Controller
 {
@@ -29,7 +32,7 @@ class ShippingController extends Controller
         ]);
     }
 
-    public function update(Request $request, ShippingGatewayManager $shipping): RedirectResponse
+    public function update(Request $request, ShippingGatewayManager $shipping, RajaOngkirLocationImporter $locationImporter): RedirectResponse
     {
         $gateways = $shipping->all();
         $gatewayKeys = array_keys($gateways);
@@ -99,6 +102,23 @@ class ShippingController extends Controller
 
         $shipping->storeGateway($selectedGatewayKey);
         $shipping->storeConfig($selectedGatewayKey, $configValues);
+
+        if ($gateway instanceof RajaOngkirShippingGateway) {
+            $apiKey = (string) ($configValues['api_key'] ?? $currentConfig['api_key'] ?? '');
+            $accountType = (string) ($configValues['account_type'] ?? $currentConfig['account_type'] ?? 'starter');
+
+            if ($apiKey !== '') {
+                try {
+                    $locationImporter->sync($apiKey, $accountType);
+                } catch (Throwable $exception) {
+                    report($exception);
+
+                    return redirect()->route('admin.shipping.index')->withErrors([
+                        'gateway' => 'Pengaturan tersimpan, tetapi gagal memperbarui data lokasi RajaOngkir: '.$exception->getMessage(),
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('admin.shipping.index')->with('success', 'Pengaturan pengiriman diperbarui.');
     }
