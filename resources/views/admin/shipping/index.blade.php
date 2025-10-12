@@ -73,16 +73,7 @@
                             <div class="form-group">
                               <label class="d-block" for="{{ $inputId }}">{{ $field['label'] }}</label>
                               @if($type === 'select')
-                                @php
-                                  $selectAttributes = '';
-                                  if ($key === 'rajaongkir' && $fieldKey === 'origin_id') {
-                                    $selectAttributes .= ' data-rajaongkir-origin-select="1"';
-                                  }
-                                  if ($key === 'rajaongkir' && $fieldKey === 'origin_type') {
-                                    $selectAttributes .= ' data-rajaongkir-origin-type="1"';
-                                  }
-                                @endphp
-                                <select name="{{ $fieldName }}" id="{{ $inputId }}" class="form-control" {!! $selectAttributes !!}>
+                                <select name="{{ $fieldName }}" id="{{ $inputId }}" class="form-control">
                                   @foreach($options as $option)
                                     @php
                                       $optionValue = is_array($option) ? ($option['value'] ?? $option[0] ?? '') : $option;
@@ -155,51 +146,6 @@
       const select = document.getElementById('shipping-gateway');
       const sections = document.querySelectorAll('[data-shipping-section]');
 
-      function initRajaOngkirOrigin(section) {
-        if (!section) return;
-
-        const originSelect = section.querySelector('[data-rajaongkir-origin-select]');
-        if (!originSelect) return;
-
-        const originTypeSelect = section.querySelector('[data-rajaongkir-origin-type]');
-
-        const applyFilter = () => {
-          const desiredType = originTypeSelect ? originTypeSelect.value : 'city';
-          let hasSelected = false;
-
-          Array.from(originSelect.options).forEach(option => {
-            const optionType = option.getAttribute('data-origin-type') || 'city';
-            const matches = optionType === desiredType;
-            option.hidden = !matches;
-            option.disabled = !matches;
-
-            if (!matches && option.selected) {
-              option.selected = false;
-            }
-
-            if (matches && option.selected) {
-              hasSelected = true;
-            }
-          });
-
-          if (!hasSelected) {
-            const firstVisible = Array.from(originSelect.options).find(option => !option.hidden);
-            if (firstVisible) {
-              originSelect.value = firstVisible.value;
-            }
-          }
-        };
-
-        if (!originSelect.dataset.initialized) {
-          originSelect.dataset.initialized = 'true';
-          if (originTypeSelect) {
-            originTypeSelect.addEventListener('change', applyFilter);
-          }
-        }
-
-        applyFilter();
-      }
-
       function toggleSections(active) {
         sections.forEach(section => {
           const isActive = section.getAttribute('data-shipping-section') === active;
@@ -213,9 +159,6 @@
             }
           });
 
-          if (isActive) {
-            initRajaOngkirOrigin(section);
-          }
         });
       }
 

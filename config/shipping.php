@@ -2,7 +2,7 @@
 
 return [
     'gateways' => [
-        App\Services\Shipping\RajaOngkirShippingGateway::class,
+        App\Services\Shipping\BiteshipShippingGateway::class,
     ],
 
     'default_weight' => 1.0,

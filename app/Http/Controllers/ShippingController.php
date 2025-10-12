@@ -127,10 +127,11 @@ class ShippingController extends Controller
                 ],
                 'destination_codes' => $destinationCodes,
                 'weight' => $cartSummary['total_weight_grams'] ?? 0,
+                'subtotal' => $cartSummary['total_price'] ?? 0,
                 'couriers' => $data['couriers'] ?? null,
             ]);
         } catch (ShippingException $exception) {
-            Log::warning('Gagal mengambil ongkir RajaOngkir', [
+            Log::warning('Gagal mengambil ongkir Biteship', [
                 'message' => $exception->getMessage(),
                 'context' => $exception->context(),
             ]);
@@ -211,9 +212,28 @@ class ShippingController extends Controller
             $orderData = $gateway->createOrder([
                 'config' => $config,
                 'rate' => $rate,
+                'contact' => [
+                    'name' => $data['recipient_name'],
+                    'email' => $data['email'],
+                    'phone' => $data['phone'],
+                ],
+                'address' => [
+                    'street' => $data['address'],
+                    'province_code' => $province->code,
+                    'province_name' => $province->name,
+                    'regency_code' => $regency->code,
+                    'regency_name' => $regency->name,
+                    'district_code' => $district->code,
+                    'district_name' => $district->name,
+                    'village_code' => $village->code,
+                    'village_name' => $village->name,
+                    'postal_code' => $data['postal_code'],
+                ],
+                'items' => $cartSummary['items'] ?? [],
+                'reference' => $request->session()->getId(),
             ]);
         } catch (ShippingException $exception) {
-            Log::warning('Gagal membuat pesanan pengiriman', [
+            Log::warning('Gagal membuat pesanan Biteship', [
                 'message' => $exception->getMessage(),
                 'context' => $exception->context(),
             ]);
@@ -280,7 +300,7 @@ class ShippingController extends Controller
                 'config' => $config,
             ]);
         } catch (ShippingException $exception) {
-            Log::warning('Gagal melacak pengiriman', [
+            Log::warning('Gagal melacak pengiriman Biteship', [
                 'message' => $exception->getMessage(),
                 'context' => $exception->context(),
             ]);
