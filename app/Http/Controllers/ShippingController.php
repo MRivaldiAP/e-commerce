@@ -107,6 +107,13 @@ class ShippingController extends Controller
         $config = $shipping->getGatewayConfig($gateway->key());
         $cartSummary = Cart::summary();
 
+        $destinationCodes = [
+            'province' => $province->code,
+            'regency' => $regency->code,
+            'district' => $district->code,
+            'village' => $village->code,
+        ];
+
         try {
             $result = $gateway->checkRates([
                 'config' => $config,
@@ -116,7 +123,9 @@ class ShippingController extends Controller
                     'district' => $district->name,
                     'village' => $village->name,
                     'postal_code' => $data['postal_code'],
+                    'codes' => $destinationCodes,
                 ],
+                'destination_codes' => $destinationCodes,
                 'weight' => $cartSummary['total_weight_grams'] ?? 0,
                 'couriers' => $data['couriers'] ?? null,
             ]);
