@@ -38,8 +38,8 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
         }
 
-        $shippingEnabled = Setting::getValue('shipping.enabled', '0') === '1';
-        $shippingData = $shippingEnabled ? $request->session()->get('checkout.shipping') : null;
+        $shippingEnabled = $shipping->isEnabled();
+        $shippingData = $shippingEnabled ? ShippingSession::get() : null;
 
         if ($shippingEnabled && empty($shippingData)) {
             return redirect()->route('checkout.shipping')->with('error', 'Lengkapi informasi pengiriman terlebih dahulu.');
@@ -89,8 +89,6 @@ class CheckoutController extends Controller
             'checkoutData' => $checkoutData,
             'selectedMethod' => $methods[0]['key'] ?? null,
             'feedbackStatus' => $feedbackStatus,
-            'shippingEnabled' => $shippingEnabled,
-            'shippingData' => $shippingData,
         ]);
     }
 
@@ -117,7 +115,7 @@ class CheckoutController extends Controller
         }
 
         $shippingEnabled = $shipping->isEnabled();
-        $shippingData = ShippingSession::get();
+        $shippingData = $shippingEnabled ? ShippingSession::get() : null;
 
         if ($shippingEnabled && ! ShippingSession::isReady()) {
             return response()->json([
@@ -133,16 +131,6 @@ class CheckoutController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Metode pembayaran tidak tersedia.',
-            ], 422);
-        }
-
-        $shippingEnabled = Setting::getValue('shipping.enabled', '0') === '1';
-        $shippingData = $shippingEnabled ? $request->session()->get('checkout.shipping') : null;
-
-        if ($shippingEnabled && empty($shippingData)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Informasi pengiriman belum lengkap.',
             ], 422);
         }
 
