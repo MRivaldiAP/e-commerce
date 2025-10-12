@@ -8,6 +8,7 @@ use App\Services\Shipping\RajaOngkirLocationService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class RajaOngkirShippingGateway implements ShippingGateway
@@ -85,6 +86,7 @@ class RajaOngkirShippingGateway implements ShippingGateway
                     ? 'Pilih lokasi origin berdasarkan daftar yang telah disinkronkan dari RajaOngkir.'
                     : 'Simpan konfigurasi setelah memasukkan API key untuk menyinkronkan daftar lokasi RajaOngkir.',
                 'rules' => 'required|string',
+                'help' => 'Pilih lokasi origin yang telah disinkronkan dari RajaOngkir.',
             ],
             [
                 'key' => 'couriers',
@@ -102,6 +104,70 @@ class RajaOngkirShippingGateway implements ShippingGateway
                 'rules' => 'nullable|string',
             ],
         ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    protected function originOptions(): array
+    {
+        if (! Schema::hasTable('rajaongkir_cities')) {
+            return [];
+        }
+
+        $options = [];
+
+        $cities = RajaOngkirCity::query()
+            ->orderBy('province_name')
+            ->orderBy('type')
+            ->orderBy('name')
+            ->get();
+
+        foreach ($cities as $city) {
+            $labelParts = array_filter([
+                trim((string) $city->type),
+                trim((string) $city->name),
+            ]);
+            $label = trim(implode(' ', $labelParts));
+            if ($label === '') {
+                $label = (string) $city->name;
+            }
+
+            $options[] = [
+                'value' => (string) $city->id,
+                'label' => trim($label.' ('.$city->province_name.')'),
+                'data' => [
+                    'origin-type' => 'city',
+                ],
+            ];
+        }
+
+        if (Schema::hasTable('rajaongkir_subdistricts')) {
+            $subdistricts = RajaOngkirSubdistrict::query()
+                ->orderBy('province_name')
+                ->orderBy('city_name')
+                ->orderBy('name')
+                ->get();
+
+            foreach ($subdistricts as $subdistrict) {
+                $labelParts = [trim((string) $subdistrict->name)];
+                if ($subdistrict->city_name !== '') {
+                    $labelParts[] = trim((string) $subdistrict->city_name);
+                }
+
+                $label = trim(implode(', ', array_filter($labelParts)).' ('.$subdistrict->province_name.')');
+
+                $options[] = [
+                    'value' => (string) $subdistrict->id,
+                    'label' => $label,
+                    'data' => [
+                        'origin-type' => 'subdistrict',
+                    ],
+                ];
+            }
+        }
+
+        return $options;
     }
 
     /**
@@ -131,10 +197,14 @@ class RajaOngkirShippingGateway implements ShippingGateway
         $destinationCityId = $destinationInfo['id'] ?? null;
         $destinationType = $destinationInfo['type'] ?? 'city';
 
-        if (! $destinationCityId) {
+        if (! $destinationId) {
             throw (new ShippingException('Tidak dapat menentukan kota tujuan.'))->withContext([
                 'destination' => $destination,
             ]);
+        }
+
+        if (! $destinationType) {
+            $destinationType = 'city';
         }
 
         $response = Http::withHeaders([
@@ -181,7 +251,12 @@ class RajaOngkirShippingGateway implements ShippingGateway
         }
 
         return [
-            'destination' => $destination,
+            'destination' => array_merge($destination, [
+                'rajaongkir_id' => $destinationId,
+                'rajaongkir_type' => $destinationType,
+                'rajaongkir_city_id' => $destinationType === 'city' ? $destinationId : null,
+                'rajaongkir_subdistrict_id' => $destinationType === 'subdistrict' ? $destinationId : null,
+            ]),
             'origin' => [
                 'id' => $config['origin_id'],
                 'type' => $config['origin_type'] ?? 'city',
@@ -370,12 +445,76 @@ class RajaOngkirShippingGateway implements ShippingGateway
         return null;
     }
 
+    protected function resolveSubdistrictId(string $provinceName, string $cityName, string $subdistrictName, array $config, ?string $cityId = null): ?string
+    {
+        if ($provinceName === '' || $cityName === '' || $subdistrictName === '') {
+            return null;
+        }
+
+        $subdistricts = $this->getSubdistricts($config, $cityId);
+        if (empty($subdistricts)) {
+            return null;
+        }
+
+        $provinceSlug = $this->normalizeProvinceName($provinceName);
+        $citySlug = $this->normalizeName($cityName);
+        $subdistrictSlug = $this->normalizeName($subdistrictName);
+
+        $fallbackMatches = [];
+
+        foreach ($subdistricts as $subdistrict) {
+            $provinceMatchSlug = $this->normalizeProvinceName((string) Arr::get($subdistrict, 'province', ''));
+            $cityMatchSlug = $this->normalizeName((string) Arr::get($subdistrict, 'city', ''));
+
+            if ($provinceSlug !== '' && $provinceSlug !== $provinceMatchSlug) {
+                continue;
+            }
+
+            if ($citySlug !== '' && $citySlug !== $cityMatchSlug) {
+                continue;
+            }
+
+            if ($this->subdistrictMatchesSlug($subdistrict, $subdistrictSlug)) {
+                return (string) Arr::get($subdistrict, 'subdistrict_id');
+            }
+
+            $fallbackMatches[] = $subdistrict;
+        }
+
+        foreach ($fallbackMatches as $subdistrict) {
+            if ($this->subdistrictMatchesSlug($subdistrict, $subdistrictSlug)) {
+                return (string) Arr::get($subdistrict, 'subdistrict_id');
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @param  array<string, mixed>  $config
      * @return array<int, array<string, mixed>>
      */
     protected function getCities(array $config): array
     {
+        if (Schema::hasTable('rajaongkir_cities')) {
+            $cities = RajaOngkirCity::query()
+                ->orderBy('province_name')
+                ->orderBy('name')
+                ->get();
+
+            if ($cities->isNotEmpty()) {
+                return $cities->map(function (RajaOngkirCity $city) {
+                    return [
+                        'city_id' => (string) $city->id,
+                        'city_name' => (string) $city->name,
+                        'province' => (string) $city->province_name,
+                        'province_id' => (string) $city->province_id,
+                        'type' => (string) $city->type,
+                    ];
+                })->all();
+            }
+        }
+
         $cacheKey = 'shipping.rajaongkir.cities.'.($config['account_type'] ?? 'starter');
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($config) {
@@ -456,6 +595,10 @@ class RajaOngkirShippingGateway implements ShippingGateway
             'kota',
             'adm.',
             'administrasi',
+            'kec.',
+            'kecamatan',
+            'kel.',
+            'kelurahan',
         ], '', $value);
 
         // Remove non-alphanumeric characters to make the comparison resilient to
@@ -479,6 +622,20 @@ class RajaOngkirShippingGateway implements ShippingGateway
         $cityNameSlug = $this->normalizeName((string) Arr::get($city, 'city_name', ''));
 
         return $candidateSlug === $slug || $cityNameSlug === $slug;
+    }
+
+    /**
+     * @param  array<string, mixed>  $subdistrict
+     */
+    protected function subdistrictMatchesSlug(array $subdistrict, string $slug): bool
+    {
+        if ($slug === '') {
+            return false;
+        }
+
+        $subdistrictSlug = $this->normalizeName((string) Arr::get($subdistrict, 'subdistrict_name', ''));
+
+        return $subdistrictSlug === $slug;
     }
 
     protected function normalizeProvinceName(string $value): string
