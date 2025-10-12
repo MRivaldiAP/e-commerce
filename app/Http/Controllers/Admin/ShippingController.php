@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\Shipping\RajaOngkirLocationService;
 use App\Services\Shipping\ShippingGatewayManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,7 @@ class ShippingController extends Controller
         ]);
     }
 
-    public function update(Request $request, ShippingGatewayManager $shipping): RedirectResponse
+    public function update(Request $request, ShippingGatewayManager $shipping, RajaOngkirLocationService $locations): RedirectResponse
     {
         $gateways = $shipping->all();
         $gatewayKeys = array_keys($gateways);
@@ -94,6 +95,16 @@ class ShippingController extends Controller
                 $configValues[$fieldKey] = array_values((array) $request->input('config.'.$fieldKey, $currentConfig[$fieldKey] ?? []));
             } else {
                 $configValues[$fieldKey] = $request->input('config.'.$fieldKey, $currentConfig[$fieldKey] ?? null);
+            }
+        }
+
+        if (! empty($configValues['api_key'])) {
+            try {
+                $locations->sync($configValues['api_key'], (string) ($configValues['account_type'] ?? 'starter'));
+            } catch (\Throwable $exception) {
+                return redirect()->route('admin.shipping.index')->withErrors([
+                    'gateway' => $exception->getMessage(),
+                ]);
             }
         }
 
