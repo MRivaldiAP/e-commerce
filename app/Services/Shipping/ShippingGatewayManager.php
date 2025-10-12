@@ -51,6 +51,11 @@ class ShippingGatewayManager
         return $key ? $this->get($key) : null;
     }
 
+    public function isEnabled(): bool
+    {
+        return Setting::getValue('shipping.enabled', '0') === '1';
+    }
+
     /**
      * @return array<string, array<string, mixed>>
      */
