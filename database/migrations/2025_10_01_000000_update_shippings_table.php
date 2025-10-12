@@ -9,6 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('shippings', function (Blueprint $table) {
+            if (! Schema::hasColumn('shippings', 'provider')) {
+                $table->string('provider')->default('manual')->after('order_id');
+            }
+
             if (! Schema::hasColumn('shippings', 'service')) {
                 $table->string('service')->nullable()->after('courier');
             }
@@ -30,6 +34,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('shippings', function (Blueprint $table) {
+            if (Schema::hasColumn('shippings', 'provider')) {
+                $table->dropColumn('provider');
+            }
+
             if (Schema::hasColumn('shippings', 'meta')) {
                 $table->dropColumn('meta');
             }
