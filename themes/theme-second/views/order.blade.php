@@ -108,6 +108,31 @@
         .alert-feedback.success { background: rgba(76,175,80,0.12); color: #2e7d32; }
         .alert-feedback.info { background: rgba(30,136,229,0.12); color: #1e88e5; }
         .alert-feedback.error { background: rgba(244,67,54,0.12); color: #c62828; }
+        .tracking-widget {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 12px;
+            background: #f7f7f7;
+            border: 1px solid #e5e7eb;
+        }
+        .tracking-widget button {
+            display: inline-block;
+            border: none;
+            background: #7fad39;
+            color: #fff;
+            padding: 0.6rem 1.4rem;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+        .tracking-widget button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .tracking-result {
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: #4a4a4a;
+        }
     </style>
 </head>
 <body>
@@ -164,27 +189,38 @@
             @foreach($orders as $order)
                 @php
                     $shippingData = optional($order->shipping);
-                    $shippingStatus = $shippingData->status ?? 'packing';
+                    $shippingStatus = $shippingData->status ?? 'pending';
+                    $remoteOrderCreated = $shippingEnabled && ! empty($shippingData?->remote_id);
+                    $trackingNumberAvailable = $shippingEnabled && ! empty($shippingData?->tracking_number);
                     $statusLabel = 'Menunggu Konfirmasi';
                     $statusClass = 'status-badge--info';
                     if($shippingEnabled) {
-                        $statusLabel = match($shippingStatus) {
-                            'delivered' => 'Selesai',
-                            'in_transit' => 'Sedang Dikirim',
-                            'cancelled' => 'Dibatalkan',
-                            default => 'Sedang Diproses',
-                        };
-                        $statusClass = match($shippingStatus) {
-                            'delivered' => 'status-badge--success',
-                            'in_transit' => 'status-badge--warning',
-                            'cancelled' => 'status-badge--danger',
-                            default => 'status-badge--info',
-                        };
+                        if($remoteOrderCreated && $trackingNumberAvailable) {
+                            $statusLabel = match($shippingStatus) {
+                                'delivered' => 'Selesai',
+                                'in_transit' => 'Sedang Dikirim',
+                                'cancelled' => 'Dibatalkan',
+                                default => 'Sedang Dalam Pengiriman',
+                            };
+                            $statusClass = match($shippingStatus) {
+                                'delivered' => 'status-badge--success',
+                                'in_transit' => 'status-badge--warning',
+                                'cancelled' => 'status-badge--danger',
+                                default => 'status-badge--info',
+                            };
+                        } elseif($remoteOrderCreated) {
+                            $statusLabel = 'Menunggu nomor resi';
+                            $statusClass = 'status-badge--warning';
+                        } else {
+                            $statusLabel = 'Sedang disiapkan penjual';
+                            $statusClass = 'status-badge--info';
+                        }
                     } else {
                         $statusLabel = $order->is_reviewed ? 'Sudah dikonfirmasi' : 'Belum dikonfirmasi';
                         $statusClass = $order->is_reviewed ? 'status-badge--success' : 'status-badge--warning';
                     }
                     $orderStatus = $order->status === 'paid' ? 'Pembayaran diterima' : ucfirst($order->status);
+                    $trackingReady = $shippingEnabled && $remoteOrderCreated && $trackingNumberAvailable;
                 @endphp
                 <div class="order-card">
                     <div class="order-card__header">
@@ -242,6 +278,17 @@
                                 <div class="text-muted">Ongkir: Rp {{ number_format($shippingData->cost ?? 0, 0, ',', '.') }}</div>
                                 <div class="text-muted">Nomor Resi: {{ $shippingData->tracking_number ?? 'Belum tersedia' }}</div>
                                 <div class="text-muted">Status Pengiriman: {{ ucfirst(str_replace('_', ' ', $shippingData->status ?? 'pending')) }}</div>
+                                @if($trackingReady)
+                                    <div class="tracking-widget" data-tracking-widget>
+                                        <div class="tracking-result">Lihat status terbaru dengan menekan tombol berikut.</div>
+                                        <button type="button" data-track-button data-tracking-number="{{ $shippingData->tracking_number }}" data-courier="{{ $shippingData->courier }}">Lacak Pengiriman</button>
+                                        <div class="tracking-result" data-tracking-result hidden></div>
+                                    </div>
+                                @elseif(! $remoteOrderCreated)
+                                    <div class="tracking-widget">
+                                        <div class="tracking-result">Sedang disiapkan penjual. Pelacakan tersedia setelah pesanan dikirim.</div>
+                                    </div>
+                                @endif
                             @endif
                         </div>
                         <div class="h5 mb-0">Total Pembayaran: Rp {{ number_format($order->total_price ?? 0, 0, ',', '.') }}</div>
@@ -264,5 +311,45 @@
 <script src="{{ asset('storage/themes/theme-second/js/mixitup.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/owl.carousel.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/main.js') }}"></script>
+<script>
+    document.querySelectorAll('[data-track-button]').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var widget = button.closest('[data-tracking-widget]');
+            var resultBox = widget.querySelector('[data-tracking-result]');
+            if (! resultBox) {
+                return;
+            }
+
+            resultBox.hidden = false;
+            resultBox.textContent = 'Mengambil status pelacakan...';
+
+            fetch('{{ route('shipping.track') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    tracking_number: button.getAttribute('data-tracking-number'),
+                    courier: button.getAttribute('data-courier')
+                })
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(payload) {
+                if (payload.status === 'ok' && payload.data && payload.data.summary) {
+                    var summary = payload.data.summary;
+                    var note = summary.note ? ' (' + summary.note + ')' : '';
+                    resultBox.textContent = 'Status: ' + (summary.status || 'Tidak diketahui') + note;
+                } else {
+                    resultBox.textContent = payload.message || 'Gagal mengambil status pelacakan.';
+                }
+            })
+            .catch(function() {
+                resultBox.textContent = 'Tidak dapat terhubung ke layanan pelacakan.';
+            });
+        });
+    });
+</script>
 </body>
 </html>

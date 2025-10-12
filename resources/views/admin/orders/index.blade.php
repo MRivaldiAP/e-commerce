@@ -92,8 +92,21 @@
                             ][$shippingStatus] ?? 'badge-secondary';
                             $shippingData = $order->shipping;
                             $oldOrderId = old('order_id');
+                            $remoteOrderCreated = ! empty(optional($shippingData)->remote_id);
                           @endphp
                           <span class="badge {{ $shippingLabel }} text-capitalize">{{ str_replace('_', ' ', $shippingStatus) }}</span>
+                          <div class="mt-2">
+                            @if($remoteOrderCreated)
+                              <span class="badge badge-success">Order API aktif</span>
+                              <div class="small text-muted mt-1">Resi: {{ $shippingData->tracking_number ?? 'Belum tersedia' }}</div>
+                            @else
+                              <form method="POST" action="{{ route('admin.orders.shipping.order', $order) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Kirim data pesanan ini ke gateway pengiriman?')">Hit Order API</button>
+                              </form>
+                              <div class="small text-muted mt-1">Atau masukkan nomor resi secara manual di bawah.</div>
+                            @endif
+                          </div>
                           <form method="POST" action="{{ route('admin.orders.shipping', $order) }}" class="mt-3">
                             @csrf
                             @method('PATCH')
