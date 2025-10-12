@@ -119,6 +119,31 @@
             text-decoration: none;
             font-weight: 600;
         }
+        .tracking-widget {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fafafa;
+        }
+        .tracking-widget button {
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .tracking-widget button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .tracking-result {
+            margin-top: 0.8rem;
+            font-size: 0.9rem;
+            color: #374151;
+        }
     </style>
 </head>
 <body>
@@ -160,25 +185,37 @@
     @else
         @foreach($orders as $order)
             @php
-                $shippingStatus = optional($order->shipping)->status ?? 'packing';
+                $shippingRecord = $order->shipping;
+                $shippingStatus = optional($shippingRecord)->status ?? 'pending';
+                $remoteOrderCreated = $shippingEnabled && ! empty(optional($shippingRecord)->remote_id);
+                $trackingNumberAvailable = $shippingEnabled && ! empty(optional($shippingRecord)->tracking_number);
                 $statusLabel = 'Menunggu Konfirmasi';
                 $statusClass = 'info';
                 if($shippingEnabled) {
-                    $statusLabel = match($shippingStatus) {
-                        'delivered' => 'Pesanan Terkirim',
-                        'in_transit' => 'Dalam Pengiriman',
-                        default => 'Sedang Diproses',
-                    };
-                    $statusClass = match($shippingStatus) {
-                        'delivered' => 'success',
-                        'in_transit' => 'warning',
-                        default => 'info',
-                    };
+                    if($remoteOrderCreated && $trackingNumberAvailable) {
+                        $statusLabel = match($shippingStatus) {
+                            'delivered' => 'Pesanan Terkirim',
+                            'in_transit' => 'Dalam Pengiriman',
+                            default => 'Sedang Dalam Pengiriman',
+                        };
+                        $statusClass = match($shippingStatus) {
+                            'delivered' => 'success',
+                            'in_transit' => 'warning',
+                            default => 'info',
+                        };
+                    } elseif($remoteOrderCreated) {
+                        $statusLabel = 'Menunggu nomor resi';
+                        $statusClass = 'warning';
+                    } else {
+                        $statusLabel = 'Sedang disiapkan penjual';
+                        $statusClass = 'info';
+                    }
                 } else {
                     $statusLabel = $order->is_reviewed ? 'Sudah dikonfirmasi admin' : 'Belum dikonfirmasi admin';
                     $statusClass = $order->is_reviewed ? 'success' : 'warning';
                 }
                 $orderStatus = $order->status === 'paid' ? 'Pembayaran diterima' : ucfirst($order->status);
+                $trackingReady = $shippingEnabled && $remoteOrderCreated && $trackingNumberAvailable;
             @endphp
             <div class="order-wrapper">
                 <div class="order-header">
@@ -238,6 +275,18 @@
                         <div class="order-meta">Status Pengiriman: {{ ucfirst(str_replace('_', ' ', $order->shipping->status ?? 'pending')) }}</div>
                     @endif
                 </div>
+
+                @if($trackingReady)
+                    <div class="tracking-widget" data-tracking-widget>
+                        <div class="order-meta">Terakhir diperbarui: {{ optional($order->shipping->updated_at)->format('d M Y H:i') ?? '-' }}</div>
+                        <button type="button" data-track-button data-tracking-number="{{ $order->shipping->tracking_number }}" data-courier="{{ $order->shipping->courier }}">Lacak Pengiriman</button>
+                        <div class="tracking-result" data-tracking-result hidden></div>
+                    </div>
+                @elseif($shippingEnabled && ! $remoteOrderCreated)
+                    <div class="tracking-widget">
+                        <div class="tracking-result">Sedang disiapkan penjual. Informasi pelacakan akan tersedia setelah pesanan dikirim.</div>
+                    </div>
+                @endif
             </div>
         @endforeach
     @endif
@@ -246,5 +295,45 @@
 {!! view()->file(base_path('themes/theme-herbalgreen/views/components/footer.blade.php'), [
     'footer' => $footerConfig,
 ])->render() !!}
+<script>
+    document.querySelectorAll('[data-track-button]').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var widget = button.closest('[data-tracking-widget]');
+            var resultBox = widget.querySelector('[data-tracking-result]');
+            if (! resultBox) {
+                return;
+            }
+
+            resultBox.hidden = false;
+            resultBox.textContent = 'Mengambil status pelacakan...';
+
+            fetch('{{ route('shipping.track') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    tracking_number: button.getAttribute('data-tracking-number'),
+                    courier: button.getAttribute('data-courier')
+                })
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(payload) {
+                if (payload.status === 'ok' && payload.data && payload.data.summary) {
+                    var summary = payload.data.summary;
+                    var note = summary.note ? ' (' + summary.note + ')' : '';
+                    resultBox.textContent = 'Status: ' + (summary.status || 'Tidak diketahui') + note;
+                } else {
+                    resultBox.textContent = payload.message || 'Gagal mengambil status pelacakan.';
+                }
+            })
+            .catch(function() {
+                resultBox.textContent = 'Tidak dapat terhubung ke layanan pelacakan.';
+            });
+        });
+    });
+</script>
 </body>
 </html>

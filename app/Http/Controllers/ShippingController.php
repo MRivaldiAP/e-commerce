@@ -196,8 +196,6 @@ class ShippingController extends Controller
             ], 422);
         }
 
-        $config = $shipping->getGatewayConfig($gateway->key());
-
         $rate = [
             'courier' => strtolower($data['selected']['courier']),
             'courier_name' => $data['selected']['courier_name'] ?? $data['selected']['courier'],
@@ -208,45 +206,8 @@ class ShippingController extends Controller
             'currency' => 'IDR',
         ];
 
-        try {
-            $orderData = $gateway->createOrder([
-                'config' => $config,
-                'rate' => $rate,
-                'contact' => [
-                    'name' => $data['recipient_name'],
-                    'email' => $data['email'],
-                    'phone' => $data['phone'],
-                ],
-                'address' => [
-                    'street' => $data['address'],
-                    'province_code' => $province->code,
-                    'province_name' => $province->name,
-                    'regency_code' => $regency->code,
-                    'regency_name' => $regency->name,
-                    'district_code' => $district->code,
-                    'district_name' => $district->name,
-                    'village_code' => $village->code,
-                    'village_name' => $village->name,
-                    'postal_code' => $data['postal_code'],
-                ],
-                'items' => $cartSummary['items'] ?? [],
-                'reference' => $request->session()->getId(),
-            ]);
-        } catch (ShippingException $exception) {
-            Log::warning('Gagal membuat pesanan Biteship', [
-                'message' => $exception->getMessage(),
-                'context' => $exception->context(),
-            ]);
-
-            return response()->json([
-                'status' => 'error',
-                'message' => $exception->getMessage(),
-            ], 422);
-        }
-
         $shippingData = [
             'provider' => $gateway->key(),
-            'config' => $config,
             'contact' => [
                 'name' => $data['recipient_name'],
                 'email' => $data['email'],
@@ -264,9 +225,16 @@ class ShippingController extends Controller
                 'village_name' => $village->name,
                 'postal_code' => $data['postal_code'],
             ],
-            'rate' => $orderData,
             'selected_rate' => $rate,
+            'selection' => [
+                'courier' => $rate['courier'],
+                'service' => $rate['service'],
+                'description' => $rate['description'],
+                'etd' => $rate['etd'],
+            ],
+            'cost' => $rate['cost'],
             'weight_grams' => $cartSummary['total_weight_grams'] ?? 0,
+            'items' => $cartSummary['items'] ?? [],
         ];
 
         $request->session()->put('checkout.shipping', $shippingData);

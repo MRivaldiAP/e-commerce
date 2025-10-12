@@ -197,10 +197,11 @@ class CheckoutController extends Controller
                     'service' => Arr::get($shippingData, 'selection.service'),
                     'cost' => $shippingCost,
                     'status' => 'pending',
-                    'metadata' => [
+                    'meta' => [
                         'selection' => Arr::get($shippingData, 'selection', []),
                         'contact' => Arr::get($shippingData, 'contact', []),
                         'address' => Arr::get($shippingData, 'address', []),
+                        'items' => Arr::get($shippingData, 'items', []),
                     ],
                 ]);
             }
@@ -241,13 +242,13 @@ class CheckoutController extends Controller
 
             if ($shippingEnabled && $shippingData) {
                 $order->shipping()->updateOrCreate([], [
-                    'courier' => Arr::get($shippingData, 'selected_rate.courier', 'manual'),
-                    'service' => Arr::get($shippingData, 'selected_rate.service'),
-                    'tracking_number' => Arr::get($shippingData, 'selected_rate.tracking_number'),
+                    'courier' => Arr::get($shippingData, 'selected_rate.courier', Arr::get($shippingData, 'selection.courier', 'manual')),
+                    'service' => Arr::get($shippingData, 'selected_rate.service', Arr::get($shippingData, 'selection.service')),
+                    'tracking_number' => null,
                     'cost' => $shippingCost,
-                    'status' => 'packing',
+                    'status' => 'pending',
                     'estimated_delivery' => $this->resolveEstimatedDelivery(Arr::get($shippingData, 'selected_rate.etd')),
-                    'remote_id' => Arr::get($shippingData, 'rate.remote_id'),
+                    'remote_id' => null,
                     'meta' => $shippingData,
                 ]);
             }
@@ -403,7 +404,7 @@ class CheckoutController extends Controller
     protected function buildCheckoutTotals(array $cartSummary, ?array $shippingData = null): array
     {
         $subtotal = (float) ($cartSummary['total_price'] ?? 0);
-        $shippingCost = (int) Arr::get($shippingData, 'rate.cost', 0);
+        $shippingCost = (int) Arr::get($shippingData, 'cost', Arr::get($shippingData, 'selected_rate.cost', 0));
         $grandTotal = $subtotal + $shippingCost;
 
         return [

@@ -161,6 +161,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::get('order', [AdminOrderController::class, 'index'])->name('admin.orders.index');
         Route::patch('order/{order}/review', [AdminOrderController::class, 'toggleReview'])->name('admin.orders.review');
         Route::patch('order/{order}/shipping', [AdminOrderController::class, 'updateShipping'])->name('admin.orders.shipping');
+        Route::post('order/{order}/shipping/order', [AdminOrderController::class, 'createShippingOrder'])->name('admin.orders.shipping.order');
     });
 
     Route::middleware('role:' . User::ROLE_ADMINISTRATOR)->group(function () {
