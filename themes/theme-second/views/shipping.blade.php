@@ -211,72 +211,6 @@
             'rate'        => $selectedRate,
             ]) }};
         let selectedRate = initialSelection.rate || null;
-        const niceSelectQueue = new Set();
-        let niceSelectTimer = null;
-        let niceSelectLoadListenerBound = false;
-
-        function applyNiceSelect(select) {
-            if (!select) return false;
-            const hasPlugin = window.jQuery && typeof window.jQuery.fn.niceSelect === 'function';
-            if (!hasPlugin) {
-                return false;
-            }
-
-            const $select = window.jQuery(select);
-            if ($select.next('.nice-select').length) {
-                $select.niceSelect('update');
-            } else {
-                $select.niceSelect();
-            }
-
-            return true;
-        }
-
-        function flushNiceSelectQueue() {
-            if (!(window.jQuery && typeof window.jQuery.fn.niceSelect === 'function')) {
-                return false;
-            }
-
-            niceSelectQueue.forEach(select => {
-                applyNiceSelect(select);
-            });
-            niceSelectQueue.clear();
-            return true;
-        }
-
-        function scheduleNiceSelectFlush() {
-            if (niceSelectTimer || niceSelectQueue.size === 0) {
-                return;
-            }
-
-            niceSelectTimer = setInterval(() => {
-                if (flushNiceSelectQueue()) {
-                    clearInterval(niceSelectTimer);
-                    niceSelectTimer = null;
-                }
-            }, 200);
-
-            if (!niceSelectLoadListenerBound) {
-                window.addEventListener('load', () => {
-                    flushNiceSelectQueue();
-                    if (niceSelectTimer) {
-                        clearInterval(niceSelectTimer);
-                        niceSelectTimer = null;
-                    }
-                });
-                niceSelectLoadListenerBound = true;
-            }
-        }
-
-        function refreshNiceSelect(select) {
-            if (!select) return;
-            if (applyNiceSelect(select)) {
-                return;
-            }
-
-            niceSelectQueue.add(select);
-            scheduleNiceSelectFlush();
-        }
 
         function setSubmitState() {
             if (submitButton) {
@@ -323,7 +257,6 @@
             option.value = '';
             option.textContent = placeholder;
             select.appendChild(option);
-            refreshNiceSelect(select);
         }
 
         function populateSelect(select, items, selectedValue) {
@@ -340,7 +273,6 @@
                 }
                 select.appendChild(option);
             });
-            refreshNiceSelect(select);
             select.dispatchEvent(new Event('change'));
         }
 
@@ -563,12 +495,12 @@
         updateTotals(selectedRate ? selectedRate.cost : ({{ $checkoutTotals['shipping_cost'] ?? 0 }}));
     })();
 </script>
-<script src="{{ asset('storage/themes/theme-second/js/jquery-3.3.1.min.js') }}"></script>
+{{-- <script src="{{ asset('storage/themes/theme-second/js/jquery-3.3.1.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/bootstrap.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/jquery.nice-select.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/jquery-ui.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/jquery.slicknav.js') }}"></script>
-<script src="{{ asset('storage/themes/theme-second/js/mixitup.min.js') }}"></script>
+<script src="{{ asset('storage/themes/theme-second/js/mixitup.min.js') }}"></script> auto fill kabupaten etc nt functioning if this uncomment --}}
 <script src="{{ asset('storage/themes/theme-second/js/owl.carousel.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/main.js') }}"></script>
 </body>
