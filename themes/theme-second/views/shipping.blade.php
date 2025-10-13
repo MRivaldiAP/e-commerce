@@ -28,6 +28,32 @@
             color: #1c1c1c;
             margin-bottom: 24px;
         }
+        .shipping-card .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .shipping-card .form-label {
+            font-weight: 600;
+            color: #1c1c1c;
+            margin-bottom: 0;
+            letter-spacing: 0.2px;
+        }
+        .shipping-card .select-wrapper {
+            position: relative;
+        }
+        .shipping-card .select-wrapper::after {
+            content: "\f078";
+            font-family: 'FontAwesome';
+            position: absolute;
+            inset-block: 0;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+            color: #7fad39;
+            font-size: 14px;
+        }
         .shipping-card .form-control,
         .shipping-card .form-select,
         .shipping-card textarea {
@@ -35,6 +61,19 @@
             border: 1px solid #e0e0e0;
             padding: 14px 16px;
             font-size: 15px;
+            background-color: #fafafa;
+        }
+        .shipping-card .form-select {
+            padding-right: 42px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: none;
+        }
+        .shipping-card .form-select option {
+            color: #1c1c1c;
+            font-weight: 500;
+            white-space: nowrap;
         }
         .shipping-card .form-control:focus,
         .shipping-card .form-select:focus,
@@ -85,51 +124,77 @@
                     <form data-shipping-form>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Nama Penerima</label>
-                                <input type="text" class="form-control" name="recipient_name" value="{{ $contact['name'] ?? '' }}" required>
+                                <div class="form-field">
+                                    <label class="form-label">Nama Penerima</label>
+                                    <input type="text" class="form-control" name="recipient_name" value="{{ $contact['name'] ?? '' }}" required>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" name="email" value="{{ $contact['email'] ?? '' }}" required>
+                                <div class="form-field">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" name="email" value="{{ $contact['email'] ?? '' }}" required>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">No. Telepon</label>
-                                <input type="tel" class="form-control" name="phone" value="{{ $contact['phone'] ?? '' }}" required>
+                                <div class="form-field">
+                                    <label class="form-label">No. Telepon</label>
+                                    <input type="tel" class="form-control" name="phone" value="{{ $contact['phone'] ?? '' }}" required>
+                                </div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Alamat Lengkap</label>
-                                <textarea class="form-control" name="address" rows="3" required>{{ $addressData['street'] ?? '' }}</textarea>
+                                <div class="form-field">
+                                    <label class="form-label">Alamat Lengkap</label>
+                                    <textarea class="form-control" name="address" rows="3" required>{{ $addressData['street'] ?? '' }}</textarea>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Provinsi</label>
-                                <select class="form-select" id="province" name="province_code" data-selected="{{ $addressData['province_code'] ?? '' }}" required>
-                                    <option value="">Pilih Provinsi</option>
-                                    @foreach($provinces as $province)
-                                        <option value="{{ $province->code }}" {{ ($addressData['province_code'] ?? '') === $province->code ? 'selected' : '' }}>{{ $province->name }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="form-field">
+                                    <label class="form-label">Provinsi</label>
+                                    <div class="select-wrapper">
+                                        <select class="form-select" id="province" name="province_code" data-selected="{{ $addressData['province_code'] ?? '' }}" required>
+                                            <option value="">Pilih Provinsi</option>
+                                            @foreach($provinces as $province)
+                                                <option value="{{ $province->code }}" {{ ($addressData['province_code'] ?? '') === $province->code ? 'selected' : '' }}>{{ $province->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Kota / Kabupaten</label>
-                                <select class="form-select" id="regency" name="regency_code" data-selected="{{ $addressData['regency_code'] ?? '' }}" required>
-                                    <option value="">Pilih Kota/Kabupaten</option>
-                                </select>
+                                <div class="form-field">
+                                    <label class="form-label">Kota / Kabupaten</label>
+                                    <div class="select-wrapper">
+                                        <select class="form-select" id="regency" name="regency_code" data-selected="{{ $addressData['regency_code'] ?? '' }}" required>
+                                            <option value="">Pilih Kota/Kabupaten</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Kecamatan</label>
-                                <select class="form-select" id="district" name="district_code" data-selected="{{ $addressData['district_code'] ?? '' }}" required>
-                                    <option value="">Pilih Kecamatan</option>
-                                </select>
+                                <div class="form-field">
+                                    <label class="form-label">Kecamatan</label>
+                                    <div class="select-wrapper">
+                                        <select class="form-select" id="district" name="district_code" data-selected="{{ $addressData['district_code'] ?? '' }}" required>
+                                            <option value="">Pilih Kecamatan</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Kelurahan</label>
-                                <select class="form-select" id="village" name="village_code" data-selected="{{ $addressData['village_code'] ?? '' }}" required>
-                                    <option value="">Pilih Kelurahan</option>
-                                </select>
+                                <div class="form-field">
+                                    <label class="form-label">Kelurahan</label>
+                                    <div class="select-wrapper">
+                                        <select class="form-select" id="village" name="village_code" data-selected="{{ $addressData['village_code'] ?? '' }}" required>
+                                            <option value="">Pilih Kelurahan</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Kode Pos</label>
-                                <input type="text" class="form-control" id="postal_code" name="postal_code" value="{{ $addressData['postal_code'] ?? '' }}" required>
+                                <div class="form-field">
+                                    <label class="form-label">Kode Pos</label>
+                                    <input type="text" class="form-control" id="postal_code" name="postal_code" value="{{ $addressData['postal_code'] ?? '' }}" required>
+                                </div>
                             </div>
                         </div>
 
