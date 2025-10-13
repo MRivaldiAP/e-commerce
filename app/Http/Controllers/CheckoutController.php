@@ -347,10 +347,20 @@ class CheckoutController extends Controller
 
         $existing = $user->addresses()->first();
         if ($existing) {
-            $existing->fill($payload)->save();
-
             return $existing;
         }
+
+        $payload = [
+            'recipient_name' => $user->name ?? 'Pelanggan',
+            'phone' => $user->phone ?? '0000000000',
+            'street' => 'Alamat belum diatur',
+            'village' => 'Belum diatur',
+            'subdistrict' => 'Belum diatur',
+            'city' => 'Belum diatur',
+            'province' => 'Belum diatur',
+            'postal_code' => '00000',
+            'is_default' => true,
+        ];
 
         return $user->addresses()->create($payload);
     }
