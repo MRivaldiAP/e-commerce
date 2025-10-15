@@ -1,6 +1,6 @@
 <?php
 
-// this pages will be the master page which list all available elements accross all themes
+// this pages will list all available elements in second theme
 
 return [
     'home' => [
