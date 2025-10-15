@@ -1,12 +1,181 @@
 <?php
 
-// this pages will list all available elements in restoran theme
-
 return [
     'home' => [
-        'hero' => ['tagline', 'button_label', 'spinning_text'],
-        'services' => ['items']
-        // other elements
+        'hero' => [
+            'hero.visible',
+            'hero.mask',
+            'hero.image',
+            'hero.tagline',
+            'hero.heading',
+            'hero.description',
+            'hero.button_label',
+            'hero.button_link',
+            'hero.spin_image',
+            'hero.spin_text',
+        ],
+        'services' => [
+            'services.visible',
+            'services.items',
+        ],
+        'about' => [
+            'about.visible',
+            'about.image',
+            'about.heading',
+            'about.text',
+        ],
+        'products' => [
+            'products.visible',
+            'products.heading',
+        ],
+        'testimonials' => [
+            'testimonials.visible',
+            'testimonials.items',
+        ],
+        'contact' => [
+            'contact.visible',
+            'contact.heading',
+            'contact.map',
+        ],
     ],
-    // other pages
+    'product' => [
+        'hero' => [
+            'hero.visible',
+            'hero.mask',
+            'hero.image',
+            'title',
+        ],
+    ],
+    'product-detail' => [
+        'hero' => [
+            'hero.visible',
+            'hero.mask',
+            'hero.image',
+            'hero.title',
+        ],
+        'comments' => [
+            'comments.visible',
+            'comments.heading',
+        ],
+        'recommendations' => [
+            'recommendations.visible',
+            'recommendations.heading',
+        ],
+    ],
+    'article' => [
+        'hero' => [
+            'hero.visible',
+            'hero.mask',
+            'hero.image',
+            'hero.heading',
+            'hero.description',
+            'search.placeholder',
+        ],
+        'list' => [
+            'list.button_label',
+            'list.empty_text',
+            'articles.items',
+        ],
+        'timeline' => [
+            'timeline.visible',
+            'timeline.heading',
+        ],
+    ],
+    'article-detail' => [
+        'hero' => [
+            'hero.visible',
+            'hero.mask',
+            'hero.image',
+            'hero.title',
+        ],
+        'meta' => [
+            'meta.show_author',
+            'meta.show_date',
+        ],
+        'comments' => [
+            'comments.visible',
+            'comments.heading',
+            'comments.disabled_text',
+        ],
+        'recommendations' => [
+            'recommendations.visible',
+            'recommendations.heading',
+        ],
+    ],
+    'about' => [
+        'hero' => [
+            'hero.visible',
+            'hero.mask',
+            'hero.background',
+            'hero.heading',
+            'hero.text',
+        ],
+        'intro' => [
+            'intro.visible',
+            'intro.image',
+            'intro.heading',
+            'intro.description',
+        ],
+        'quote' => [
+            'quote.visible',
+            'quote.text',
+            'quote.author',
+        ],
+        'team' => [
+            'team.visible',
+            'team.heading',
+            'team.description',
+            'team.members',
+        ],
+        'advantages' => [
+            'advantages.visible',
+            'advantages.heading',
+            'advantages.description',
+            'advantages.items',
+        ],
+    ],
+    'cart' => [
+        'header' => [
+            'title',
+            'subtitle',
+        ],
+        'empty' => [
+            'empty.message',
+            'empty.button',
+        ],
+        'actions' => [
+            'button.shipping',
+            'button.payment',
+        ],
+    ],
+    'layout' => [
+        'navigation' => [
+            'navigation.brand.visible',
+            'navigation.brand.text',
+            'navigation.brand.logo',
+            'navigation.brand.icon',
+            'navigation.link.home',
+            'navigation.link.about',
+            'navigation.link.products',
+            'navigation.link.articles',
+            'navigation.link.article-detail',
+            'navigation.link.orders',
+            'navigation.icon.cart',
+            'navigation.button.login',
+        ],
+        'footer' => [
+            'footer.hotlinks.visible',
+            'footer.address.visible',
+            'footer.address.text',
+            'footer.phone.visible',
+            'footer.phone.text',
+            'footer.email.visible',
+            'footer.email.text',
+            'footer.social.visible',
+            'footer.social.text',
+            'footer.schedule.visible',
+            'footer.schedule.text',
+            'footer.copyright',
+        ],
+    ],
 ];
