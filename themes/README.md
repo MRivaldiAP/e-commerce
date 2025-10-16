@@ -100,3 +100,10 @@ B) forms - for address (address, provinces, kecamatan, kelurahan, name, email, p
 C) below form right after postal code filled, show available shipping method
 D) right bar, shows prodcut list price from kerangjang page, and after subtotal, add shipping cost which dynamically get from selected shipping method, and belw that add total
 E) payment button under the right sidebar which connect to payment gateway page according to payment gateway selected 
+------------------
+GALlERY PAGE
+Components - Nav Menu
+A) Header saying Galeri
+B) list of thumbnails of photos in right side, with click to zoom modal
+C) category filter of gallery in left side
+D) Components - Footer
