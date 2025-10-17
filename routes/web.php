@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -61,6 +62,15 @@ Route::get('/tentang-kami', function () {
     }
     abort(404);
 })->name('about');
+
+Route::get('/galeri', function () {
+    $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
+    $viewPath = base_path("themes/{$activeTheme}/views/gallery.blade.php");
+    if (File::exists($viewPath)) {
+        return view()->file($viewPath, ['theme' => $activeTheme]);
+    }
+    abort(404);
+})->name('gallery.index');
 
 Route::get('/produk/{product}', function (Product $product) {
     $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
@@ -189,6 +199,13 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::post('pages/article', [PageController::class, 'updateArticle'])->name('admin.pages.article.update');
         Route::get('pages/article-detail', [PageController::class, 'articleDetail'])->name('admin.pages.article-detail');
         Route::post('pages/article-detail', [PageController::class, 'updateArticleDetail'])->name('admin.pages.article-detail.update');
+        Route::get('pages/gallery', [PageController::class, 'gallery'])->name('admin.pages.gallery');
+        Route::post('pages/gallery', [PageController::class, 'updateGallery'])->name('admin.pages.gallery.update');
+        Route::get('gallery', [GalleryController::class, 'index'])->name('admin.gallery.index');
+        Route::post('gallery/categories', [GalleryController::class, 'storeCategory'])->name('admin.gallery.categories.store');
+        Route::delete('gallery/categories/{slug}', [GalleryController::class, 'destroyCategory'])->name('admin.gallery.categories.destroy');
+        Route::post('gallery/items', [GalleryController::class, 'storeItem'])->name('admin.gallery.items.store');
+        Route::delete('gallery/items/{id}', [GalleryController::class, 'destroyItem'])->name('admin.gallery.items.destroy');
         Route::get('pages/cart', [PageController::class, 'cart'])->name('admin.pages.cart');
         Route::post('pages/cart', [PageController::class, 'updateCart'])->name('admin.pages.cart.update');
         Route::get('pages/layout', [PageController::class, 'layout'])->name('admin.pages.layout');

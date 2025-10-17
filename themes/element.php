@@ -193,6 +193,35 @@ return [
             ],
         ],
     ],
+    'gallery' => [
+        'sections' => [
+            'hero' => [
+                'label' => 'Header',
+                'elements' => [
+                    'hero.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
+                    'hero.image' => ['type' => 'image', 'label' => 'Gambar Latar'],
+                    'hero.heading' => ['type' => 'text', 'label' => 'Judul'],
+                    'hero.description' => ['type' => 'textarea', 'label' => 'Deskripsi Pendek'],
+                ],
+            ],
+            'filters' => [
+                'label' => 'Filter Kategori',
+                'elements' => [
+                    'filters.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
+                    'filters.heading' => ['type' => 'text', 'label' => 'Judul Sidebar'],
+                    'filters.all_label' => ['type' => 'text', 'label' => 'Label Semua Kategori'],
+                ],
+            ],
+            'items' => [
+                'label' => 'Item Galeri',
+                'elements' => [
+                    'items.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
+                    'items.heading' => ['type' => 'text', 'label' => 'Judul Galeri'],
+                    'items.description' => ['type' => 'textarea', 'label' => 'Deskripsi Galeri'],
+                ],
+            ],
+        ],
+    ],
     'about' => [
         'sections' => [
             'hero' => [
@@ -296,6 +325,7 @@ return [
                     'navigation.link.home' => ['type' => 'checkbox', 'label' => 'Tautan Home'],
                     'navigation.link.about' => ['type' => 'checkbox', 'label' => 'Tautan Tentang Kami'],
                     'navigation.link.products' => ['type' => 'checkbox', 'label' => 'Tautan Produk'],
+                    'navigation.link.gallery' => ['type' => 'checkbox', 'label' => 'Tautan Galeri'],
                     'navigation.link.articles' => ['type' => 'checkbox', 'label' => 'Tautan Artikel'],
                     'navigation.link.article-detail' => ['type' => 'checkbox', 'label' => 'Tautan Detail Artikel'],
                     'navigation.link.orders' => ['type' => 'checkbox', 'label' => 'Tautan Pesanan Saya'],
