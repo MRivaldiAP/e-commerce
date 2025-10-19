@@ -199,25 +199,44 @@ return [
                 'label' => 'Header',
                 'elements' => [
                     'hero.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
+                    'hero.mask' => ['type' => 'checkbox', 'label' => 'Gunakan Overlay Gelap'],
                     'hero.image' => ['type' => 'image', 'label' => 'Gambar Latar'],
-                    'hero.heading' => ['type' => 'text', 'label' => 'Judul'],
-                    'hero.description' => ['type' => 'textarea', 'label' => 'Deskripsi Pendek'],
+                    'hero.heading' => ['type' => 'text', 'label' => 'Judul Halaman'],
+                    'hero.description' => ['type' => 'textarea', 'label' => 'Deskripsi Singkat'],
                 ],
             ],
             'filters' => [
                 'label' => 'Filter Kategori',
                 'elements' => [
-                    'filters.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
-                    'filters.heading' => ['type' => 'text', 'label' => 'Judul Sidebar'],
-                    'filters.all_label' => ['type' => 'text', 'label' => 'Label Semua Kategori'],
+                    'categories.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Filter'],
+                    'categories.heading' => ['type' => 'text', 'label' => 'Judul Filter'],
+                    'categories.all_label' => ['type' => 'text', 'label' => 'Label Tombol "Semua"'],
+                    'categories.items' => [
+                        'type' => 'repeatable',
+                        'label' => 'Daftar Kategori',
+                        'fields' => [
+                            ['name' => 'name', 'placeholder' => 'Nama Kategori'],
+                            ['name' => 'slug', 'placeholder' => 'Slug (opsional)'],
+                        ],
+                    ],
                 ],
             ],
-            'items' => [
-                'label' => 'Item Galeri',
+            'grid' => [
+                'label' => 'Galeri Foto',
                 'elements' => [
-                    'items.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
-                    'items.heading' => ['type' => 'text', 'label' => 'Judul Galeri'],
-                    'items.description' => ['type' => 'textarea', 'label' => 'Deskripsi Galeri'],
+                    'gallery.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Galeri'],
+                    'gallery.heading' => ['type' => 'text', 'label' => 'Judul Seksi Galeri'],
+                    'gallery.empty_text' => ['type' => 'textarea', 'label' => 'Pesan Saat Galeri Kosong'],
+                    'gallery.items' => [
+                        'type' => 'repeatable',
+                        'label' => 'Foto Galeri',
+                        'fields' => [
+                            ['name' => 'title', 'placeholder' => 'Judul Foto'],
+                            ['name' => 'image', 'placeholder' => 'Path Gambar atau URL'],
+                            ['name' => 'category', 'placeholder' => 'Slug/Nama Kategori'],
+                            ['name' => 'description', 'placeholder' => 'Deskripsi', 'type' => 'textarea'],
+                        ],
+                    ],
                 ],
             ],
         ],

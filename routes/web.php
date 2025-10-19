@@ -71,7 +71,7 @@ Route::get('/galeri', function () {
         return view()->file($viewPath, ['theme' => $activeTheme]);
     }
     abort(404);
-})->name('gallery.index');
+})->name('gallery');
 
 Route::get('/produk/{product}', function (Product $product) {
     $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
@@ -202,12 +202,6 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::post('pages/article-detail', [PageController::class, 'updateArticleDetail'])->name('admin.pages.article-detail.update');
         Route::get('pages/gallery', [PageController::class, 'gallery'])->name('admin.pages.gallery');
         Route::post('pages/gallery', [PageController::class, 'updateGallery'])->name('admin.pages.gallery.update');
-        Route::resource('gallery/categories', GalleryCategoryController::class)
-            ->except(['show'])
-            ->names('admin.gallery.categories');
-        Route::resource('gallery/items', GalleryItemController::class)
-            ->except(['show'])
-            ->names('admin.gallery.items');
         Route::get('pages/cart', [PageController::class, 'cart'])->name('admin.pages.cart');
         Route::post('pages/cart', [PageController::class, 'updateCart'])->name('admin.pages.cart.update');
         Route::get('pages/layout', [PageController::class, 'layout'])->name('admin.pages.layout');

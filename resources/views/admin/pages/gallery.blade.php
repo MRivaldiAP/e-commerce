@@ -26,20 +26,21 @@
                   <label>{{ $element['label'] }}</label>
                   <input type="file" class="form-control-file" data-key="{{ $element['id'] }}">
                   @if (!empty($settings[$element['id']]))
-                    <img src="{{ asset('storage/' . $settings[$element['id']]) }}" alt="Preview" class="img-fluid mt-2 rounded" style="max-height:120px; object-fit:cover;">
+                    <img src="{{ asset('storage/' . $settings[$element['id']]) }}" alt="Preview" class="img-fluid mt-2 rounded" style="max-height:120px; object-fit:contain;">
                   @endif
                 @elseif ($element['type'] === 'repeatable')
                   @php
-                    $itemsValue = json_decode($settings[$element['id']] ?? '[]', true);
+                    $items = json_decode($settings[$element['id']] ?? '[]', true);
                     $fields = $element['fields'] ?? [];
+                    if (!is_array($items)) {
+                        $items = [];
+                    }
                   @endphp
                   <div data-repeatable="{{ $element['id'] }}" data-fields='@json($fields)'>
                     <div class="repeatable-items"></div>
                     <button type="button" class="btn btn-sm btn-secondary add-item">Tambah Item</button>
-                    <textarea class="d-none" data-key="{{ $element['id'] }}">{{ json_encode($itemsValue) }}</textarea>
+                    <textarea class="d-none" data-key="{{ $element['id'] }}">{{ json_encode($items) }}</textarea>
                   </div>
-                @else
-                  <p class="text-muted mb-0">{{ $element['label'] }}</p>
                 @endif
               </div>
             @endforeach
@@ -51,7 +52,6 @@
         <iframe id="page-preview" src="{{ $previewUrl }}" class="w-100 border h-100"></iframe>
       </div>
     </div>
-
   </div>
 </div>
 @endsection
@@ -70,41 +70,29 @@ function debounce(fn, delay) {
 
 const triggerPreviewReload = debounce(function(){
   const iframe = document.getElementById('page-preview');
-  if (iframe && iframe.contentWindow) {
-    iframe.contentWindow.location.reload();
-  }
+  iframe.contentWindow.location.reload();
 }, 500);
-
-function updateSetting(input){
-  const key = input.getAttribute('data-key');
-  const formData = new FormData();
-  formData.append('key', key);
-  if(input.type === 'checkbox'){
-    formData.append('value', input.checked ? 1 : 0);
-  }else if(input.type === 'file'){
-    if(input.files[0]){ formData.append('value', input.files[0]); }
-  }else{
-    formData.append('value', input.value);
-  }
-
-  fetch('{{ route('admin.pages.gallery.update') }}', {
-    method: 'POST',
-    headers: {'X-CSRF-TOKEN': csrf},
-    body: formData
-  }).then(() => {
-    triggerPreviewReload();
-  });
-}
 
 document.querySelectorAll('#elements [data-key]').forEach(function(input){
   input.addEventListener('change', function(){
-    updateSetting(this);
-  });
-  if(input.type === 'file'){
-    input.addEventListener('input', function(){
-      updateSetting(this);
+    const key = this.getAttribute('data-key');
+    const formData = new FormData();
+    formData.append('key', key);
+    if(this.type === 'checkbox'){
+      formData.append('value', this.checked ? 1 : 0);
+    }else if(this.type === 'file'){
+      if(this.files[0]){ formData.append('value', this.files[0]); }
+    }else{
+      formData.append('value', this.value);
+    }
+    fetch('{{ route('admin.pages.gallery.update') }}', {
+      method: 'POST',
+      headers: {'X-CSRF-TOKEN': csrf},
+      body: formData
+    }).then(() => {
+      triggerPreviewReload();
     });
-  }
+  });
 });
 
 document.querySelectorAll('[data-repeatable]').forEach(function(wrapper){
@@ -114,17 +102,14 @@ document.querySelectorAll('[data-repeatable]').forEach(function(wrapper){
 
   function buildItem(data = {}){
     const div = document.createElement('div');
-    div.className = 'repeatable-item mb-2 border rounded p-2';
+    div.className = 'repeatable-item mb-2 p-2 border rounded';
     let html = '';
     fields.forEach(function(field){
-      const type = field.type || 'text';
-      const name = field.name;
-      const placeholder = field.placeholder || '';
-      const value = data[name] || '';
-      if(type === 'textarea'){
-        html += `<textarea class="form-control mb-2" data-field="${name}" placeholder="${placeholder}">${value}</textarea>`;
+      const fieldType = field.type || 'text';
+      if(fieldType === 'textarea'){
+        html += `<textarea class="form-control mb-1" data-field="${field.name}" placeholder="${field.placeholder}">${data[field.name] || ''}</textarea>`;
       }else{
-        html += `<input type="text" class="form-control mb-2" data-field="${name}" placeholder="${placeholder}" value="${value}">`;
+        html += `<input type="text" class="form-control mb-1" data-field="${field.name}" placeholder="${field.placeholder}" value="${data[field.name] || ''}">`;
       }
     });
     html += '<button type="button" class="btn btn-sm btn-danger remove-item">Hapus</button>';
@@ -150,7 +135,6 @@ document.querySelectorAll('[data-repeatable]').forEach(function(wrapper){
   });
 
   itemsContainer.addEventListener('input', sync);
-  itemsContainer.addEventListener('change', sync);
   itemsContainer.addEventListener('click', function(e){
     if(e.target.classList.contains('remove-item')){
       e.target.closest('.repeatable-item').remove();
@@ -170,22 +154,18 @@ document.querySelectorAll('#elements .card').forEach(function(card){
   card.addEventListener('mouseenter', function(){
     const target = card.getAttribute('data-section');
     const iframe = document.getElementById('page-preview');
-    if(iframe && iframe.contentWindow){
-      const section = iframe.contentWindow.document.getElementById(target);
-      if(section){
-        section.style.outline = '2px dashed #ff9800';
-        section.scrollIntoView({behavior:'smooth'});
-      }
+    const section = iframe.contentWindow.document.getElementById(target);
+    if(section){
+      section.style.outline = '2px dashed #ff9800';
+      section.scrollIntoView({behavior:'smooth'});
     }
   });
   card.addEventListener('mouseleave', function(){
     const target = card.getAttribute('data-section');
     const iframe = document.getElementById('page-preview');
-    if(iframe && iframe.contentWindow){
-      const section = iframe.contentWindow.document.getElementById(target);
-      if(section){
-        section.style.outline = '';
-      }
+    const section = iframe.contentWindow.document.getElementById(target);
+    if(section){
+      section.style.outline = '';
     }
   });
 });

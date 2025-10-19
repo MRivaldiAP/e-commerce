@@ -181,8 +181,7 @@ class PageController extends Controller
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('gallery'));
         $sections = PageElements::sections('gallery', $theme);
-
-        $previewUrl = route('gallery.index');
+        $previewUrl = route('gallery');
 
         return view('admin.pages.gallery', compact('sections', 'settings', 'previewUrl'));
     }
