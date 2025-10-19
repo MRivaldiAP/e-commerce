@@ -107,3 +107,11 @@ A) Header saying Galeri
 B) list of thumbnails of photos in right side, with click to zoom modal
 C) category filter of gallery in left side
 D) Components - Footer
+-------------------
+CONTACT PAGE
+Components - Nav Menu
+A) Header saying Kontak Kami
+B) section consisting of cards of contact info, email, alamat, no telp, better if the cards can be managed in admin page
+C) links of social media including their socmed icon, each socmed can be hide/show
+D) section showing map just like in home page, can be hide and show
+Components - Footer
