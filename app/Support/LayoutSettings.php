@@ -68,6 +68,12 @@ class LayoutSettings
                 'visible' => ($settings['navigation.link.gallery'] ?? '1') === '1',
             ],
             [
+                'key' => 'contact',
+                'label' => 'Kontak',
+                'href' => route('contact'),
+                'visible' => ($settings['navigation.link.contact'] ?? '1') === '1',
+            ],
+            [
                 'key' => 'articles',
                 'label' => 'Artikel',
                 'href' => route('articles.index'),

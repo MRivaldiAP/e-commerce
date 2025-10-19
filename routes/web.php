@@ -65,6 +65,15 @@ Route::get('/tentang-kami', function () {
     abort(404);
 })->name('about');
 
+Route::get('/kontak', function () {
+    $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
+    $viewPath = base_path("themes/{$activeTheme}/views/kontak.blade.php");
+    if (File::exists($viewPath)) {
+        return view()->file($viewPath, ['theme' => $activeTheme]);
+    }
+    abort(404);
+})->name('contact');
+
 Route::get('/produk/{product}', function (Product $product) {
     $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
     $viewPath = base_path("themes/{$activeTheme}/views/product-detail.blade.php");
@@ -184,6 +193,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::post('pages/home', [PageController::class, 'updateHome'])->name('admin.pages.home.update');
         Route::get('pages/about', [PageController::class, 'about'])->name('admin.pages.about');
         Route::post('pages/about', [PageController::class, 'updateAbout'])->name('admin.pages.about.update');
+        Route::get('pages/contact', [PageController::class, 'contact'])->name('admin.pages.contact');
+        Route::post('pages/contact', [PageController::class, 'updateContact'])->name('admin.pages.contact.update');
         Route::get('pages/product', [PageController::class, 'product'])->name('admin.pages.product');
         Route::post('pages/product', [PageController::class, 'updateProduct'])->name('admin.pages.product.update');
         Route::get('pages/product-detail', [PageController::class, 'productDetail'])->name('admin.pages.product-detail');
