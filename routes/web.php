@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThemeAssetController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\AIController;
+use App\Http\Controllers\Admin\GalleryCategoryController;
+use App\Http\Controllers\Admin\GalleryItemController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
