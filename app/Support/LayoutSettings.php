@@ -62,12 +62,6 @@ class LayoutSettings
                 'visible' => ($settings['navigation.link.products'] ?? '1') === '1',
             ],
             [
-                'key' => 'gallery',
-                'label' => 'Galeri',
-                'href' => route('gallery'),
-                'visible' => ($settings['navigation.link.gallery'] ?? '1') === '1',
-            ],
-            [
                 'key' => 'articles',
                 'label' => 'Artikel',
                 'href' => route('articles.index'),
