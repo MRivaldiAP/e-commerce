@@ -33,7 +33,6 @@
         $isUsersRoute = request()->routeIs('admin.users.*');
         $isCustomersView = $isUsersRoute && $usersView === 'customers';
         $isTeamView = $isUsersRoute && ! $isCustomersView;
-        $isGalleryRoute = request()->routeIs('admin.gallery.*') || request()->routeIs('admin.pages.gallery');
     @endphp
     <div class="container-scroller">
       <nav class="sidebar sidebar-offcanvas" id="sidebar" style="overflow-y: auto;">
