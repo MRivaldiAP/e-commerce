@@ -176,6 +176,37 @@ class PageController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
+    public function gallery()
+    {
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+        $settings = collect(PageSetting::forPage('gallery'));
+        $sections = PageElements::sections('gallery', $theme);
+        $previewUrl = route('gallery.index');
+
+        return view('admin.pages.gallery', compact('sections', 'settings', 'previewUrl'));
+    }
+
+    public function updateGallery(Request $request)
+    {
+        $request->validate([
+            'key' => 'required',
+            'value' => 'nullable',
+        ]);
+
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+
+        $value = $request->input('value');
+        if ($request->hasFile('value')) {
+            $value = $request->file('value')->store("pages/{$theme}", 'public');
+        }
+
+        $key = $request->input('key');
+
+        PageSetting::put('gallery', $key, $value);
+
+        return response()->json(['status' => 'ok']);
+    }
+
     public function about()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
@@ -249,6 +280,9 @@ class PageController extends Controller
         }
         if (! $settings->has('navigation.link.article-detail')) {
             $settings->put('navigation.link.article-detail', '0');
+        }
+        if (! $settings->has('navigation.link.gallery')) {
+            $settings->put('navigation.link.gallery', '1');
         }
         $sections = PageElements::sections('layout', $theme);
 
