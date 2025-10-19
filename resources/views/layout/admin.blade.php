@@ -362,17 +362,3 @@
     <!-- End custom js for this page -->
   </body>
 </html>
-          <li class="nav-item">
-            <a class="nav-link" data-toggle="collapse" href="#gallery-menu" aria-expanded="{{ $isGalleryRoute ? 'true' : 'false' }}" aria-controls="gallery-menu">
-              <i class="mdi mdi-image-multiple menu-icon"></i>
-              <span class="menu-title">Galeri</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse {{ $isGalleryRoute ? 'show' : '' }}" id="gallery-menu">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.pages.gallery') ? 'active' : '' }}" href="{{ route('admin.pages.gallery') }}">Pengaturan Layout</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.gallery.categories.*') ? 'active' : '' }}" href="{{ route('admin.gallery.categories.index') }}">Kategori</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.gallery.items.*') ? 'active' : '' }}" href="{{ route('admin.gallery.items.index') }}">Item</a></li>
-              </ul>
-            </div>
-          </li>
