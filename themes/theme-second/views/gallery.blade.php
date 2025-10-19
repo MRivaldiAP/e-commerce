@@ -3,37 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galeri</title>
-    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/bootstrap.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/font-awesome.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/elegant-icons.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/nice-select.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/jquery-ui.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/owl.carousel.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/slicknav.min.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/style.css') }}" type="text/css">
-    <style>
-        .gallery__filters ul li a.active { color: #7fad39; font-weight: 600; }
-        .gallery__item { cursor: pointer; transition: transform .2s ease; }
-        .gallery__item:hover { transform: translateY(-4px); }
-        .gallery__thumb { position: relative; overflow: hidden; border-radius: 8px; }
-        .gallery__thumb img { width: 100%; height: 260px; object-fit: cover; display: block; }
-        .gallery__thumb::after { content: '\f002'; font-family: 'FontAwesome'; position: absolute; inset: 0; background: rgba(0,0,0,0.45); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; opacity: 0; transition: opacity .2s ease; }
-        .gallery__item:hover .gallery__thumb::after { opacity: 1; }
-        .gallery-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; padding: 1.5rem; z-index: 1050; }
-        .gallery-modal.open { display: flex; }
-        .gallery-modal__content { max-width: 960px; width: 100%; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1.5rem 3rem rgba(0,0,0,0.25); }
-        .gallery-modal__image { width: 100%; height: 0; padding-top: 56.25%; position: relative; }
-        .gallery-modal__image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #111; }
-        .gallery-modal__body { padding: 1.5rem; }
-        .gallery-modal__close { position: absolute; top: 1rem; right: 1rem; color: #fff; font-size: 2rem; cursor: pointer; }
-        @media (max-width: 767.98px) {
-            .gallery__thumb img { height: 200px; }
-        }
-    </style>
-</head>
-<body>
-@php
+    @php
     use App\Models\PageSetting;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
@@ -49,55 +19,83 @@
         if (! $value) {
             return null;
         }
-        if (Str::startsWith($value, ['http://', 'https://', '//'])) {
-            return $value;
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return null;
         }
-        if (Str::startsWith($value, ['/storage', 'storage/'])) {
-            return asset(ltrim($value, '/'));
+        if (Str::startsWith($trimmed, ['http://', 'https://', '//'])) {
+            return $trimmed;
         }
-        return asset('storage/' . ltrim($value, '/'));
+        return asset('storage/' . ltrim($trimmed, '/'));
     };
 
-    $rawCategories = collect(json_decode($settings['gallery.categories'] ?? '[]', true));
-    $categories = $rawCategories->filter(fn ($item) => is_array($item))
-        ->map(function ($item) {
-            $name = trim($item['name'] ?? '');
-            $slug = trim($item['slug'] ?? '');
-            if ($slug === '') {
-                $slug = Str::slug($name ?: uniqid('kategori'));
-            }
-            if ($name === '') {
-                $name = Str::title(str_replace('-', ' ', $slug));
-            }
-            return ['name' => $name, 'slug' => $slug];
-        })
-        ->unique('slug')
-        ->values();
+    $categories = collect(json_decode($settings['categories.items'] ?? '[]', true));
+    $categories = $categories->map(function ($item, $index) {
+        $name = trim((string)($item['name'] ?? ''));
+        $slug = trim((string)($item['slug'] ?? ''));
+        if ($slug === '') {
+            $slug = $name !== '' ? Str::slug($name) : 'kategori-' . ($index + 1);
+        } else {
+            $slug = Str::slug($slug);
+        }
+        if ($name === '') {
+            $name = 'Kategori ' . ($index + 1);
+        }
+        return ['name' => $name, 'slug' => $slug];
+    })->filter(fn ($item) => $item['slug'] !== '')->unique('slug')->values();
 
-    $categoryMap = $categories->keyBy('slug');
-    $allLabel = $settings['filters.all_label'] ?? 'Semua';
+    $categoriesMap = $categories->keyBy('slug');
 
-    $rawItems = collect(json_decode($settings['gallery.items'] ?? '[]', true));
-    $items = $rawItems->filter(fn ($item) => is_array($item) && ! empty($item['image']))
-        ->map(function ($item) use ($resolveMedia, $categoryMap) {
-            $title = trim($item['title'] ?? '');
-            $category = trim($item['category'] ?? '');
-            if ($category === '' && $categoryMap->isNotEmpty()) {
-                $category = $categoryMap->keys()->first();
-            }
-            $image = $resolveMedia($item['image'] ?? null) ?? asset('storage/themes/theme-second/img/blog/blog-1.jpg');
-            $description = trim($item['description'] ?? '');
-            return [
-                'title' => $title !== '' ? $title : 'Galeri',
-                'category' => $category,
-                'image' => $image,
-                'description' => $description,
-            ];
-        })
-        ->values();
+    $galleryItemsRaw = json_decode($settings['gallery.items'] ?? '[]', true);
+    if (! is_array($galleryItemsRaw)) {
+        $galleryItemsRaw = [];
+    }
 
+    $galleryItems = collect($galleryItemsRaw)->map(function ($item, $index) use ($categoriesMap, $resolveMedia) {
+        $image = $resolveMedia($item['image'] ?? null);
+        if (! $image) {
+            return null;
+        }
+        $title = trim((string)($item['title'] ?? ''));
+        $description = trim((string)($item['description'] ?? ''));
+        $categoryRaw = trim((string)($item['category'] ?? ''));
+        $categorySlug = $categoryRaw !== '' ? Str::slug($categoryRaw) : null;
+        if ($categorySlug === null && $categoriesMap->isNotEmpty()) {
+            $categorySlug = $categoriesMap->keys()->first();
+        }
+        $categoryLabel = $categorySlug && $categoriesMap->has($categorySlug)
+            ? $categoriesMap[$categorySlug]['name']
+            : ($categoryRaw !== '' ? $categoryRaw : '');
+
+        return [
+            'title' => $title !== '' ? $title : 'Galeri ' . ($index + 1),
+            'description' => $description,
+            'image' => $image,
+            'category' => $categorySlug ?? '',
+            'category_label' => $categoryLabel,
+        ];
+    })->filter()->values();
+
+    $showFilters = ($settings['categories.visible'] ?? '1') == '1' && $categories->isNotEmpty();
+    $allLabel = $settings['categories.all_label'] ?? 'Semua';
+    $filtersHeading = $settings['categories.heading'] ?? 'Kategori';
+    $galleryHeading = $settings['gallery.heading'] ?? 'Galeri';
+    $emptyText = $settings['gallery.empty_text'] ?? 'Belum ada foto galeri.';
+    $heroMask = ($settings['hero.mask'] ?? '0') === '1';
     $heroImage = $resolveMedia($settings['hero.image'] ?? null) ?? asset('storage/themes/theme-second/img/breadcrumb.jpg');
+    $pageTitle = $settings['hero.heading'] ?? 'Galeri';
 @endphp
+    <title>{{ $pageTitle }}</title>
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/bootstrap.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/font-awesome.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/elegant-icons.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/nice-select.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/jquery-ui.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/owl.carousel.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/slicknav.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/style.css') }}" type="text/css">
+</head>
+<body>
 {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
     'brand' => $navigation['brand'],
     'links' => $navigation['links'],
@@ -105,15 +103,20 @@
     'showLogin' => $navigation['show_login'],
     'cart' => $cartSummary,
 ])->render() !!}
+
 @if(($settings['hero.visible'] ?? '1') == '1')
-<section id="hero" class="breadcrumb-section set-bg" data-setbg="{{ $heroImage }}">
+<section id="hero" class="breadcrumb-section set-bg {{ $heroMask ? 'breadcrumb-section--mask' : '' }}" data-setbg="{{ $heroImage }}">
     <div class="container">
         <div class="row">
             <div class="col-lg-12 text-center">
                 <div class="breadcrumb__text">
                     <h2>{{ $settings['hero.heading'] ?? 'Galeri' }}</h2>
+                    <div class="breadcrumb__option">
+                        <a href="{{ url('/') }}">Home</a>
+                        <span>{{ $settings['hero.heading'] ?? 'Galeri' }}</span>
+                    </div>
                     @if(!empty($settings['hero.description']))
-                        <p>{{ $settings['hero.description'] }}</p>
+                        <p class="mt-3 text-white-50">{{ $settings['hero.description'] }}</p>
                     @endif
                 </div>
             </div>
@@ -121,81 +124,81 @@
     </div>
 </section>
 @endif
-<section id="filters" class="product spad">
+
+@if(($settings['gallery.visible'] ?? '1') == '1')
+<section id="grid" class="blog spad">
     <div class="container">
         <div class="row">
-            @if(($settings['filters.visible'] ?? '1') == '1')
-            <div class="col-lg-3 col-md-5 mb-4 mb-md-0">
-                <div class="sidebar gallery__filters">
-                    <div class="sidebar__item">
-                        <h4>{{ $settings['filters.heading'] ?? 'Kategori' }}</h4>
+            @if($showFilters)
+            <div class="col-lg-3 col-md-4">
+                <div class="blog__sidebar">
+                    <div id="filters" class="blog__sidebar__item">
+                        <h4>{{ $filtersHeading }}</h4>
                         <ul>
-                            <li><a href="#" data-filter="" class="active">{{ $allLabel }}</a></li>
+                            <li><a href="#" class="active" data-gallery-filter="*">{{ $allLabel }}</a></li>
                             @foreach($categories as $category)
-                                <li><a href="#" data-filter="{{ $category['slug'] }}">{{ $category['name'] }}</a></li>
+                                <li><a href="#" data-gallery-filter="{{ $category['slug'] }}">{{ $category['name'] }}</a></li>
                             @endforeach
                         </ul>
                     </div>
                 </div>
             </div>
             @endif
-            <div class="col-lg-9 col-md-7">
-                @if(($settings['items.visible'] ?? '1') == '1')
-                <div id="items" class="gallery__header mb-4">
-                    <div class="section-title">
-                        <h2>{{ $settings['items.heading'] ?? 'Galeri Kami' }}</h2>
-                        @if(!empty($settings['items.description']))
-                            <p>{{ $settings['items.description'] }}</p>
-                        @endif
+            <div class="{{ $showFilters ? 'col-lg-9 col-md-8' : 'col-lg-12' }}">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="section-title from-blog__title">
+                            <h2>{{ $galleryHeading }}</h2>
+                        </div>
                     </div>
-                </div>
-                <div class="row" data-gallery-grid>
-                    @forelse($items as $item)
-                        <div class="col-lg-4 col-md-6 col-sm-6 mb-4" data-category="{{ $item['category'] }}">
-                            <div class="gallery__item" data-image="{{ $item['image'] }}" data-title="{{ $item['title'] }}" data-description="{{ $item['description'] }}" data-category-label="{{ $categoryMap[$item['category']]['name'] ?? $item['category'] }}">
-                                <div class="gallery__thumb mb-3">
-                                    <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}">
-                                </div>
-                                <div class="blog__item__text">
-                                    @if(!empty($item['category']))
-                                    <ul>
-                                        <li><i class="fa fa-tag"></i> {{ $categoryMap[$item['category']]['name'] ?? $item['category'] }}</li>
-                                    </ul>
-                                    @endif
-                                    <h5 class="mb-2">{{ $item['title'] }}</h5>
-                                    @if(!empty($item['description']))
-                                        <p class="mb-0">{{ $item['description'] }}</p>
-                                    @endif
-                                </div>
+                    @forelse($galleryItems as $item)
+                    <div class="col-lg-4 col-md-6 col-sm-6" data-gallery-item data-category="{{ $item['category'] }}">
+                        <div class="blog__item">
+                            <div class="blog__item__pic">
+                                <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}">
+                            </div>
+                            <div class="blog__item__text">
+                                <h5>{{ $item['title'] }}</h5>
+                                @if(!empty($item['category_label']))
+                                    <span class="text-muted small d-block mb-2">{{ $item['category_label'] }}</span>
+                                @endif
+                                <a href="#" class="blog__btn" data-gallery-open data-image="{{ $item['image'] }}" data-title="{{ e($item['title']) }}" data-description="{{ e($item['description']) }}">Lihat <span class="arrow_right"></span></a>
                             </div>
                         </div>
+                    </div>
                     @empty
-                        <div class="col-12">
-                            <div class="alert alert-info">Belum ada item galeri yang ditambahkan.</div>
-                        </div>
+                    <div class="col-12">
+                        <div class="alert alert-light border">{{ $emptyText }}</div>
+                    </div>
                     @endforelse
                 </div>
-                @endif
             </div>
         </div>
     </div>
 </section>
-<div class="gallery-modal" id="gallery-modal" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="gallery-modal__close" data-modal-close>&times;</div>
-    <div class="gallery-modal__content">
-        <div class="gallery-modal__image">
-            <img src="" alt="Galeri" data-modal-image>
-        </div>
-        <div class="gallery-modal__body">
-            <p class="text-muted mb-1" data-modal-category></p>
-            <h4 class="mb-3" data-modal-title></h4>
-            <p class="mb-0" data-modal-description></p>
+@endif
+
+<div class="modal fade" id="galleryModal" tabindex="-1" role="dialog" aria-labelledby="galleryModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="galleryModalTitle"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img src="" alt="" id="galleryModalImage" class="img-fluid w-100 rounded mb-3">
+                <p id="galleryModalCaption" class="mb-0"></p>
+            </div>
         </div>
     </div>
 </div>
+
 {!! view()->file(base_path('themes/' . $themeName . '/views/components/footer.blade.php'), [
     'footer' => $footerConfig,
 ])->render() !!}
+
 <script src="{{ asset('storage/themes/theme-second/js/jquery-3.3.1.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/bootstrap.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/jquery.nice-select.min.js') }}"></script>
@@ -205,56 +208,32 @@
 <script src="{{ asset('storage/themes/theme-second/js/owl.carousel.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/main.js') }}"></script>
 <script>
-    (function(){
-        const filterLinks = document.querySelectorAll('.gallery__filters [data-filter]');
-        const items = document.querySelectorAll('[data-gallery-grid] [data-category]');
-        const modal = document.getElementById('gallery-modal');
-        const modalImage = modal.querySelector('[data-modal-image]');
-        const modalTitle = modal.querySelector('[data-modal-title]');
-        const modalDescription = modal.querySelector('[data-modal-description]');
-        const modalCategory = modal.querySelector('[data-modal-category]');
+(function($){
+    const $filters = $('[data-gallery-filter]');
+    const $items = $('[data-gallery-item]');
 
-        filterLinks.forEach(function(link){
-            link.addEventListener('click', function(e){
-                e.preventDefault();
-                const target = this.getAttribute('data-filter');
-                filterLinks.forEach(function(other){ other.classList.remove('active'); });
-                this.classList.add('active');
-                items.forEach(function(item){
-                    const category = item.getAttribute('data-category');
-                    if (!target || category === target) {
-                        item.style.display = '';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            });
+    $filters.on('click', function(e){
+        e.preventDefault();
+        const filter = $(this).data('gallery-filter');
+        $filters.removeClass('active');
+        $(this).addClass('active');
+        $items.each(function(){
+            const $item = $(this);
+            const category = $item.data('category') || '';
+            const visible = filter === '*' || category === filter;
+            $item.toggleClass('d-none', !visible);
         });
+    });
 
-        document.querySelectorAll('.gallery__item').forEach(function(item){
-            item.addEventListener('click', function(){
-                modalImage.src = this.getAttribute('data-image');
-                modalTitle.textContent = this.getAttribute('data-title');
-                modalDescription.textContent = this.getAttribute('data-description') || '';
-                modalCategory.textContent = this.getAttribute('data-category-label') || '';
-                modal.classList.add('open');
-                document.body.style.overflow = 'hidden';
-            });
-        });
-
-        modal.addEventListener('click', function(e){
-            if (e.target === modal || e.target.hasAttribute('data-modal-close')) {
-                modal.classList.remove('open');
-                document.body.style.overflow = '';
-            }
-        });
-        document.addEventListener('keyup', function(e){
-            if (e.key === 'Escape' && modal.classList.contains('open')) {
-                modal.classList.remove('open');
-                document.body.style.overflow = '';
-            }
-        });
-    })();
+    $('[data-gallery-open]').on('click', function(e){
+        e.preventDefault();
+        const $btn = $(this);
+        $('#galleryModalTitle').text($btn.data('title') || '');
+        $('#galleryModalImage').attr('src', $btn.data('image') || '');
+        $('#galleryModalCaption').text($btn.data('description') || '');
+        $('#galleryModal').modal('show');
+    });
+})(jQuery);
 </script>
 </body>
 </html>

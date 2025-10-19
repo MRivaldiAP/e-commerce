@@ -100,19 +100,22 @@ return [
     'gallery' => [
         'hero' => [
             'hero.visible',
+            'hero.mask',
             'hero.image',
             'hero.heading',
             'hero.description',
         ],
         'filters' => [
-            'filters.visible',
-            'filters.heading',
-            'filters.all_label',
+            'categories.visible',
+            'categories.heading',
+            'categories.all_label',
+            'categories.items',
         ],
-        'items' => [
-            'items.visible',
-            'items.heading',
-            'items.description',
+        'grid' => [
+            'gallery.visible',
+            'gallery.heading',
+            'gallery.empty_text',
+            'gallery.items',
         ],
     ],
     'about' => [

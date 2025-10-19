@@ -64,7 +64,7 @@ class LayoutSettings
             [
                 'key' => 'gallery',
                 'label' => 'Galeri',
-                'href' => route('gallery.index'),
+                'href' => route('gallery'),
                 'visible' => ($settings['navigation.link.gallery'] ?? '1') === '1',
             ],
             [
