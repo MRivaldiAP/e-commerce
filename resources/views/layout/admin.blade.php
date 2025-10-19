@@ -133,6 +133,7 @@
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/layout')}}">Navigasi & Footer</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/home')}}">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/about')}}">Tentang Kami</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/contact')}}">Kontak</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/product')}}">Produk</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/product-detail')}}">Detail Produk</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/article')}}">Artikel</a></li>
