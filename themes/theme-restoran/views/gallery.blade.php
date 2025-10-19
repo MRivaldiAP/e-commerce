@@ -22,10 +22,23 @@
     $hasUncategorized = $itemCollection->contains(fn ($item) => $item->category === null);
 
     $heroVisible = ($settings['hero.visible'] ?? '1') === '1';
-    $heroMask = ($settings['hero.mask'] ?? '0') === '1';
-    $heroBackground = ThemeMedia::url($settings['hero.background'] ?? null) ?? asset('storage/themes/theme-restoran/img/breadcrumb.jpg');
-    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMask ? ' bg-dark' : ' hero-no-mask');
-    $heroStyle = $heroBackground ? "background-image: " . ($heroMask ? "linear-gradient(rgba(15, 23, 43, .85), rgba(15, 23, 43, .85)), url('{$heroBackground}')" : "url('{$heroBackground}')") . "; background-size: cover; background-position: center;" : '';
+    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
+    $heroBackground = ThemeMedia::url($settings['hero.image'] ?? $settings['hero.background'] ?? null)
+        ?? asset('storage/themes/theme-restoran/img/breadcrumb.jpg');
+    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+    if (! $heroMaskEnabled) {
+        $heroClasses .= ' hero-no-mask';
+    }
+    $heroStyle = '';
+    if ($heroBackground) {
+        if ($heroMaskEnabled) {
+            $heroStyle = "background-image: linear-gradient(rgba(15, 23, 43, .85), rgba(15, 23, 43, .85)), url('{$heroBackground}'); background-size: cover; background-position: center;";
+        } else {
+            $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+        }
+    } elseif (! $heroMaskEnabled) {
+        $heroStyle = 'background-image: none;';
+    }
 
     $filterVisible = ($settings['filters.visible'] ?? '1') === '1' && ($categoryCollection->isNotEmpty() || $hasUncategorized);
     $filterHeading = $settings['filters.heading'] ?? 'Kategori Galeri';
