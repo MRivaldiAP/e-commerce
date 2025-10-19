@@ -65,7 +65,6 @@
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
     <style>
         :root{--bs-primary:#FEA116;--bs-primary-rgb:254,161,22;}
-        .navbar {position: sticky; top:0; z-index:1030;}
     </style>
 </head>
 <body>
