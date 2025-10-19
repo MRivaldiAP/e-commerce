@@ -23,6 +23,9 @@ use App\Http\Controllers\ArticleController as FrontArticleController;
 use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\ShippingLocationController;
 use App\Http\Controllers\Admin\ShippingController as AdminShippingController;
+use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\Admin\GalleryCategoryController;
+use App\Http\Controllers\Admin\GalleryItemController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,6 +85,7 @@ Route::get('/produk/{product}', function (Product $product) {
 
 Route::get('/artikel', [FrontArticleController::class, 'index'])->name('articles.index');
 Route::get('/artikel/{slug}', [FrontArticleController::class, 'show'])->name('articles.show');
+Route::get('/galeri', [GalleryController::class, 'index'])->name('gallery.index');
 
 Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
@@ -189,10 +193,19 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::post('pages/article', [PageController::class, 'updateArticle'])->name('admin.pages.article.update');
         Route::get('pages/article-detail', [PageController::class, 'articleDetail'])->name('admin.pages.article-detail');
         Route::post('pages/article-detail', [PageController::class, 'updateArticleDetail'])->name('admin.pages.article-detail.update');
+        Route::get('pages/gallery', [PageController::class, 'gallery'])->name('admin.pages.gallery');
+        Route::post('pages/gallery', [PageController::class, 'updateGallery'])->name('admin.pages.gallery.update');
         Route::get('pages/cart', [PageController::class, 'cart'])->name('admin.pages.cart');
         Route::post('pages/cart', [PageController::class, 'updateCart'])->name('admin.pages.cart.update');
         Route::get('pages/layout', [PageController::class, 'layout'])->name('admin.pages.layout');
         Route::post('pages/layout', [PageController::class, 'updateLayout'])->name('admin.pages.layout.update');
+
+        Route::resource('gallery/categories', GalleryCategoryController::class)
+            ->except(['show'])
+            ->names('admin.gallery.categories');
+        Route::resource('gallery/items', GalleryItemController::class)
+            ->except(['show'])
+            ->names('admin.gallery.items');
 
         Route::get('payments', [PaymentController::class, 'index'])->name('admin.payments.index');
         Route::post('payments', [PaymentController::class, 'update'])->name('admin.payments.update');

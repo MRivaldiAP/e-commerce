@@ -137,7 +137,24 @@
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/product-detail')}}">Detail Produk</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/article')}}">Artikel</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/article-detail')}}">Detail Artikel</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('admin.pages.gallery') }}">Galeri</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/cart')}}">Keranjang</a></li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item">
+            @php
+              $isGalleryMenu = request()->routeIs('admin.gallery.categories.*') || request()->routeIs('admin.gallery.items.*');
+            @endphp
+            <a class="nav-link" data-toggle="collapse" href="#gallery-menu" aria-expanded="{{ $isGalleryMenu ? 'true' : 'false' }}" aria-controls="gallery-menu">
+              <i class="mdi mdi-image-multiple menu-icon"></i>
+              <span class="menu-title">Galeri</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse {{ $isGalleryMenu ? 'show' : '' }}" id="gallery-menu">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.gallery.categories.*') ? 'active' : '' }}" href="{{ route('admin.gallery.categories.index') }}">Kategori</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.gallery.items.*') ? 'active' : '' }}" href="{{ route('admin.gallery.items.index') }}">Item Galeri</a></li>
               </ul>
             </div>
           </li>

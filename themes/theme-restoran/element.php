@@ -102,6 +102,24 @@ return [
             'recommendations.heading',
         ],
     ],
+    'gallery' => [
+        'hero' => [
+            'hero.visible',
+            'hero.mask',
+            'hero.background',
+            'hero.heading',
+            'hero.description',
+        ],
+        'filters' => [
+            'filters.visible',
+            'filters.heading',
+            'filters.all_label',
+        ],
+        'grid' => [
+            'grid.heading',
+            'grid.empty_text',
+        ],
+    ],
     'about' => [
         'hero' => [
             'hero.visible',
@@ -157,6 +175,7 @@ return [
             'navigation.link.home',
             'navigation.link.about',
             'navigation.link.products',
+            'navigation.link.gallery',
             'navigation.link.articles',
             'navigation.link.article-detail',
             'navigation.link.orders',
