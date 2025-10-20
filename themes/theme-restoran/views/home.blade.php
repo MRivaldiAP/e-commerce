@@ -48,11 +48,17 @@
         $heroClasses .= ' hero-no-mask';
     }
     $heroStyle = '';
-    if (! $heroMaskEnabled) {
-        $heroStyle = 'background-image: none;';
-    }
     $heroImage = ThemeMedia::url($settings['hero.image'] ?? null);
     $heroSpinImage = ThemeMedia::url($settings['hero.spin_image'] ?? null);
+    if ($heroImage) {
+        if ($heroMaskEnabled) {
+            $heroStyle = "background-image: linear-gradient(rgba(15, 23, 43, .9), rgba(15, 23, 43, .9)), url('{$heroImage}'); background-size: cover; background-position: center;";
+        } else {
+            $heroStyle = "background-image: url('{$heroImage}'); background-size: cover; background-position: center;";
+        }
+    } elseif (! $heroMaskEnabled) {
+        $heroStyle = 'background-image: none;';
+    }
 @endphp
 <div class="container-xxl position-relative p-0">
     {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
@@ -75,10 +81,7 @@
                     <a href="{{ $settings['hero.button_link'] ?? '#' }}" class="btn btn-primary py-sm-3 px-sm-5 me-3 animated slideInLeft">{{ $settings['hero.button_label'] ?? 'Book A Table' }}</a>
                 </div>
                 <div class="col-lg-6 text-center text-lg-end overflow-hidden position-relative">
-                    @if($heroSpinImage)
-                    <img class="img-fluid position-absolute top-0 start-0 spin" style="width:200px;" src="{{ $heroSpinImage }}" alt="">
-                    @endif
-                    <img class="img-fluid main" src="{{ $heroImage ?: asset('storage/themes/theme-restoran/img/hero.png') }}" alt="">
+                    <img class="img-fluid main spin" src="{{ $heroSpinImage ?: asset('storage/themes/theme-restoran/img/hero.png') }}" alt="">
                     @if(!empty($settings['hero.spin_text']))
                     <span class="text-white position-absolute top-50 start-50 translate-middle spin-text">{{ $settings['hero.spin_text'] }}</span>
                     @endif
