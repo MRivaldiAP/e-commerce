@@ -97,6 +97,46 @@ document.querySelectorAll('[data-repeatable]').forEach(function(wrapper){
       const type = field.type || 'text';
       if(type === 'textarea'){
         html += `<textarea class="form-control mb-1" data-field="${field.name}" placeholder="${field.placeholder}">${data[field.name] || ''}</textarea>`;
+      }else if(type === 'select'){
+        const value = data[field.name] || '';
+        const options = Array.isArray(field.options) ? field.options : [];
+        const placeholder = field.placeholder || 'Pilih opsi';
+        let optionsHtml = `<option value="">${placeholder}</option>`;
+        let hasValue = value === '';
+
+        options.forEach(function(option){
+          if(option === null || option === undefined){
+            return;
+          }
+
+          let optionValue;
+          let optionLabel;
+
+          if(typeof option === 'object'){
+            optionValue = option.value;
+            optionLabel = option.label || option.value;
+          }else{
+            optionValue = option;
+            optionLabel = option;
+          }
+
+          if(optionValue === undefined){
+            return;
+          }
+
+          const isSelected = optionValue === value;
+          if(isSelected){
+            hasValue = true;
+          }
+
+          optionsHtml += `<option value="${optionValue}"${isSelected ? ' selected' : ''}>${optionLabel}</option>`;
+        });
+
+        if(value && !hasValue){
+          optionsHtml += `<option value="${value}" selected>${value}</option>`;
+        }
+
+        html += `<select class="form-control mb-1" data-field="${field.name}">${optionsHtml}</select>`;
       }else{
         const value = data[field.name] || '';
         html += `<input type="text" class="form-control mb-1" data-field="${field.name}" placeholder="${field.placeholder}" value="${value}">`;
@@ -125,6 +165,7 @@ document.querySelectorAll('[data-repeatable]').forEach(function(wrapper){
   });
 
   itemsContainer.addEventListener('input', sync);
+  itemsContainer.addEventListener('change', sync);
   itemsContainer.addEventListener('click', function(e){
     if(e.target.classList.contains('remove-item')){
       e.target.closest('.repeatable-item').remove();
