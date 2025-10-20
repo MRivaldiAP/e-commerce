@@ -19,7 +19,6 @@
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
     <style>
         :root{--bs-primary:#FEA116;--bs-primary-rgb:254,161,22;}
-        .navbar {position: sticky; top:0; z-index:1030;}
         .contact-card i {font-size: 2rem; color: #FEA116;}
         .contact-card {transition: transform .2s ease, box-shadow .2s ease;}
         .contact-card:hover {transform: translateY(-6px); box-shadow: 0 18px 40px rgba(15,23,43,.12);}
