@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\AIController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -45,7 +46,7 @@ Route::get('/', function () {
         return view()->file($viewPath, ['theme' => $activeTheme]);
     }
     abort(404);
-});
+})->name('home')->middleware('track.landing.page');
 
 Route::get('/produk', function () {
     $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
@@ -54,7 +55,7 @@ Route::get('/produk', function () {
         return view()->file($viewPath, ['theme' => $activeTheme]);
     }
     abort(404);
-})->name('products.index');
+})->name('products.index')->middleware('track.landing.page');
 
 Route::get('/tentang-kami', function () {
     $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
@@ -63,7 +64,7 @@ Route::get('/tentang-kami', function () {
         return view()->file($viewPath, ['theme' => $activeTheme]);
     }
     abort(404);
-})->name('about');
+})->name('about')->middleware('track.landing.page');
 
 Route::get('/kontak', function () {
     $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
@@ -72,7 +73,7 @@ Route::get('/kontak', function () {
         return view()->file($viewPath, ['theme' => $activeTheme]);
     }
     abort(404);
-})->name('contact');
+})->name('contact')->middleware('track.landing.page');
 
 Route::get('/produk/{product}', function (Product $product) {
     $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
@@ -90,13 +91,13 @@ Route::get('/produk/{product}', function (Product $product) {
         ]);
     }
     abort(404);
-})->name('products.show');
+})->name('products.show')->middleware('track.landing.page');
 
-Route::get('/artikel', [FrontArticleController::class, 'index'])->name('articles.index');
-Route::get('/artikel/{slug}', [FrontArticleController::class, 'show'])->name('articles.show');
-Route::get('/galeri', [GalleryController::class, 'index'])->name('gallery.index');
+Route::get('/artikel', [FrontArticleController::class, 'index'])->name('articles.index')->middleware('track.landing.page');
+Route::get('/artikel/{slug}', [FrontArticleController::class, 'show'])->name('articles.show')->middleware('track.landing.page');
+Route::get('/galeri', [GalleryController::class, 'index'])->name('gallery.index')->middleware('track.landing.page');
 
-Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
+Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index')->middleware('track.landing.page');
 Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
 Route::patch('/cart/items/{product}', [CartController::class, 'update'])->name('cart.items.update');
 Route::delete('/cart/items/{product}', [CartController::class, 'destroy'])->name('cart.items.destroy');
@@ -131,9 +132,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         User::ROLE_PRODUCT_MANAGER,
         User::ROLE_ORDER_MANAGER,
     ]))->group(function () {
-        Route::get('/', function () {
-            return view('layout.admin');
-        })->name('admin.dashboard');
+        Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
     });
 
     Route::middleware('role:' . implode(',', [
