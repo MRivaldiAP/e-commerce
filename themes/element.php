@@ -76,6 +76,85 @@ return [
             ],
         ],
     ],
+    'contact' => [
+        'sections' => [
+            'hero' => [
+                'label' => 'Header',
+                'elements' => [
+                    'hero.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
+                    'hero.background' => ['type' => 'image', 'label' => 'Gambar Latar'],
+                    'hero.heading' => ['type' => 'text', 'label' => 'Judul'],
+                    'hero.description' => ['type' => 'textarea', 'label' => 'Deskripsi'],
+                ],
+            ],
+            'details' => [
+                'label' => 'Informasi Kontak',
+                'elements' => [
+                    'details.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
+                    'details.heading' => ['type' => 'text', 'label' => 'Judul Seksi'],
+                    'details.description' => ['type' => 'textarea', 'label' => 'Deskripsi Singkat'],
+                    'details.items' => [
+                        'type' => 'repeatable',
+                        'label' => 'Daftar Kontak',
+                        'fields' => [
+                            ['name' => 'icon', 'placeholder' => 'Kelas Ikon (contoh: fa-solid fa-phone)'],
+                            ['name' => 'label', 'placeholder' => 'Judul Kartu (contoh: Telepon)'],
+                            ['name' => 'value', 'placeholder' => 'Isi Informasi'],
+                            ['name' => 'link', 'placeholder' => 'Tautan Opsional'],
+                        ],
+                    ],
+                ],
+            ],
+            'social' => [
+                'label' => 'Media Sosial',
+                'elements' => [
+                    'social.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
+                    'social.heading' => ['type' => 'text', 'label' => 'Judul Seksi'],
+                    'social.description' => ['type' => 'textarea', 'label' => 'Deskripsi Singkat'],
+                    'social.items' => [
+                        'type' => 'repeatable',
+                        'label' => 'Daftar Media Sosial',
+                        'fields' => [
+                            [
+                                'name' => 'icon',
+                                'type' => 'select',
+                                'placeholder' => 'Pilih ikon media sosial',
+                                'options' => [
+                                    ['value' => 'fab fa-facebook-f', 'label' => 'Facebook'],
+                                    ['value' => 'fab fa-instagram', 'label' => 'Instagram'],
+                                    ['value' => 'fab fa-twitter', 'label' => 'Twitter / X'],
+                                    ['value' => 'fab fa-whatsapp', 'label' => 'WhatsApp'],
+                                    ['value' => 'fab fa-youtube', 'label' => 'YouTube'],
+                                    ['value' => 'fab fa-tiktok', 'label' => 'TikTok'],
+                                    ['value' => 'fab fa-linkedin-in', 'label' => 'LinkedIn'],
+                                    ['value' => 'fab fa-telegram-plane', 'label' => 'Telegram'],
+                                    ['value' => 'fab fa-facebook-messenger', 'label' => 'Messenger'],
+                                    ['value' => 'fab fa-line', 'label' => 'LINE'],
+                                    ['value' => 'fab fa-pinterest', 'label' => 'Pinterest'],
+                                    ['value' => 'fab fa-github', 'label' => 'GitHub'],
+                                    ['value' => 'fab fa-dribbble', 'label' => 'Dribbble'],
+                                    ['value' => 'fab fa-behance', 'label' => 'Behance'],
+                                    ['value' => 'fab fa-medium-m', 'label' => 'Medium'],
+                                    ['value' => 'fa fa-link', 'label' => 'Link Default'],
+                                ],
+                            ],
+                            ['name' => 'label', 'placeholder' => 'Nama Media Sosial'],
+                            ['name' => 'url', 'placeholder' => 'Tautan'],
+                            ['name' => 'visible', 'placeholder' => 'Visibilitas (1 untuk tampil, 0 untuk sembunyi)'],
+                        ],
+                    ],
+                ],
+            ],
+            'map' => [
+                'label' => 'Peta',
+                'elements' => [
+                    'map.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
+                    'map.heading' => ['type' => 'text', 'label' => 'Judul Seksi'],
+                    'map.embed' => ['type' => 'textarea', 'label' => 'Embed Map (iframe atau URL)'],
+                ],
+            ],
+        ],
+    ],
     'product' => [
         'sections' => [
             'hero' => [
@@ -326,6 +405,7 @@ return [
                     'navigation.link.about' => ['type' => 'checkbox', 'label' => 'Tautan Tentang Kami'],
                     'navigation.link.products' => ['type' => 'checkbox', 'label' => 'Tautan Produk'],
                     'navigation.link.gallery' => ['type' => 'checkbox', 'label' => 'Tautan Galeri'],
+                    'navigation.link.contact' => ['type' => 'checkbox', 'label' => 'Tautan Kontak'],
                     'navigation.link.articles' => ['type' => 'checkbox', 'label' => 'Tautan Artikel'],
                     'navigation.link.article-detail' => ['type' => 'checkbox', 'label' => 'Tautan Detail Artikel'],
                     'navigation.link.orders' => ['type' => 'checkbox', 'label' => 'Tautan Pesanan Saya'],

@@ -207,6 +207,37 @@ class PageController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
+    public function contact()
+    {
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+        $settings = collect(PageSetting::forPage('contact'));
+        $sections = PageElements::sections('contact', $theme);
+        $previewUrl = route('contact');
+
+        return view('admin.pages.contact', compact('sections', 'settings', 'previewUrl'));
+    }
+
+    public function updateContact(Request $request)
+    {
+        $request->validate([
+            'key' => 'required',
+            'value' => 'nullable',
+        ]);
+
+        $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
+
+        $value = $request->input('value');
+        if ($request->hasFile('value')) {
+            $value = $request->file('value')->store("pages/{$theme}", 'public');
+        }
+
+        $key = $request->input('key');
+
+        PageSetting::put('contact', $key, $value);
+
+        return response()->json(['status' => 'ok']);
+    }
+
     public function about()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
@@ -283,6 +314,9 @@ class PageController extends Controller
         }
         if (! $settings->has('navigation.link.gallery')) {
             $settings->put('navigation.link.gallery', '1');
+        }
+        if (! $settings->has('navigation.link.contact')) {
+            $settings->put('navigation.link.contact', '1');
         }
         $sections = PageElements::sections('layout', $theme);
 

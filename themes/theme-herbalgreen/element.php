@@ -35,6 +35,31 @@ return [
             'contact.map',
         ],
     ],
+    'contact' => [
+        'hero' => [
+            'hero.visible',
+            'hero.background',
+            'hero.heading',
+            'hero.description',
+        ],
+        'details' => [
+            'details.visible',
+            'details.heading',
+            'details.description',
+            'details.items',
+        ],
+        'social' => [
+            'social.visible',
+            'social.heading',
+            'social.description',
+            'social.items',
+        ],
+        'map' => [
+            'map.visible',
+            'map.heading',
+            'map.embed',
+        ],
+    ],
     'product' => [
         'hero' => [
             'hero.visible',
@@ -170,6 +195,7 @@ return [
             'navigation.link.about',
             'navigation.link.products',
             'navigation.link.gallery',
+            'navigation.link.contact',
             'navigation.link.articles',
             'navigation.link.article-detail',
             'navigation.link.orders',
