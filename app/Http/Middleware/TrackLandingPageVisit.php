@@ -6,42 +6,56 @@ use App\Models\LandingPageVisit;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class TrackLandingPageVisit
 {
     /**
      * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
+        /** @var Response $response */
         $response = $next($request);
 
-        if (! $this->shouldTrack($request, $response)) {
-            return $response;
+        if ($request->isMethod('get')) {
+            $this->recordVisit($request, $response);
         }
 
-        $page = $this->resolvePageIdentifier($request);
+        return $response;
+    }
+
+    protected function recordVisit(Request $request, Response $response): void
+    {
+        $page = '/' . ltrim($request->path(), '/');
+        if ($page === '//') {
+            $page = '/';
+        }
+
         $today = Carbon::today();
+        $cookieName = 'landing_visit_' . md5($page . '_' . $today->toDateString());
+        $hasUniqueCookie = $request->cookies->has($cookieName);
+        $isUniqueVisit = ! $hasUniqueCookie;
 
-        $sessionKey = sprintf('landing_page_unique_visits.%s.%s', $today->toDateString(), $page);
-        $session = $request->session();
-        $isUniqueVisit = ! $session->get($sessionKey, false);
+        $referer = $request->headers->get('referer');
+        $host = $request->getHost();
+        $refererHost = $referer ? parse_url($referer, PHP_URL_HOST) : null;
+        $isPrimaryVisit = empty($refererHost) || $refererHost !== $host;
 
-        if ($isUniqueVisit) {
-            $session->put($sessionKey, true);
-        }
-
-        $isPrimaryVisit = $this->isPrimaryVisit($request);
-
-        $visit = LandingPageVisit::query()->firstOrCreate([
+        $visit = LandingPageVisit::firstOrCreate([
             'page' => $page,
-            'date' => $today->toDateString(),
+            'visit_date' => $today->toDateString(),
         ]);
 
         $visit->increment('total_visits');
 
         if ($isUniqueVisit) {
             $visit->increment('unique_visits');
+
+            $minutesRemaining = $today->copy()->endOfDay()->diffInMinutes(Carbon::now());
+            $response->headers->setCookie(cookie()->make($cookieName, true, $minutesRemaining > 0 ? $minutesRemaining : 1));
         }
 
         if ($isPrimaryVisit) {
@@ -49,54 +63,5 @@ class TrackLandingPageVisit
         } else {
             $visit->increment('secondary_visits');
         }
-
-        return $response;
-    }
-
-    private function shouldTrack(Request $request, $response): bool
-    {
-        if (! $request->isMethod('get')) {
-            return false;
-        }
-
-        if (! $request->route()) {
-            return false;
-        }
-
-        if (method_exists($response, 'getStatusCode') && $response->getStatusCode() >= 400) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private function resolvePageIdentifier(Request $request): string
-    {
-        $routeName = $request->route()->getName();
-
-        if (! empty($routeName)) {
-            return $routeName;
-        }
-
-        $path = trim($request->path(), '/');
-
-        return $path === '' ? 'home' : $path;
-    }
-
-    private function isPrimaryVisit(Request $request): bool
-    {
-        $referer = $request->headers->get('referer');
-
-        if (! $referer) {
-            return true;
-        }
-
-        $refererHost = parse_url($referer, PHP_URL_HOST);
-
-        if (! $refererHost) {
-            return true;
-        }
-
-        return $refererHost !== $request->getHost();
     }
 }

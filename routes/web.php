@@ -2,6 +2,7 @@
 
 use App\Models\Setting;
 use App\Models\Product;
+use App\Models\LandingPageVisit;
 use App\Models\PageSetting;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
@@ -27,6 +28,7 @@ use App\Http\Controllers\Admin\ShippingController as AdminShippingController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\Admin\GalleryCategoryController;
 use App\Http\Controllers\Admin\GalleryItemController;
+use Carbon\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,7 +41,7 @@ use App\Http\Controllers\Admin\GalleryItemController;
 |
 */
 
-Route::get('/', function () {
+Route::middleware('landing.visit')->get('/', function () {
     $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
     $viewPath = base_path("themes/{$activeTheme}/views/home.blade.php");
     if (File::exists($viewPath)) {
@@ -132,7 +134,96 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         User::ROLE_PRODUCT_MANAGER,
         User::ROLE_ORDER_MANAGER,
     ]))->group(function () {
-        Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/', function () {
+            $selectedPage = request('page', 'all');
+            $today = Carbon::today();
+
+            $availablePages = LandingPageVisit::query()
+                ->select('page')
+                ->distinct()
+                ->orderBy('page')
+                ->pluck('page')
+                ->toArray();
+
+            if ($selectedPage !== 'all' && ! in_array($selectedPage, $availablePages, true)) {
+                $selectedPage = 'all';
+            }
+
+            $fromInput = request('from_date');
+            $toInput = request('to_date');
+
+            $toDate = $toInput && Carbon::hasFormat($toInput, 'Y-m-d')
+                ? Carbon::createFromFormat('Y-m-d', $toInput)
+                : $today->copy();
+
+            $fromDate = $fromInput && Carbon::hasFormat($fromInput, 'Y-m-d')
+                ? Carbon::createFromFormat('Y-m-d', $fromInput)
+                : $toDate->copy()->subDays(6);
+
+            if ($fromDate->greaterThan($toDate)) {
+                [$fromDate, $toDate] = [$toDate->copy(), $fromDate->copy()];
+            }
+
+            $fromDate = $fromDate->startOfDay();
+            $toDate = $toDate->endOfDay();
+
+            $baseQuery = LandingPageVisit::query()
+                ->whereBetween('visit_date', [$fromDate->toDateString(), $toDate->toDateString()]);
+
+            if ($selectedPage !== 'all') {
+                $baseQuery->where('page', $selectedPage);
+            }
+
+            $groupedVisits = $baseQuery
+                ->selectRaw(<<<'SQL'
+                    visit_date,
+                    SUM(total_visits) as total_visits,
+                    SUM(unique_visits) as unique_visits,
+                    SUM(primary_visits) as primary_visits,
+                    SUM(secondary_visits) as secondary_visits
+                SQL
+                )
+                ->groupBy('visit_date')
+                ->orderBy('visit_date')
+                ->get()
+                ->keyBy(fn ($row) => Carbon::parse($row->visit_date)->toDateString());
+
+            $labels = [];
+            $series = [
+                'total' => [],
+                'unique' => [],
+                'primary' => [],
+                'secondary' => [],
+            ];
+
+            $cursor = $fromDate->copy()->startOfDay();
+            $end = $toDate->copy()->startOfDay();
+
+            while ($cursor->lte($end)) {
+                $key = $cursor->toDateString();
+                $labels[] = $cursor->translatedFormat('d M Y');
+
+                $record = $groupedVisits[$key] ?? null;
+
+                $series['total'][] = (int) ($record->total_visits ?? 0);
+                $series['unique'][] = (int) ($record->unique_visits ?? 0);
+                $series['primary'][] = (int) ($record->primary_visits ?? 0);
+                $series['secondary'][] = (int) ($record->secondary_visits ?? 0);
+
+                $cursor->addDay();
+            }
+
+            return view('admin.dashboard', [
+                'availablePages' => $availablePages,
+                'selectedPage' => $selectedPage,
+                'fromDate' => $fromDate->copy()->startOfDay(),
+                'toDate' => $toDate->copy()->startOfDay(),
+                'chartData' => [
+                    'labels' => $labels,
+                    'series' => $series,
+                ],
+            ]);
+        })->name('admin.dashboard');
     });
 
     Route::middleware('role:' . implode(',', [

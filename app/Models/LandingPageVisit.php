@@ -11,7 +11,7 @@ class LandingPageVisit extends Model
 
     protected $fillable = [
         'page',
-        'date',
+        'visit_date',
         'total_visits',
         'unique_visits',
         'primary_visits',
@@ -19,7 +19,7 @@ class LandingPageVisit extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'visit_date' => 'date',
         'total_visits' => 'integer',
         'unique_visits' => 'integer',
         'primary_visits' => 'integer',
