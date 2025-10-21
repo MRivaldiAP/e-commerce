@@ -322,7 +322,7 @@ class PageController extends Controller
 
         $previewUrl = url('/');
 
-        return view('admin.pages.layout', compact('sections', 'settings', 'previewUrl'));
+        return view('admin.pages.layout', compact('sections', 'settings', 'previewUrl', 'theme'));
     }
 
     public function updateLayout(Request $request)

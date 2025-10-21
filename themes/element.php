@@ -394,6 +394,17 @@ return [
     ],
     'layout' => [
         'sections' => [
+            'appearance' => [
+                'label' => 'Tampilan',
+                'elements' => [
+                    'theme.variation' => [
+                        'type' => 'select',
+                        'label' => 'Variasi Warna',
+                        'options' => '@theme-variations',
+                        'default' => '@theme-variation-default',
+                    ],
+                ],
+            ],
             'navigation' => [
                 'label' => 'Navigasi',
                 'elements' => [

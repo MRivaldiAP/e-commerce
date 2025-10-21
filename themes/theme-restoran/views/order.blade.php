@@ -1,3 +1,6 @@
+@php
+    $themeName = $theme ?? 'theme-restoran';
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,6 +18,7 @@
     <link href="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/palette.blade.php'), ['theme' => $themeName])->render() !!}
     <style>
         .hero-header {
             padding: 6rem 0 4rem;
@@ -25,7 +29,7 @@
         .order-card {
             background: #fff;
             border-radius: 16px;
-            box-shadow: 0 15px 40px rgba(15, 23, 42, 0.12);
+            box-shadow: 0 15px 40px rgba(var(--theme-accent-rgb), 0.12);
             padding: 2.5rem;
             margin-bottom: 2.5rem;
         }
@@ -99,7 +103,7 @@
             padding: 1.2rem;
             border-radius: 14px;
             background: #f8f9fa;
-            border: 1px solid rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(var(--theme-accent-rgb), 0.08);
         }
         .tracking-widget button {
             border: none;
@@ -125,7 +129,6 @@
     use App\Support\Cart;
     use App\Support\LayoutSettings;
 
-    $themeName = $theme ?? 'theme-restoran';
     $orders = $orders ?? collect();
     $feedbackStatus = $feedbackStatus ?? null;
     $cartSummary = Cart::summary();
