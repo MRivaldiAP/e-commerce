@@ -1,3 +1,6 @@
+@php
+    $themeName = $theme ?? 'theme-restoran';
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,6 +18,7 @@
     <link href="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/palette.blade.php'), ['theme' => $themeName])->render() !!}
     <style>
         .cart-feedback {
             margin-top: 0.5rem;
@@ -36,7 +40,6 @@
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
 
-    $themeName = $theme ?? 'theme-restoran';
     $settings = PageSetting::forPage('product-detail');
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
@@ -50,7 +53,7 @@
     $heroStyle = '';
     if ($heroBackground) {
         if ($heroMaskEnabled) {
-            $heroStyle = "background-image: linear-gradient(rgba(15, 23, 43, .9), rgba(15, 23, 43, .9)), url('{$heroBackground}'); background-size: cover; background-position: center;";
+            $heroStyle = "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroBackground}'); background-size: cover; background-position: center;";
         } else {
             $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
         }
