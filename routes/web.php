@@ -41,7 +41,7 @@ use Carbon\Carbon;
 |
 */
 
-Route::middleware('landing.visit')->get('/', function () {
+Route::middleware('track.landing.page')->get('/', function () {
     $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
     $viewPath = base_path("themes/{$activeTheme}/views/home.blade.php");
     if (File::exists($viewPath)) {
