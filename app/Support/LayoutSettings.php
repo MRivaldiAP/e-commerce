@@ -146,6 +146,27 @@ class LayoutSettings
         ];
     }
 
+    /**
+     * Determine the currently selected variation key for a theme.
+     */
+    public static function variationKey(string $theme): string
+    {
+        $settings = self::get($theme);
+        $selected = $settings['theme.variation'] ?? null;
+
+        return ThemeVariation::ensureKey($theme, $selected);
+    }
+
+    /**
+     * Retrieve the active variation configuration for a theme.
+     */
+    public static function variation(string $theme): array
+    {
+        $key = self::variationKey($theme);
+
+        return ThemeVariation::get($theme, $key);
+    }
+
     protected static function storageAsset(?string $path): ?string
     {
         if (! $path) {

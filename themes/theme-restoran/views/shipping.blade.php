@@ -1,3 +1,6 @@
+@php
+    $themeName = $theme ?? 'theme-restoran';
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,6 +18,7 @@
     <link href="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/palette.blade.php'), ['theme' => $themeName])->render() !!}
     <style>
         .shipping-wrapper {
             padding: 80px 0;
@@ -60,7 +64,7 @@
         }
         .method-option input { display: none; }
         .summary-card {
-            background: #212529;
+            background: var(--theme-accent);
             color: #fff;
             border-radius: 16px;
             padding: 40px;
@@ -115,15 +119,15 @@
 <body>
 @php
     use App\Support\LayoutSettings;
-    $navigation = LayoutSettings::navigation($theme);
-    $footerConfig = LayoutSettings::footer($theme);
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
     $contact = $shippingData['contact'] ?? [];
     $addressData = $shippingData['address'] ?? [];
     $selectedRate = $shippingData['selected_rate'] ?? null;
     $couriers = $shippingConfig['couriers'] ?? [];
 @endphp
 
-{!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), [
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
     'brand' => $navigation['brand'],
     'links' => $navigation['links'],
     'showCart' => $navigation['show_cart'],

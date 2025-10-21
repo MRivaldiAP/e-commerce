@@ -1,3 +1,6 @@
+@php
+    $themeName = $theme ?? 'theme-restoran';
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,6 +41,7 @@
     <link href="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/palette.blade.php'), ['theme' => $themeName])->render() !!}
 </head>
 <body>
 @php
@@ -45,7 +49,6 @@
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
 
-    $themeName = $theme ?? 'theme-restoran';
     $settings = $settings ?? [];
     $meta = $meta ?? [];
     $articles = collect($articles ?? [])->filter(fn ($item) => !empty($item['slug'] ?? null));
