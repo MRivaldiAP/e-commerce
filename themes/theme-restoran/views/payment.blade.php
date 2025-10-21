@@ -1,3 +1,6 @@
+@php
+    $themeName = $theme ?? 'theme-restoran';
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +19,7 @@
     <link href="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/palette.blade.php'), ['theme' => $themeName])->render() !!}
     <style>
         .payment-method-card {
             border: 1px solid rgba(0,0,0,0.05);
@@ -50,7 +54,6 @@
 @php
     use App\Support\LayoutSettings;
 
-    $themeName = $theme ?? 'theme-restoran';
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
     $items = $cartSummary['items'] ?? [];

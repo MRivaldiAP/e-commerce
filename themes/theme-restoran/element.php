@@ -193,6 +193,9 @@ return [
         ],
     ],
     'layout' => [
+        'appearance' => [
+            'theme.variation',
+        ],
         'navigation' => [
             'navigation.brand.visible',
             'navigation.brand.text',
