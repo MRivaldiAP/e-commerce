@@ -22,6 +22,27 @@
                 @elseif ($element['type'] === 'textarea')
                   <label>{{ $element['label'] }}</label>
                   <textarea class="form-control" data-key="{{ $element['id'] }}">{{ $settings[$element['id']] ?? '' }}</textarea>
+                @elseif ($element['type'] === 'select')
+                  <label>{{ $element['label'] }}</label>
+                  @php
+                    $options = $element['options'] ?? [];
+                    if ($options === '@theme-variations') {
+                      $options = \App\Support\ThemeVariation::options($theme);
+                    }
+                    $defaultValue = $element['default'] ?? null;
+                    if ($defaultValue === '@theme-variation-default') {
+                      $defaultValue = \App\Support\ThemeVariation::defaultKey($theme);
+                    }
+                    $currentValue = $settings[$element['id']] ?? $defaultValue;
+                    if ($options !== [] && ! array_key_exists($currentValue, $options)) {
+                      $currentValue = array_key_first($options);
+                    }
+                  @endphp
+                  <select class="form-select" data-key="{{ $element['id'] }}">
+                    @foreach ($options as $value => $label)
+                      <option value="{{ $value }}" {{ (string) $currentValue === (string) $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                  </select>
                 @elseif ($element['type'] === 'image')
                   <label>{{ $element['label'] }}</label>
                   <input type="file" class="form-control-file" data-key="{{ $element['id'] }}">
