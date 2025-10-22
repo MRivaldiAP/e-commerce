@@ -58,8 +58,10 @@
         } else {
             $heroStyle = "background-image: url('{$heroImage}'); background-size: cover; background-position: center;";
         }
-    } elseif (! $heroMaskEnabled) {
-        $heroStyle = 'background-image: none;';
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
+            : 'background: var(--theme-accent);';
     }
 @endphp
 <div class="container-xxl position-relative p-0">

@@ -116,6 +116,7 @@
 @php
     use App\Support\Cart;
     use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
 
     $settings = $settings ?? collect();
     $cartSummary = $cartSummary ?? Cart::summary();
@@ -130,6 +131,26 @@
     $primaryButton = $shippingEnabled ? $shippingLabel : $paymentLabel;
     $actionUrl = $shippingEnabled ? route('checkout.shipping') : route('checkout.payment');
     $hasItems = !empty($cartSummary['items']);
+
+    $heroVisible = ($settings['hero.visible'] ?? '1') === '1';
+    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
+    $heroImage = ThemeMedia::url($settings['hero.image'] ?? null);
+    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+    if (! $heroMaskEnabled) {
+        $heroClasses .= ' hero-no-mask';
+    }
+    $heroStyle = '';
+    if ($heroImage) {
+        if ($heroMaskEnabled) {
+            $heroStyle = "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroImage}'); background-size: cover; background-position: center;";
+        } else {
+            $heroStyle = "background-image: url('{$heroImage}'); background-size: cover; background-position: center;";
+        }
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
+            : 'background: var(--theme-accent);';
+    }
 @endphp
 
 <div class="container-xxl position-relative p-0">
@@ -140,12 +161,14 @@
         'showLogin' => $navigation['show_login'],
         'cart' => $cartSummary,
     ])->render() !!}
-    <div class="container-xxl py-5 bg-dark hero-header mb-5">
+    @if($heroVisible)
+    <div id="hero" class="{{ $heroClasses }}" style="{{ $heroStyle }}">
         <div class="container text-center my-5 pt-5 pb-4">
             <h1 class="display-3 text-white mb-3">{{ $title }}</h1>
             <p class="text-white-50 mb-0">{{ $subtitle }}</p>
         </div>
     </div>
+    @endif
 </div>
 
 <div class="container py-5">

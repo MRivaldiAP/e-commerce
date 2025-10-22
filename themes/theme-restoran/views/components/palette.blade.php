@@ -36,4 +36,29 @@
         --theme-surface: {{ $background }};
         --theme-on-surface: {{ $text }};
     }
+
+    .bg-dark {
+        background-color: var(--theme-accent) !important;
+    }
+
+    .bg-dark.hero-header {
+        background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));
+        background-size: cover;
+        background-position: center;
+    }
+
+    .hero-header.hero-no-mask {
+        background: var(--theme-accent);
+    }
+
+    .bg-dark .btn-outline-light {
+        color: var(--theme-accent-contrast);
+        border-color: rgba(var(--theme-accent-rgb), 0.35);
+    }
+
+    .bg-dark .btn-outline-light:hover {
+        background-color: var(--theme-accent-contrast);
+        color: var(--theme-accent);
+        border-color: var(--theme-accent-contrast);
+    }
 </style>

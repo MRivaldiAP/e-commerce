@@ -64,8 +64,10 @@
         } else {
             $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
         }
-    } elseif (! $heroMaskEnabled) {
-        $heroStyle = 'background-image: none;';
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.88), rgba(var(--theme-accent-rgb), 0.88));'
+            : 'background: var(--theme-accent);';
     }
 
     $visibleSocials = collect($socialItems)->filter(function ($item) {

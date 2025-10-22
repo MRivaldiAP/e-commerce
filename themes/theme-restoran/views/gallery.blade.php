@@ -36,8 +36,10 @@
         } else {
             $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
         }
-    } elseif (! $heroMaskEnabled) {
-        $heroStyle = 'background-image: none;';
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.85), rgba(var(--theme-accent-rgb), 0.85));'
+            : 'background: var(--theme-accent);';
     }
 
     $filterVisible = ($settings['filters.visible'] ?? '1') === '1' && ($categoryCollection->isNotEmpty() || $hasUncategorized);
