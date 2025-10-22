@@ -9,7 +9,30 @@
     $schedule = $footer['schedule'] ?? ['visible' => false, 'text' => ''];
     $copyright = $footer['copyright'] ?? '';
 @endphp
-<div id="footer" class="container-fluid bg-dark text-light footer pt-5 mt-5">
+<style>
+    #footer {
+        background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.96), rgba(var(--theme-accent-rgb), 0.96));
+        background-color: var(--theme-accent);
+        color: var(--theme-accent-contrast);
+    }
+    #footer a,
+    #footer a:hover,
+    #footer .btn-link,
+    #footer .btn-link:hover {
+        color: var(--theme-accent-contrast);
+    }
+    #footer .btn-outline-light.btn-social {
+        color: var(--theme-accent-contrast);
+        border-color: rgba(var(--theme-accent-rgb), 0.35);
+        background-color: transparent;
+    }
+    #footer .btn-outline-light.btn-social:hover {
+        background-color: var(--theme-accent-contrast);
+        color: var(--theme-accent);
+        border-color: transparent;
+    }
+</style>
+<div id="footer" class="container-fluid bg-dark text-light footer pt-5 mt-5" style="color: var(--theme-accent-contrast);">
     <div class="container py-5">
         <div class="row g-5">
             @if ($showHotlinks && count($links))

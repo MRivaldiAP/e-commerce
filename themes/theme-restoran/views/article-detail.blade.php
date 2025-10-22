@@ -74,7 +74,16 @@
     if (! $heroMaskEnabled) {
         $heroClasses .= ' hero-no-mask';
     }
-    $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+    $heroStyle = '';
+    if ($heroBackground) {
+        if ($heroMaskEnabled) {
+            $heroStyle = "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroBackground}'); background-size: cover; background-position: center;";
+        } else {
+            $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+        }
+    } elseif (! $heroMaskEnabled) {
+        $heroStyle = 'background-image: none;';
+    }
 
     function restoran_article_image($path) {
         if (empty($path)) {
