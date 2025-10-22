@@ -1,3 +1,6 @@
+@php
+    $themeName = $theme ?? 'theme-restoran';
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,6 +18,7 @@
     <link href="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/palette.blade.php'), ['theme' => $themeName])->render() !!}
     <style>
         .hero-header {
             padding: 6rem 0 4rem;
@@ -25,7 +29,7 @@
         .order-card {
             background: #fff;
             border-radius: 16px;
-            box-shadow: 0 15px 40px rgba(15, 23, 42, 0.12);
+            box-shadow: 0 15px 40px rgba(var(--theme-accent-rgb), 0.12);
             padding: 2.5rem;
             margin-bottom: 2.5rem;
         }
@@ -99,7 +103,7 @@
             padding: 1.2rem;
             border-radius: 14px;
             background: #f8f9fa;
-            border: 1px solid rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(var(--theme-accent-rgb), 0.08);
         }
         .tracking-widget button {
             border: none;
@@ -122,15 +126,39 @@
 </head>
 <body>
 @php
+    use App\Models\PageSetting;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
 
-    $themeName = $theme ?? 'theme-restoran';
     $orders = $orders ?? collect();
     $feedbackStatus = $feedbackStatus ?? null;
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
+
+    $pageSettings = PageSetting::forPage('orders');
+    $heroVisible = ($pageSettings['hero.visible'] ?? '1') === '1';
+    $heroMaskEnabled = ($pageSettings['hero.mask'] ?? '1') === '1';
+    $heroImage = ThemeMedia::url($pageSettings['hero.image'] ?? null);
+    $heroTitle = $pageSettings['hero.heading'] ?? 'Pesanan';
+    $heroDescription = $pageSettings['hero.description'] ?? null;
+    $heroContainerClass = 'container-fluid hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+    if (! $heroMaskEnabled) {
+        $heroContainerClass .= ' hero-no-mask';
+    }
+    $heroStyle = '';
+    if ($heroImage) {
+        if ($heroMaskEnabled) {
+            $heroStyle = "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroImage}'); background-size: cover; background-position: center;";
+        } else {
+            $heroStyle = "background-image: url('{$heroImage}'); background-size: cover; background-position: center;";
+        }
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
+            : 'background: var(--theme-accent);';
+    }
 @endphp
 
 {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
@@ -141,17 +169,22 @@
     'cart' => $cartSummary,
 ])->render() !!}
 
-<div class="container-fluid bg-dark hero-header mb-5">
+@if($heroVisible)
+<div id="hero" class="{{ $heroContainerClass }}" style="{{ $heroStyle }}">
     <div class="container text-center my-5 pt-5 pb-4">
-        <h1 class="display-3 text-white mb-3 animated slideInDown">Pesanan</h1>
+        <h1 class="display-3 text-white mb-3 animated slideInDown">{{ $heroTitle }}</h1>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb justify-content-center text-uppercase">
                 <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
-                <li class="breadcrumb-item text-white active" aria-current="page">Pesanan</li>
+                <li class="breadcrumb-item text-white active" aria-current="page">{{ $heroTitle }}</li>
             </ol>
         </nav>
+        @if(!empty($heroDescription))
+            <p class="text-white-50 mb-0">{{ $heroDescription }}</p>
+        @endif
     </div>
 </div>
+@endif
 
 <div class="container order-section">
     @if($feedbackStatus)

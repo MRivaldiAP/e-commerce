@@ -1,3 +1,6 @@
+@php
+    $themeName = $theme ?? 'theme-restoran';
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,13 +20,13 @@
     <link href="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/palette.blade.php'), ['theme' => $themeName])->render() !!}
     <style>
-        :root{--bs-primary:#FEA116;--bs-primary-rgb:254,161,22;}
         .contact-card i {font-size: 2rem; color: #FEA116;}
         .contact-card {transition: transform .2s ease, box-shadow .2s ease;}
-        .contact-card:hover {transform: translateY(-6px); box-shadow: 0 18px 40px rgba(15,23,43,.12);}
+        .contact-card:hover {transform: translateY(-6px); box-shadow: 0 18px 40px rgba(var(--theme-accent-rgb), .12);}
         .contact-social a {width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); margin: 0 .35rem; transition: all .2s ease;}
-        .contact-social a:hover {background: #FEA116; border-color: #FEA116; color: #0F172B;}
+        .contact-social a:hover {background: #FEA116; border-color: #FEA116; color: var(--theme-accent);}
         .contact-map iframe {width: 100%; border: 0; min-height: 420px; border-radius: 16px;}
     </style>
 </head>
@@ -35,7 +38,6 @@
     use App\Support\ThemeMedia;
     use Illuminate\Support\Str;
 
-    $themeName = $theme ?? 'theme-restoran';
     $settings = PageSetting::forPage('contact');
     $detailItems = json_decode($settings['details.items'] ?? '[]', true);
     $socialItems = json_decode($settings['social.items'] ?? '[]', true);
@@ -58,12 +60,14 @@
     $heroStyle = '';
     if ($heroBackground) {
         if ($heroMaskEnabled) {
-            $heroStyle = "background-image: linear-gradient(rgba(15, 23, 43, .88), rgba(15, 23, 43, .88)), url('{$heroBackground}'); background-size: cover; background-position: center;";
+            $heroStyle = "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.88), rgba(var(--theme-accent-rgb), 0.88)), url('{$heroBackground}'); background-size: cover; background-position: center;";
         } else {
             $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
         }
-    } elseif (! $heroMaskEnabled) {
-        $heroStyle = 'background-image: none;';
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.88), rgba(var(--theme-accent-rgb), 0.88));'
+            : 'background: var(--theme-accent);';
     }
 
     $visibleSocials = collect($socialItems)->filter(function ($item) {

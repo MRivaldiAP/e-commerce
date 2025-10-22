@@ -32,12 +32,14 @@
     $heroStyle = '';
     if ($heroBackground) {
         if ($heroMaskEnabled) {
-            $heroStyle = "background-image: linear-gradient(rgba(15, 23, 43, .85), rgba(15, 23, 43, .85)), url('{$heroBackground}'); background-size: cover; background-position: center;";
+            $heroStyle = "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.85), rgba(var(--theme-accent-rgb), 0.85)), url('{$heroBackground}'); background-size: cover; background-position: center;";
         } else {
             $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
         }
-    } elseif (! $heroMaskEnabled) {
-        $heroStyle = 'background-image: none;';
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.85), rgba(var(--theme-accent-rgb), 0.85));'
+            : 'background: var(--theme-accent);';
     }
 
     $filterVisible = ($settings['filters.visible'] ?? '1') === '1' && ($categoryCollection->isNotEmpty() || $hasUncategorized);
@@ -63,9 +65,7 @@
     <link href="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
-    <style>
-        :root{--bs-primary:#FEA116;--bs-primary-rgb:254,161,22;}
-    </style>
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/palette.blade.php'), ['theme' => $themeName])->render() !!}
 </head>
 <body>
 <div class="container-xxl position-relative p-0">
@@ -205,7 +205,7 @@
         .gallery-modal__backdrop {
             position: absolute;
             inset: 0;
-            background: rgba(15, 23, 43, 0.75);
+            background: rgba(var(--theme-accent-rgb), 0.75);
         }
         .gallery-modal__dialog {
             position: relative;

@@ -1,3 +1,6 @@
+@php
+    $themeName = $theme ?? 'theme-restoran';
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -37,6 +40,7 @@
     <link href="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
+    {!! view()->file(base_path('themes/' . $themeName . '/views/components/palette.blade.php'), ['theme' => $themeName])->render() !!}
 </head>
 <body>
 @php
@@ -44,7 +48,6 @@
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
 
-    $themeName = $theme ?? 'theme-restoran';
     $detailSettings = $settings ?? [];
     $listSettings = $listSettings ?? [];
     $article = $article ?? [];
@@ -71,7 +74,18 @@
     if (! $heroMaskEnabled) {
         $heroClasses .= ' hero-no-mask';
     }
-    $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+    $heroStyle = '';
+    if ($heroBackground) {
+        if ($heroMaskEnabled) {
+            $heroStyle = "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroBackground}'); background-size: cover; background-position: center;";
+        } else {
+            $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+        }
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
+            : 'background: var(--theme-accent);';
+    }
 
     function restoran_article_image($path) {
         if (empty($path)) {
