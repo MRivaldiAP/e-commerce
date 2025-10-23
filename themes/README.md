@@ -20,6 +20,7 @@ SPECIFIC RULE FOR EACH PAGE :
 COMPONENTS
 A) Nav Menu : Brand/Logo, Nav Link based on page/menu visibility, sticky header, and icons
 B) Footer : Brand/Logo, quick links based on page/menu visibility, address
+C) Flying Whatsapp/Phone Button : fixed button on the bottom corner of all landing pages, can be showed, hided, added, and edited (the link inside button). 
 ---------------
 HOME PAGE :
 Components - Nav Menu
