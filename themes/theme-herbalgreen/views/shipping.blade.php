@@ -580,5 +580,9 @@
         updateTotals(selectedRate ? selectedRate.cost : ({{ $checkoutTotals['shipping_cost'] ?? 0 }}));
     })();
 </script>
+
+{!! view()->file(base_path('themes/' . $theme . '/views/components/floating-contact-buttons.blade.php'), [
+    'theme' => $theme,
+])->render() !!}
 </body>
 </html>

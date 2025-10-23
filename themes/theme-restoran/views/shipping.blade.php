@@ -563,5 +563,9 @@
 <script src="{{ asset('storage/themes/theme-restoran/lib/counterup/counterup.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-restoran/lib/owlcarousel/owl.carousel.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-restoran/js/main.js') }}"></script>
+
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/floating-contact-buttons.blade.php'), [
+    'theme' => $themeName,
+])->render() !!}
 </body>
 </html>

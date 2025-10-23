@@ -49,6 +49,20 @@
                   @if (!empty($settings[$element['id']]))
                     <img src="{{ asset('storage/' . $settings[$element['id']]) }}" alt="Preview" class="img-fluid mt-2 rounded" style="max-height:120px; object-fit:contain;">
                   @endif
+                @elseif ($element['type'] === 'repeatable')
+                  @php
+                    $items = json_decode($settings[$element['id']] ?? '[]', true);
+                    $items = is_array($items) ? $items : [];
+                    $fields = $element['fields'] ?? [];
+                  @endphp
+                  @if (!empty($element['label']))
+                    <label class="form-label">{{ $element['label'] }}</label>
+                  @endif
+                  <div data-repeatable="{{ $element['id'] }}" data-fields='@json($fields)'>
+                    <div class="repeatable-items"></div>
+                    <button type="button" class="btn btn-sm btn-secondary add-item">Tambah Tombol</button>
+                    <textarea class="d-none" data-key="{{ $element['id'] }}">{{ json_encode($items) }}</textarea>
+                  </div>
                 @endif
               </div>
             @endforeach
@@ -101,6 +115,120 @@ document.querySelectorAll('#elements [data-key]').forEach(function(input){
       triggerPreviewReload();
     });
   });
+});
+
+document.querySelectorAll('[data-repeatable]').forEach(function(wrapper){
+  const itemsContainer = wrapper.querySelector('.repeatable-items');
+  const hidden = wrapper.querySelector('[data-key]');
+  const fields = JSON.parse(wrapper.getAttribute('data-fields') || '[]');
+
+  function buildItem(data = {}){
+    const div = document.createElement('div');
+    div.className = 'repeatable-item mb-2 border rounded p-2';
+    let html = '';
+
+    fields.forEach(function(field){
+      if(!field || typeof field !== 'object'){
+        return;
+      }
+
+      const name = field.name || '';
+      const type = field.type || 'text';
+      const placeholder = field.placeholder || '';
+      const value = data[name] || '';
+
+      if(type === 'textarea'){
+        html += `<textarea class="form-control mb-1" data-field="${name}" placeholder="${placeholder}">${value}</textarea>`;
+        return;
+      }
+
+      if(type === 'select'){
+        const options = Array.isArray(field.options) ? field.options : [];
+        let optionsHtml = `<option value="">${placeholder || 'Pilih opsi'}</option>`;
+        let hasSelectedValue = value === '';
+
+        options.forEach(function(option){
+          if(option === null || option === undefined){
+            return;
+          }
+
+          let optionValue;
+          let optionLabel;
+
+          if(typeof option === 'object'){
+            optionValue = option.value;
+            optionLabel = option.label || option.value;
+          }else{
+            optionValue = option;
+            optionLabel = option;
+          }
+
+          if(optionValue === undefined){
+            return;
+          }
+
+          const selected = optionValue === value;
+          if(selected){
+            hasSelectedValue = true;
+          }
+
+          optionsHtml += `<option value="${optionValue}"${selected ? ' selected' : ''}>${optionLabel}</option>`;
+        });
+
+        if(value && !hasSelectedValue){
+          optionsHtml += `<option value="${value}" selected>${value}</option>`;
+        }
+
+        html += `<select class="form-control mb-1" data-field="${name}">${optionsHtml}</select>`;
+        return;
+      }
+
+      html += `<input type="text" class="form-control mb-1" data-field="${name}" placeholder="${placeholder}" value="${value}">`;
+    });
+
+    html += '<button type="button" class="btn btn-sm btn-outline-danger remove-item">Hapus</button>';
+    div.innerHTML = html;
+
+    return div;
+  }
+
+  function sync(){
+    const data = [];
+    itemsContainer.querySelectorAll('.repeatable-item').forEach(function(item){
+      const row = {};
+      item.querySelectorAll('[data-field]').forEach(function(input){
+        row[input.getAttribute('data-field')] = input.value;
+      });
+      data.push(row);
+    });
+
+    hidden.value = JSON.stringify(data);
+    hidden.dispatchEvent(new Event('change'));
+  }
+
+  const addButton = wrapper.querySelector('.add-item');
+  if(addButton){
+    addButton.addEventListener('click', function(){
+      itemsContainer.appendChild(buildItem());
+    });
+  }
+
+  itemsContainer.addEventListener('input', sync);
+  itemsContainer.addEventListener('change', sync);
+  itemsContainer.addEventListener('click', function(event){
+    if(event.target.classList.contains('remove-item')){
+      event.target.closest('.repeatable-item').remove();
+      sync();
+    }
+  });
+
+  try {
+    JSON.parse(hidden.value || '[]').forEach(function(item){
+      itemsContainer.appendChild(buildItem(item));
+    });
+  } catch (error) {}
+
+  sync();
 });
 
 document.querySelectorAll('#elements .card').forEach(function(card){

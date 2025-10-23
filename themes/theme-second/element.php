@@ -216,5 +216,9 @@ return [
             'footer.schedule.text',
             'footer.copyright',
         ],
+        'floating' => [
+            'floating.visible',
+            'floating.buttons',
+        ],
     ],
 ];
