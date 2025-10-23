@@ -142,5 +142,9 @@
 <script src="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-restoran/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-restoran/js/main.js') }}"></script>
+
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/floating-contact-buttons.blade.php'), [
+    'theme' => $themeName,
+])->render() !!}
 </body>
 </html>

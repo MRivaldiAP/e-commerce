@@ -213,5 +213,9 @@
         }
     </style>
 @endonce
+
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/floating-contact-buttons.blade.php'), [
+    'theme' => $themeName,
+])->render() !!}
 </body>
 </html>

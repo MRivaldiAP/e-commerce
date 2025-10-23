@@ -441,6 +441,30 @@ return [
                     'footer.copyright' => ['type' => 'text', 'label' => 'Teks Hak Cipta'],
                 ],
             ],
+            'floating' => [
+                'label' => 'Tombol Melayang',
+                'elements' => [
+                    'floating.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Tombol'],
+                    'floating.buttons' => [
+                        'type' => 'repeatable',
+                        'label' => 'Daftar Tombol',
+                        'fields' => [
+                            [
+                                'name' => 'type',
+                                'placeholder' => 'Pilih Jenis Tombol',
+                                'type' => 'select',
+                                'options' => [
+                                    ['value' => 'whatsapp', 'label' => 'WhatsApp'],
+                                    ['value' => 'phone', 'label' => 'Telepon'],
+                                ],
+                            ],
+                            ['name' => 'label', 'placeholder' => 'Label Tombol'],
+                            ['name' => 'target', 'placeholder' => 'Nomor Telepon / WhatsApp'],
+                            ['name' => 'message', 'placeholder' => 'Pesan WhatsApp (opsional)', 'type' => 'textarea'],
+                        ],
+                    ],
+                ],
+            ],
         ],
     ],
 ];

@@ -268,5 +268,9 @@
 {!! view()->file(base_path('themes/' . $themeName . '/views/components/footer.blade.php'), [
     'footer' => $footerConfig,
 ])->render() !!}
+
+{!! view()->file(base_path('themes/' . $theme . '/views/components/floating-contact-buttons.blade.php'), [
+    'theme' => $theme,
+])->render() !!}
 </body>
 </html>

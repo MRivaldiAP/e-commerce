@@ -190,5 +190,9 @@
 <script src="{{ asset('storage/themes/theme-second/js/mixitup.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/owl.carousel.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/main.js') }}"></script>
+
+{!! view()->file(base_path('themes/' . $themeName . '/views/components/floating-contact-buttons.blade.php'), [
+    'theme' => $themeName,
+])->render() !!}
 </body>
 </html>

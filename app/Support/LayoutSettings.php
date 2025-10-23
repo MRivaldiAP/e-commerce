@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\PageSetting;
+use function str_starts_with;
 
 class LayoutSettings
 {
@@ -143,6 +144,83 @@ class LayoutSettings
                 'text' => $settings['footer.schedule.text'] ?? 'Senin - Jumat: 09.00 - 18.00',
             ],
             'copyright' => $settings['footer.copyright'] ?? ('© ' . date('Y') . ' Herbal Green'),
+        ];
+    }
+
+    /**
+     * Retrieve floating contact button configuration for a theme.
+     */
+    public static function floatingButtons(string $theme): array
+    {
+        $settings = self::get($theme);
+
+        $visible = ($settings['floating.visible'] ?? '0') === '1';
+        $rawItems = json_decode($settings['floating.buttons'] ?? '[]', true);
+        $items = is_array($rawItems) ? $rawItems : [];
+
+        $buttons = [];
+
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $type = $item['type'] ?? 'whatsapp';
+            $type = in_array($type, ['whatsapp', 'phone'], true) ? $type : 'whatsapp';
+            $label = trim((string) ($item['label'] ?? ''));
+            $target = trim((string) ($item['target'] ?? ''));
+            $message = trim((string) ($item['message'] ?? ''));
+
+            if ($target === '') {
+                continue;
+            }
+
+            $digits = preg_replace('/\D+/', '', $target);
+            if (! is_string($digits) || $digits === '') {
+                continue;
+            }
+
+            $hasLeadingPlus = str_starts_with($target, '+');
+            $displayNumber = $hasLeadingPlus ? '+' . $digits : $digits;
+            $telValue = $displayNumber;
+
+            if ($type === 'whatsapp') {
+                $href = 'https://wa.me/' . $digits;
+                if ($message !== '') {
+                    $href .= '?text=' . urlencode($message);
+                }
+                $external = true;
+            } else {
+                $href = 'tel:' . $telValue;
+                $external = false;
+            }
+
+            if ($label === '') {
+                $label = $type === 'phone' ? 'Hubungi Kami' : 'Chat WhatsApp';
+            }
+
+            $ariaLabelParts = [$label];
+            if ($displayNumber !== '') {
+                $ariaLabelParts[] = $displayNumber;
+            }
+
+            $buttons[] = [
+                'type' => $type,
+                'label' => $label,
+                'href' => $href,
+                'external' => $external,
+                'number' => $displayNumber,
+                'aria_label' => trim(implode(' ', $ariaLabelParts)),
+            ];
+        }
+
+        if ($buttons === []) {
+            $visible = false;
+        }
+
+        return [
+            'visible' => $visible,
+            'buttons' => $buttons,
         ];
     }
 
