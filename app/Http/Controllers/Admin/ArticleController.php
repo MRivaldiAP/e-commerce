@@ -8,11 +8,16 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\ImageService;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ArticleController extends Controller
 {
+    public function __construct(private readonly ImageService $imageService)
+    {
+    }
+
     public function index(Request $request): View
     {
         $articles = Article::query()
@@ -74,7 +79,10 @@ class ArticleController extends Controller
         }
 
         if ($request->hasFile('featured_image')) {
-            $validated['featured_image'] = $request->file('featured_image')->store('articles', 'public');
+            $validated['featured_image'] = $this->imageService->storeAsWebp(
+                $request->file('featured_image'),
+                'articles'
+            );
         }
 
         Article::create($validated);
@@ -130,7 +138,10 @@ class ArticleController extends Controller
             if ($article->featured_image) {
                 Storage::disk('public')->delete($article->featured_image);
             }
-            $validated['featured_image'] = $request->file('featured_image')->store('articles', 'public');
+            $validated['featured_image'] = $this->imageService->storeAsWebp(
+                $request->file('featured_image'),
+                'articles'
+            );
         }
 
         $article->update($validated);

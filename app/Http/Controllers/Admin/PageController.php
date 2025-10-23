@@ -10,9 +10,14 @@ use App\Models\Comment;
 use App\Models\Product;
 use App\Support\LayoutSettings;
 use App\Support\PageElements;
+use App\Services\ImageService;
 
 class PageController extends Controller
 {
+    public function __construct(private readonly ImageService $imageService)
+    {
+    }
+
     public function home()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
@@ -31,10 +36,7 @@ class PageController extends Controller
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
 
-        $value = $request->input('value');
-        if ($request->hasFile('value')) {
-            $value = $request->file('value')->store("pages/{$theme}", 'public');
-        }
+        $value = $this->resolvePageValue($request, $theme);
 
         $key = $request->input('key');
 
@@ -61,10 +63,7 @@ class PageController extends Controller
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
 
-        $value = $request->input('value');
-        if ($request->hasFile('value')) {
-            $value = $request->file('value')->store("pages/{$theme}", 'public');
-        }
+        $value = $this->resolvePageValue($request, $theme);
 
         $key = $request->input('key');
 
@@ -95,10 +94,7 @@ class PageController extends Controller
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
 
-        $value = $request->input('value');
-        if ($request->hasFile('value')) {
-            $value = $request->file('value')->store("pages/{$theme}", 'public');
-        }
+        $value = $this->resolvePageValue($request, $theme);
 
         $key = $request->input('key');
 
@@ -128,10 +124,7 @@ class PageController extends Controller
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
 
-        $value = $request->input('value');
-        if ($request->hasFile('value')) {
-            $value = $request->file('value')->store("pages/{$theme}", 'public');
-        }
+        $value = $this->resolvePageValue($request, $theme);
 
         $key = $request->input('key');
 
@@ -164,10 +157,7 @@ class PageController extends Controller
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
 
-        $value = $request->input('value');
-        if ($request->hasFile('value')) {
-            $value = $request->file('value')->store("pages/{$theme}", 'public');
-        }
+        $value = $this->resolvePageValue($request, $theme);
 
         $key = $request->input('key');
 
@@ -195,10 +185,7 @@ class PageController extends Controller
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
 
-        $value = $request->input('value');
-        if ($request->hasFile('value')) {
-            $value = $request->file('value')->store("pages/{$theme}", 'public');
-        }
+        $value = $this->resolvePageValue($request, $theme);
 
         $key = $request->input('key');
 
@@ -226,10 +213,7 @@ class PageController extends Controller
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
 
-        $value = $request->input('value');
-        if ($request->hasFile('value')) {
-            $value = $request->file('value')->store("pages/{$theme}", 'public');
-        }
+        $value = $this->resolvePageValue($request, $theme);
 
         $key = $request->input('key');
 
@@ -258,10 +242,7 @@ class PageController extends Controller
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
 
-        $value = $request->input('value');
-        if ($request->hasFile('value')) {
-            $value = $request->file('value')->store("pages/{$theme}", 'public');
-        }
+        $value = $this->resolvePageValue($request, $theme);
 
         $key = $request->input('key');
 
@@ -290,10 +271,7 @@ class PageController extends Controller
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
 
-        $value = $request->input('value');
-        if ($request->hasFile('value')) {
-            $value = $request->file('value')->store("pages/{$theme}", 'public');
-        }
+        $value = $this->resolvePageValue($request, $theme);
 
         $key = $request->input('key');
 
@@ -334,10 +312,7 @@ class PageController extends Controller
 
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
 
-        $value = $request->input('value');
-        if ($request->hasFile('value')) {
-            $value = $request->file('value')->store("pages/{$theme}", 'public');
-        }
+        $value = $this->resolvePageValue($request, $theme);
 
         $key = $request->input('key');
 
@@ -354,5 +329,14 @@ class PageController extends Controller
         $comment->save();
 
         return back()->with('success', 'Status komentar diperbarui.');
+    }
+
+    private function resolvePageValue(Request $request, string $theme)
+    {
+        if ($request->hasFile('value')) {
+            return $this->imageService->storeAsWebp($request->file('value'), "pages/{$theme}");
+        }
+
+        return $request->input('value');
     }
 }

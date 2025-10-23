@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductService
 {
+    public function __construct(private readonly ImageService $imageService)
+    {
+    }
+
     public function getAllProducts(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = Product::query()->with(['categories', 'images']);
@@ -152,7 +156,7 @@ class ProductService
 
         $created = new Collection();
         foreach ($files as $file) {
-            $path = $file->store('products', ['disk' => 'public']);
+            $path = $this->imageService->storeAsWebp($file, 'products');
             $created->push(
                 $product->images()->create(['path' => $path])
             );

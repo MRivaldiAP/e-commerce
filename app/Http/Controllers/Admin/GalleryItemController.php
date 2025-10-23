@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\GalleryCategory;
 use App\Models\GalleryItem;
+use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,10 @@ use Illuminate\View\View;
 
 class GalleryItemController extends Controller
 {
+    public function __construct(private readonly ImageService $imageService)
+    {
+    }
+
     public function index(): View
     {
         $items = GalleryItem::with('category')
@@ -40,7 +45,7 @@ class GalleryItemController extends Controller
             'image' => ['required', 'image', 'max:5120'],
         ]);
 
-        $path = $request->file('image')->store('gallery/items', 'public');
+        $path = $this->imageService->storeAsWebp($request->file('image'), 'gallery/items');
 
         GalleryItem::create([
             'title' => $data['title'],
@@ -80,7 +85,7 @@ class GalleryItemController extends Controller
         ];
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('gallery/items', 'public');
+            $path = $this->imageService->storeAsWebp($request->file('image'), 'gallery/items');
             if ($item->image_path) {
                 Storage::disk('public')->delete($item->image_path);
             }
