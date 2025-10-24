@@ -81,10 +81,8 @@
         } else {
             $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
         }
-    } else {
-        $heroStyle = $heroMaskEnabled
-            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
-            : 'background: var(--theme-accent);';
+    } elseif (! $heroMaskEnabled) {
+        $heroStyle = 'background-image: none;';
     }
 
     function restoran_article_image($path) {
