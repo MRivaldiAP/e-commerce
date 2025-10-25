@@ -9,11 +9,18 @@ INPUTS
 - Assets are already under /public/theme-reference/{determined theme} (keep using originl CSS/JS/images from public), and copy all the asset to /storage/app/public/themes/{determined theme} (just create the placeholder, and ill copy it myself). Rewrite URLs using Laravel’s asset() helper. 
 
 STRICT RULES
-1) Change as little as possible of the original theme markup and class names. 
+1) Change as little as possible of the original theme markup and class names.
 2) Cherry-pick whole sections from the source HTML files. If an exact section doesn’t exist, adapt the closest equivalent with minimal tweaks.
 3) Keep responsiveness and original CSS/JS intact.
 4) Do not rename core classes or restructure nested elements unless strictly required to integrate with Blade.
 5) Convert only what’s needed to Blade (asset() paths, loops/vars). No framework-specific rewrites beyond that.
+
+PROMO DISPLAY RULES
+- Every product list (landing, detail recommendations, cart summary, shipping, payment) must surface an active promotion by showing the promo label badge and rendering the original price with a strike-through above the discounted price.
+- When no promotion is active or the promo period has ended, only the normal price should be shown and the promo badge must be hidden.
+- Cart, shipping, and payment totals must rely on the discounted price when a promo is active so expired promotions never affect the payable amount.
+- Keep markup adjustments minimal: append helper classes (e.g. `.promo-label`, `.price-original`, `.price-current`) instead of rewriting structural containers.
+- Theme Restoran implements these helpers via `.promo-label` badges and `.price-stack` containers across its listing, detail, cart, shipping, and payment views—preserve them when extending the theme so promo states stay consistent.
 
 SPECIFIC RULE FOR EACH PAGE :
 ---------------

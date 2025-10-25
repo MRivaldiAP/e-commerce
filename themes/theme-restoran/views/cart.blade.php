@@ -93,6 +93,48 @@
             color: #dc3545;
         }
 
+        .promo-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--theme-accent, #feA116);
+            color: #fff;
+            padding: 0.15rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-top: 0.35rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .price-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .price-stack.align-end {
+            align-items: flex-end;
+        }
+
+        .price-stack .price-original {
+            text-decoration: line-through;
+            color: rgba(0, 0, 0, 0.45);
+            font-size: 0.85rem;
+        }
+
+        .price-stack .price-current {
+            color: var(--theme-accent, #feA116);
+            font-weight: 700;
+        }
+
+        .cart-total-meta {
+            font-size: 0.85rem;
+            color: rgba(0, 0, 0, 0.65);
+        }
+
         .cart-empty {
             text-align: center;
             padding: 3rem 1.5rem;
@@ -192,10 +234,20 @@
                                     <img src="{{ $item['image_url'] }}" alt="{{ $item['name'] }}">
                                     <div>
                                         <h5 class="mb-1"><a href="{{ $item['product_url'] }}" class="text-dark">{{ $item['name'] }}</a></h5>
+                                        @if(!empty($item['has_promo']) && !empty($item['promo_label']))
+                                            <span class="promo-label">{{ $item['promo_label'] }}</span>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
-                            <td>Rp <span data-item-price>{{ $item['price_formatted'] }}</span></td>
+                            <td>
+                                <div class="price-stack align-end">
+                                    @if(!empty($item['has_promo']))
+                                        <span class="price-original">Rp {{ $item['original_price_formatted'] }}</span>
+                                    @endif
+                                    <span class="price-current" data-item-price>Rp {{ $item['price_formatted'] }}</span>
+                                </div>
+                            </td>
                             <td>
                                 <div class="quantity-control" data-quantity-control>
                                     <button type="button" data-action="decrease">-</button>
@@ -203,7 +255,14 @@
                                     <button type="button" data-action="increase">+</button>
                                 </div>
                             </td>
-                            <td>Rp <span data-item-subtotal>{{ $item['subtotal_formatted'] }}</span></td>
+                            <td>
+                                <div class="price-stack align-end">
+                                    @if(!empty($item['has_promo']))
+                                        <span class="price-original">Rp {{ $item['original_subtotal_formatted'] }}</span>
+                                    @endif
+                                    <span class="price-current" data-item-subtotal>Rp {{ $item['subtotal_formatted'] }}</span>
+                                </div>
+                            </td>
                             <td class="text-end"><button type="button" class="cart-remove" data-remove-item>&times;</button></td>
                         </tr>
                     @endforeach
@@ -217,6 +276,12 @@
             </div>
             <div class="col-lg-6 text-lg-end">
                 <div class="d-inline-flex flex-column align-items-end gap-3">
+                    <div class="cart-total-meta {{ ($cartSummary['discount_total'] ?? 0) > 0 ? '' : 'd-none' }}" data-cart-original-wrapper>
+                        Harga Normal: Rp <span data-cart-original-total>{{ $cartSummary['original_total_formatted'] }}</span>
+                    </div>
+                    <div class="cart-total-meta text-success {{ ($cartSummary['discount_total'] ?? 0) > 0 ? '' : 'd-none' }}" data-cart-discount-wrapper>
+                        Hemat Promo: -Rp <span data-cart-discount-total>{{ $cartSummary['discount_total_formatted'] }}</span>
+                    </div>
                     <div class="fs-4 fw-bold">Total: Rp <span data-cart-grand-total>{{ $cartSummary['total_price_formatted'] }}</span></div>
                     <a href="{{ $actionUrl }}" class="btn btn-primary btn-lg {{ empty($cartSummary['items']) ? 'disabled' : '' }}" data-cart-action aria-disabled="{{ empty($cartSummary['items']) ? 'true' : 'false' }}" tabindex="{{ empty($cartSummary['items']) ? '-1' : '0' }}">{{ $primaryButton }}</a>
                 </div>
@@ -259,6 +324,10 @@
         const emptyState = document.getElementById('cart-empty');
         const status = document.querySelector('[data-cart-status]');
         const totalDisplay = document.querySelector('[data-cart-grand-total]');
+        const originalWrapper = document.querySelector('[data-cart-original-wrapper]');
+        const originalDisplay = document.querySelector('[data-cart-original-total]');
+        const discountWrapper = document.querySelector('[data-cart-discount-wrapper]');
+        const discountDisplay = document.querySelector('[data-cart-discount-total]');
         const actionButton = document.querySelector('[data-cart-action]');
         const initialHasItems = {{ $hasItems ? 'true' : 'false' }};
 
@@ -281,12 +350,31 @@
             link.textContent = item.name;
             title.appendChild(link);
             info.appendChild(title);
+            if (item.has_promo && item.promo_label) {
+                const badge = document.createElement('span');
+                badge.className = 'promo-label';
+                badge.textContent = item.promo_label;
+                info.appendChild(badge);
+            }
             wrapper.appendChild(img);
             wrapper.appendChild(info);
             infoCell.appendChild(wrapper);
 
             const priceCell = document.createElement('td');
-            priceCell.innerHTML = 'Rp <span data-item-price>' + item.price_formatted + '</span>';
+            const priceStack = document.createElement('div');
+            priceStack.className = 'price-stack align-end';
+            if (item.has_promo && item.original_price_formatted) {
+                const originalPrice = document.createElement('span');
+                originalPrice.className = 'price-original';
+                originalPrice.textContent = 'Rp ' + item.original_price_formatted;
+                priceStack.appendChild(originalPrice);
+            }
+            const currentPrice = document.createElement('span');
+            currentPrice.className = 'price-current';
+            currentPrice.textContent = 'Rp ' + item.price_formatted;
+            currentPrice.setAttribute('data-item-price', 'true');
+            priceStack.appendChild(currentPrice);
+            priceCell.appendChild(priceStack);
 
             const quantityCell = document.createElement('td');
             const control = document.createElement('div');
@@ -298,7 +386,20 @@
             quantityCell.appendChild(control);
 
             const subtotalCell = document.createElement('td');
-            subtotalCell.innerHTML = 'Rp <span data-item-subtotal>' + item.subtotal_formatted + '</span>';
+            const subtotalStack = document.createElement('div');
+            subtotalStack.className = 'price-stack align-end';
+            if (item.has_promo && item.original_subtotal_formatted) {
+                const originalSubtotal = document.createElement('span');
+                originalSubtotal.className = 'price-original';
+                originalSubtotal.textContent = 'Rp ' + item.original_subtotal_formatted;
+                subtotalStack.appendChild(originalSubtotal);
+            }
+            const currentSubtotal = document.createElement('span');
+            currentSubtotal.className = 'price-current';
+            currentSubtotal.textContent = 'Rp ' + item.subtotal_formatted;
+            currentSubtotal.setAttribute('data-item-subtotal', 'true');
+            subtotalStack.appendChild(currentSubtotal);
+            subtotalCell.appendChild(subtotalStack);
 
             const actionCell = document.createElement('td');
             actionCell.className = 'text-end';
@@ -329,6 +430,18 @@
             items.forEach(item => cartBody.appendChild(buildRow(item)));
             if(totalDisplay){
                 totalDisplay.textContent = summary.total_price_formatted || '0';
+            }
+            if (originalDisplay) {
+                originalDisplay.textContent = summary.original_total_formatted || '0';
+            }
+            if (discountDisplay) {
+                discountDisplay.textContent = summary.discount_total_formatted || '0';
+            }
+            if (originalWrapper) {
+                originalWrapper.classList.toggle('d-none', (summary.discount_total || 0) <= 0);
+            }
+            if (discountWrapper) {
+                discountWrapper.classList.toggle('d-none', (summary.discount_total || 0) <= 0);
             }
             setActionButtonState(items.length > 0);
             if(items.length === 0){

@@ -23,6 +23,64 @@
         .cart-feedback.error {
             color: #d9534f;
         }
+
+        .product__details__price {
+            display: flex;
+            flex-direction: column;
+            gap: .35rem;
+        }
+
+        .product__details__price .price-original {
+            color: #9e9e9e;
+            text-decoration: line-through;
+            font-size: 1rem;
+        }
+
+        .product__details__price .price-current {
+            color: #e65100;
+            font-weight: 700;
+            font-size: 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .product__details__price .promo-pill {
+            background: #e53935;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .product__item__badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #e53935;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .product__item__text .price-original {
+            display: block;
+            font-size: .85rem;
+            color: #9e9e9e;
+            text-decoration: line-through;
+        }
+
+        .product__item__text .price-discount {
+            display: block;
+            font-weight: 700;
+            color: #e65100;
+        }
     </style>
 </head>
 <body>
@@ -50,15 +108,18 @@
     if ($product->categories && $product->categories->count()) {
         $recommendationsQuery->whereHas('categories', fn($q) => $q->whereIn('categories.id', $product->categories->pluck('id')));
     }
-    $recommendations = $recommendationsQuery->with('images')->take(5)->get();
+    $recommendations = $recommendationsQuery->with(['images', 'promotions'])->take(5)->get();
     if ($recommendations->count() < 5) {
         $fallback = Product::where('id', '!=', $product->id)
             ->whereNotIn('id', $recommendations->pluck('id'))
-            ->with('images')
+            ->with(['images', 'promotions'])
             ->take(5 - $recommendations->count())
             ->get();
         $recommendations = $recommendations->concat($fallback);
     }
+    $productPromotion = $product->currentPromotion();
+    $productHasPromo = $productPromotion && $product->promo_price !== null && $product->promo_price < $product->price;
+    $productFinalPrice = $product->final_price;
 @endphp
 {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
     'brand' => $navigation['brand'],
@@ -103,7 +164,14 @@
             <div class="col-lg-6 col-md-6">
                 <div class="product__details__text">
                     <h3>{{ $product->name }}</h3>
-                    <div class="product__details__price">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
+                    <div class="product__details__price">
+                        @if($productHasPromo)
+                            <span class="price-original">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                            <span class="price-current">Rp {{ number_format($productFinalPrice, 0, ',', '.') }}<span class="promo-pill">{{ $productPromotion->label }}</span></span>
+                        @else
+                            <span class="price-current">Rp {{ number_format($productFinalPrice, 0, ',', '.') }}</span>
+                        @endif
+                    </div>
                     <p>{{ $product->short_description ?? 'Produk pilihan terbaik untuk memenuhi kebutuhan Anda setiap hari.' }}</p>
                     <div class="product__details__quantity">
                         <div class="quantity">
@@ -196,10 +264,18 @@
         </div>
         <div class="row">
             @foreach($recommendations as $item)
-                @php $img = optional($item->images->first())->path; @endphp
+                @php
+                    $img = optional($item->images->first())->path;
+                    $recommendationPromotion = $item->currentPromotion();
+                    $recommendationHasPromo = $recommendationPromotion && $item->promo_price !== null && $item->promo_price < $item->price;
+                    $recommendationFinalPrice = $item->final_price;
+                @endphp
                 <div class="col-lg-3 col-md-4 col-sm-6">
                     <div class="product__item">
                         <div class="product__item__pic set-bg" data-setbg="{{ $img ? asset('storage/'.$img) : asset('storage/themes/theme-second/img/product/product-1.jpg') }}">
+                            @if($recommendationHasPromo)
+                                <span class="product__item__badge">{{ $recommendationPromotion->label }}</span>
+                            @endif
                             <ul class="product__item__pic__hover">
                                 <li><a href="#"><i class="fa fa-heart"></i></a></li>
                                 <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -208,7 +284,12 @@
                         </div>
                         <div class="product__item__text">
                             <h6><a href="{{ route('products.show', $item) }}">{{ $item->name }}</a></h6>
-                            <h5>{{ $item->price_formatted ?? number_format($item->price,0,',','.') }}</h5>
+                            @if($recommendationHasPromo)
+                                <span class="price-original">Rp {{ number_format($item->price,0,',','.') }}</span>
+                                <span class="price-discount">Rp {{ number_format($recommendationFinalPrice,0,',','.') }}</span>
+                            @else
+                                <span class="price-discount">Rp {{ number_format($recommendationFinalPrice,0,',','.') }}</span>
+                            @endif
                         </div>
                     </div>
                 </div>

@@ -6,6 +6,40 @@
     <title>Produk</title>
     <link rel="stylesheet" href="{{ asset('themes/' . $theme . '/theme.css') }}">
     <script src="{{ asset('themes/' . $theme . '/theme.js') }}" defer></script>
+    <style>
+        .product-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card .promo-label {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #e53935;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            font-weight: 600;
+        }
+
+        .product-card .price-original {
+            display: block;
+            text-decoration: line-through;
+            color: #9e9e9e;
+            font-size: 0.9rem;
+        }
+
+        .product-card .price-current {
+            display: block;
+            color: #2e7d32;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+    </style>
 </head>
 <body>
 @php
@@ -15,7 +49,7 @@
     use App\Support\Cart;
     use App\Support\LayoutSettings;
     $settings = PageSetting::forPage('product');
-    $query = Product::query();
+    $query = Product::query()->with(['images', 'promotions']);
     if($s = request('search')){ $query->where('name', 'like', "%$s%"); }
     if($cat = request('category')){ $query->whereHas('categories', fn($q) => $q->where('slug', $cat)); }
     if($sort = request('sort')){
@@ -64,11 +98,24 @@
 <section id="products" class="products">
     <div class="product-grid">
         @foreach($products as $product)
+            @php
+                $imagePath = optional($product->images->first())->path;
+                $promotion = $product->currentPromotion();
+                $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
+                $finalPrice = $product->final_price;
+            @endphp
             <div class="product-card">
-                @php $img = optional($product->images()->first())->path; @endphp
-                <img src="{{ $img ? asset('storage/'.$img) : 'https://via.placeholder.com/150' }}" alt="{{ $product->name }}">
+                <img src="{{ $imagePath ? asset('storage/'.$imagePath) : 'https://via.placeholder.com/150' }}" alt="{{ $product->name }}">
+                @if($hasPromo)
+                    <span class="promo-label">{{ $promotion->label }}</span>
+                @endif
                 <h3>{{ $product->name }}</h3>
-                <p>{{ $product->price_formatted ?? number_format($product->price,0,',','.') }}</p>
+                @if($hasPromo)
+                    <span class="price-original">Rp {{ number_format($product->price,0,',','.') }}</span>
+                    <span class="price-current">Rp {{ number_format($finalPrice,0,',','.') }}</span>
+                @else
+                    <span class="price-current">Rp {{ number_format($finalPrice,0,',','.') }}</span>
+                @endif
                 <a href="{{ route('products.show', $product) }}" class="btn">Detail</a>
             </div>
         @endforeach

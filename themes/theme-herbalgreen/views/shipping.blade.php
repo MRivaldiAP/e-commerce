@@ -137,6 +137,10 @@
         .feedback.visible { display: block; }
         .feedback.error { background: #ffebee; color: #c62828; }
         .feedback.success { background: #e8f5e9; color: #2e7d32; }
+        .product-item { display:flex; justify-content: space-between; align-items:flex-start; }
+        .product-item .price-original { display:block; color:#9e9e9e; text-decoration:line-through; font-size:0.85rem; }
+        .product-item .price-current { display:block; color:#2e7d32; font-weight:600; }
+        .product-item .promo-label { display:inline-flex; align-items:center; background:#e53935; color:#fff; border-radius:999px; padding:3px 10px; font-size:0.7rem; text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
         @media (max-width: 992px) {
             .shipping-grid { grid-template-columns: 1fr; }
         }
@@ -230,9 +234,20 @@
             <h2>Ringkasan Pesanan</h2>
             <div class="product-list">
                 @foreach($cartSummary['items'] as $item)
+                    @php $hasPromo = $item['has_promo'] ?? false; @endphp
                     <div class="product-item">
-                        <span>{{ $item['name'] }} (x{{ $item['quantity'] }})</span>
-                        <span>Rp {{ $item['subtotal_formatted'] }}</span>
+                        <div>
+                            <span>{{ $item['name'] }} (x{{ $item['quantity'] }})</span>
+                            @if($hasPromo && !empty($item['promo_label']))
+                                <span class="promo-label">{{ $item['promo_label'] }}</span>
+                            @endif
+                        </div>
+                        <div style="text-align:right;">
+                            @if($hasPromo && !empty($item['original_subtotal_formatted']))
+                                <span class="price-original">Rp {{ $item['original_subtotal_formatted'] }}</span>
+                            @endif
+                            <span class="price-current">Rp {{ $item['subtotal_formatted'] }}</span>
+                        </div>
                     </div>
                 @endforeach
             </div>

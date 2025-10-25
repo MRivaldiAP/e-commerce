@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\CheckoutController;
@@ -80,12 +81,13 @@ Route::get('/kontak', function () {
 Route::get('/produk/{product}', function (Product $product) {
     $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
     $viewPath = base_path("themes/{$activeTheme}/views/product-detail.blade.php");
-    if (File::exists($viewPath)) {
-        $product->load([
-            'images',
-            'categories',
-            'comments' => fn ($query) => $query->where('is_active', true)->latest(),
-        ]);
+        if (File::exists($viewPath)) {
+            $product->load([
+                'images',
+                'categories',
+                'promotions',
+                'comments' => fn ($query) => $query->where('is_active', true)->latest(),
+            ]);
 
         return view()->file($viewPath, [
             'theme' => $activeTheme,
@@ -246,6 +248,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::delete('products/{productId}/images/{imageId}', [ProductController::class, 'removeImage']);
         Route::post('products/{id}/replace-images', [ProductController::class, 'replaceImages']);
         Route::put('products/{id}/categories', [ProductController::class, 'syncCategories']);
+
+        Route::resource('promotions', PromotionController::class)->except(['show']);
 
         Route::get('categories', [CategoryController::class, 'index'])->name('admin.categories.index');
         Route::get('categories/create', [CategoryController::class, 'create'])->name('admin.categories.create');

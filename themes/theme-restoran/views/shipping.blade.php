@@ -98,6 +98,35 @@
             color: rgba(255,255,255,0.8);
             margin-bottom: 8px;
         }
+        .product-item .promo-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border-radius: 999px;
+            padding: 0.15rem 0.6rem;
+            font-size: 0.65rem;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-top: 0.3rem;
+        }
+        .price-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            align-items: flex-end;
+        }
+        .price-stack .price-original {
+            text-decoration: line-through;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+        .price-stack .price-current {
+            color: #fff;
+            font-weight: 700;
+        }
         .btn-primary {
             background: var(--bs-primary);
             border-color: var(--bs-primary);
@@ -210,12 +239,30 @@
                     <div class="mt-4">
                         @foreach($cartSummary['items'] as $item)
                             <div class="product-item">
-                                <span>{{ $item['name'] }} (x{{ $item['quantity'] }})</span>
-                                <span>Rp {{ $item['subtotal_formatted'] }}</span>
+                                <div class="d-flex flex-column">
+                                    <span>{{ $item['name'] }} (x{{ $item['quantity'] }})</span>
+                                    @if(!empty($item['has_promo']) && !empty($item['promo_label']))
+                                        <span class="promo-label">{{ $item['promo_label'] }}</span>
+                                    @endif
+                                </div>
+                                <div class="price-stack">
+                                    @if(!empty($item['has_promo']))
+                                        <span class="price-original">Rp {{ $item['original_subtotal_formatted'] }}</span>
+                                    @endif
+                                    <span class="price-current">Rp {{ $item['subtotal_formatted'] }}</span>
+                                </div>
                             </div>
                         @endforeach
                     </div>
                     <ul>
+                        <li class="{{ ($cartSummary['discount_total'] ?? 0) > 0 ? '' : 'd-none' }}" data-summary-original>
+                            <span>Harga Normal</span>
+                            <span>Rp {{ $cartSummary['original_total_formatted'] }}</span>
+                        </li>
+                        <li class="text-success {{ ($cartSummary['discount_total'] ?? 0) > 0 ? '' : 'd-none' }}" data-summary-discount>
+                            <span>Diskon Promo</span>
+                            <span>-Rp {{ $cartSummary['discount_total_formatted'] }}</span>
+                        </li>
                         <li>
                             <span>Subtotal</span>
                             <span>Rp {{ $checkoutTotals['subtotal_formatted'] ?? $cartSummary['total_price_formatted'] }}</span>
