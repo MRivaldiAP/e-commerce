@@ -14,6 +14,49 @@
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/style.css') }}" type="text/css">
     <style>
         .header {position: sticky; top: 0; z-index: 1000; background: #fff;}
+
+        .about__row {
+            align-items: center;
+        }
+
+        .about__media {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .about__media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .about__content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .about__content h2,
+        .about__content h4 {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .about__content p {
+            margin-bottom: 0;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 991.98px) {
+            .about__content {
+                text-align: center;
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -62,11 +105,15 @@
 @if(($settings['about.visible'] ?? '1') == '1')
 <section id="about" class="about spad">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="blog__details__text">
-                    <img src="{{ $aboutImage ? asset('storage/'.$aboutImage) : asset('storage/themes/theme-second/img/blog/details/details-pic.jpg') }}" alt="">
-                    <h4>{{ $settings['about.heading'] ?? 'About Us' }}</h4>
+        <div class="row about__row gy-4 gx-lg-5">
+            <div class="col-lg-6">
+                <div class="about__media">
+                    <img src="{{ $aboutImage ? asset('storage/'.$aboutImage) : asset('storage/themes/theme-second/img/blog/details/details-pic.jpg') }}" alt="{{ $settings['about.heading'] ?? 'About Us' }}">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="about__content">
+                    <h2>{{ $settings['about.heading'] ?? 'About Us' }}</h2>
                     <p>{{ $settings['about.text'] ?? 'We provide quality products.' }}</p>
                 </div>
             </div>
