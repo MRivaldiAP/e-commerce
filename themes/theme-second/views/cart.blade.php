@@ -43,6 +43,11 @@
             border-bottom: 1px solid #f2f2f2;
         }
 
+        .shoping__cart__price,
+        .shoping__cart__total {
+            text-align: right;
+        }
+
         .cart__product__item {
             display: flex;
             align-items: center;
@@ -125,14 +130,15 @@
         }
 
         .price-stack {
-            display: flex;
+            display: inline-flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: flex-end;
             gap: 0.35rem;
         }
 
         .price-stack.single-line {
             flex-direction: row;
+            align-items: baseline;
             gap: 0.35rem;
         }
 
@@ -149,6 +155,10 @@
             color: #e65100;
             font-weight: 700;
             line-height: 1.2;
+        }
+
+        .price-stack span {
+            white-space: nowrap;
         }
 
         .promo-label {
