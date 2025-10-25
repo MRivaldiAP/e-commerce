@@ -30,6 +30,57 @@
         .cart-feedback.error {
             color: #dc3545;
         }
+
+        .promo-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--theme-accent, #feA116);
+            color: #fff;
+            font-size: 0.75rem;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-weight: 600;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        }
+
+        .price-display {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .price-display .price-original {
+            text-decoration: line-through;
+            color: rgba(0, 0, 0, 0.45);
+            font-size: 1rem;
+        }
+
+        .price-display .price-current {
+            color: var(--theme-accent, #feA116);
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .recommendation-card .price-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.2rem;
+        }
+
+        .recommendation-card .price-original {
+            text-decoration: line-through;
+            color: rgba(0, 0, 0, 0.45);
+            font-size: 0.85rem;
+        }
+
+        .recommendation-card .price-current {
+            color: var(--theme-accent, #feA116);
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -44,6 +95,9 @@
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
+    $promotion = $product->currentPromotion();
+    $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
+    $finalPrice = $product->final_price;
     $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
     $heroBackground = ThemeMedia::url($settings['hero.image'] ?? null);
     $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
@@ -75,11 +129,11 @@
     if ($product->categories && $product->categories->count()) {
         $recommendationsQuery->whereHas('categories', fn($q) => $q->whereIn('categories.id', $product->categories->pluck('id')));
     }
-    $recommendations = $recommendationsQuery->with('images')->take(5)->get();
+    $recommendations = $recommendationsQuery->with(['images', 'promotions'])->take(5)->get();
     if ($recommendations->count() < 5) {
         $fallback = Product::where('id', '!=', $product->id)
             ->whereNotIn('id', $recommendations->pluck('id'))
-            ->with('images')
+            ->with(['images', 'promotions'])
             ->take(5 - $recommendations->count())
             ->get();
         $recommendations = $recommendations->concat($fallback);
@@ -123,7 +177,17 @@
         </div>
         <div class="col-lg-6">
             <h2 class="mb-3">{{ $product->name }}</h2>
-            <h3 class="text-primary mb-4">Rp {{ number_format($product->price, 0, ',', '.') }}</h3>
+            <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+                @if($hasPromo)
+                    <span class="promo-badge">{{ $promotion->label }}</span>
+                @endif
+                <div class="price-display">
+                    @if($hasPromo)
+                        <span class="price-original">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                    @endif
+                    <span class="price-current">Rp {{ number_format($finalPrice, 0, ',', '.') }}</span>
+                </div>
+            </div>
             <p class="mb-4">{{ $product->short_description ?? 'Nikmati cita rasa terbaik dari produk pilihan kami.' }}</p>
             <div class="d-flex align-items-center mb-3" id="quantityControl">
                 <div class="input-group" style="width: 150px;">
@@ -177,15 +241,30 @@
     </div>
     <div class="row g-4">
         @foreach($recommendations as $item)
-            @php $img = optional($item->images->first())->path; @endphp
+            @php
+                $img = optional($item->images->first())->path;
+                $itemPromotion = $item->currentPromotion();
+                $itemHasPromo = $itemPromotion && $item->promo_price !== null && $item->promo_price < $item->price;
+                $itemFinalPrice = $item->final_price;
+            @endphp
             <div class="col-lg-6">
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center recommendation-card">
                     <img class="flex-shrink-0 img-fluid rounded" src="{{ $img ? asset('storage/'.$img) : asset('storage/themes/theme-restoran/img/menu-1.jpg') }}" alt="{{ $item->name }}" style="width: 80px;">
                     <div class="w-100 d-flex flex-column text-start ps-4">
-                        <h5 class="d-flex justify-content-between border-bottom pb-2">
-                            <span>{{ $item->name }}</span>
-                            <span class="text-primary">{{ $item->price_formatted ?? number_format($item->price,0,',','.') }}</span>
-                        </h5>
+                        <div class="d-flex justify-content-between align-items-start border-bottom pb-2 gap-2">
+                            <div class="d-flex flex-column gap-1">
+                                <span>{{ $item->name }}</span>
+                                @if($itemHasPromo)
+                                    <span class="promo-badge">{{ $itemPromotion->label }}</span>
+                                @endif
+                            </div>
+                            <div class="price-stack text-end">
+                                @if($itemHasPromo)
+                                    <span class="price-original">Rp {{ number_format($item->price,0,',','.') }}</span>
+                                @endif
+                                <span class="price-current">Rp {{ number_format($itemFinalPrice,0,',','.') }}</span>
+                            </div>
+                        </div>
                         <small class="fst-italic">{{ \Illuminate\Support\Str::limit($item->short_description ?? $item->description, 80) }}</small>
                         <a href="{{ route('products.show', $item) }}" class="btn btn-sm btn-primary mt-2 align-self-start">Detail</a>
                     </div>

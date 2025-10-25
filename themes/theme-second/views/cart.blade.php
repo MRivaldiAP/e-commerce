@@ -123,6 +123,32 @@
             pointer-events: none;
             opacity: 0.6;
         }
+
+        .price-original {
+            display: block;
+            color: #9e9e9e;
+            text-decoration: line-through;
+            font-size: 0.85rem;
+        }
+
+        .price-current {
+            display: block;
+            color: #e65100;
+            font-weight: 700;
+        }
+
+        .promo-label {
+            display: inline-flex;
+            align-items: center;
+            background: #e53935;
+            color: #fff;
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-top: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -187,16 +213,29 @@
                         </thead>
                         <tbody data-cart-body>
                             @foreach($cartSummary['items'] as $item)
+                                @php
+                                    $hasPromo = $item['has_promo'] ?? false;
+                                @endphp
                                 <tr data-product-id="{{ $item['product_id'] }}">
                                     <td class="shoping__cart__item">
                                         <div class="cart__product__item">
                                             <img src="{{ $item['image_url'] }}" alt="{{ $item['name'] }}">
                                             <div class="cart__product__item__title">
                                                 <h6><a href="{{ $item['product_url'] }}">{{ $item['name'] }}</a></h6>
+                                                @if($hasPromo && !empty($item['promo_label']))
+                                                    <span class="promo-label">{{ $item['promo_label'] }}</span>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="shoping__cart__price">Rp <span data-item-price>{{ $item['price_formatted'] }}</span></td>
+                                    <td class="shoping__cart__price" data-item-price>
+                                        @if($hasPromo)
+                                            <span class="price-original">Rp {{ $item['original_price_formatted'] ?? $item['price_formatted'] }}</span>
+                                            <span class="price-current">Rp {{ $item['price_formatted'] }}</span>
+                                        @else
+                                            <span class="price-current">Rp {{ $item['price_formatted'] }}</span>
+                                        @endif
+                                    </td>
                                     <td class="shoping__cart__quantity">
                                         <div class="quantity-control" data-quantity-control>
                                             <button type="button" data-action="decrease">-</button>
@@ -204,7 +243,12 @@
                                             <button type="button" data-action="increase">+</button>
                                         </div>
                                     </td>
-                                    <td class="shoping__cart__total">Rp <span data-item-subtotal>{{ $item['subtotal_formatted'] }}</span></td>
+                                    <td class="shoping__cart__total" data-item-subtotal>
+                                        @if($hasPromo && !empty($item['original_subtotal_formatted']))
+                                            <span class="price-original">Rp {{ $item['original_subtotal_formatted'] }}</span>
+                                        @endif
+                                        <span class="price-current">Rp {{ $item['subtotal_formatted'] }}</span>
+                                    </td>
                                     <td class="shoping__cart__item__close"><button type="button" class="cart-remove" data-remove-item>&times;</button></td>
                                 </tr>
                             @endforeach
@@ -265,6 +309,26 @@
         const actionButton = document.querySelector('[data-cart-action]');
         const initialHasItems = {{ $hasItems ? 'true' : 'false' }};
 
+        function renderPriceMarkup(item) {
+            if (item.has_promo) {
+                const original = item.original_price_formatted || item.price_formatted;
+                const originalMarkup = original ? `<span class="price-original">Rp ${original}</span>` : '';
+                return `${originalMarkup}<span class="price-current">Rp ${item.price_formatted}</span>`;
+            }
+
+            return `<span class="price-current">Rp ${item.price_formatted}</span>`;
+        }
+
+        function renderSubtotalMarkup(item) {
+            if (item.has_promo) {
+                const originalSubtotal = item.original_subtotal_formatted || '';
+                const originalMarkup = originalSubtotal ? `<span class="price-original">Rp ${originalSubtotal}</span>` : '';
+                return `${originalMarkup}<span class="price-current">Rp ${item.subtotal_formatted}</span>`;
+            }
+
+            return `<span class="price-current">Rp ${item.subtotal_formatted}</span>`;
+        }
+
         function buildRow(item){
             const tr = document.createElement('tr');
             tr.dataset.productId = item.product_id;
@@ -284,13 +348,20 @@
             link.textContent = item.name;
             title.appendChild(link);
             info.appendChild(title);
+            if (item.has_promo && item.promo_label) {
+                const promoBadge = document.createElement('span');
+                promoBadge.className = 'promo-label';
+                promoBadge.textContent = item.promo_label;
+                info.appendChild(promoBadge);
+            }
             wrapper.appendChild(img);
             wrapper.appendChild(info);
             productCell.appendChild(wrapper);
 
             const priceCell = document.createElement('td');
             priceCell.className = 'shoping__cart__price';
-            priceCell.innerHTML = 'Rp <span data-item-price>' + item.price_formatted + '</span>';
+            priceCell.setAttribute('data-item-price', 'true');
+            priceCell.innerHTML = renderPriceMarkup(item);
 
             const quantityCell = document.createElement('td');
             quantityCell.className = 'shoping__cart__quantity';
@@ -304,7 +375,8 @@
 
             const subtotalCell = document.createElement('td');
             subtotalCell.className = 'shoping__cart__total';
-            subtotalCell.innerHTML = 'Rp <span data-item-subtotal>' + item.subtotal_formatted + '</span>';
+            subtotalCell.setAttribute('data-item-subtotal', 'true');
+            subtotalCell.innerHTML = renderSubtotalMarkup(item);
 
             const actionCell = document.createElement('td');
             actionCell.className = 'shoping__cart__item__close';

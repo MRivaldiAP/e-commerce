@@ -56,6 +56,9 @@
             font-weight: 600;
             color: var(--color-primary);
         }
+        .summary-item .price-original { display:block; color:#94a3b8; text-decoration:line-through; font-size:0.85rem; }
+        .summary-item .price-current { display:block; color:var(--color-primary); font-weight:700; }
+        .summary-item .promo-label { display:inline-flex; align-items:center; background:#e53935; color:#fff; border-radius:999px; padding:3px 10px; font-size:0.7rem; text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
         .summary-total {
             margin-top: 2rem;
             padding-top: 1.5rem;
@@ -190,12 +193,21 @@
             <h3 class="mb-3">Ringkasan Pesanan</h3>
             <div class="summary-items">
                 @foreach($summaryItems as $item)
+                    @php $hasPromo = $item['has_promo'] ?? false; @endphp
                     <div class="summary-item">
                         <div>
                             <h4>{{ $item['name'] }}</h4>
                             <small>x{{ $item['quantity'] }} • Rp {{ $item['price_formatted'] }}</small>
+                            @if($hasPromo && !empty($item['promo_label']))
+                                <span class="promo-label">{{ $item['promo_label'] }}</span>
+                            @endif
                         </div>
-                        <span>Rp {{ $item['subtotal_formatted'] }}</span>
+                        <div style="text-align:right;">
+                            @if($hasPromo && !empty($item['original_subtotal_formatted']))
+                                <span class="price-original">Rp {{ $item['original_subtotal_formatted'] }}</span>
+                            @endif
+                            <span class="price-current">Rp {{ $item['subtotal_formatted'] }}</span>
+                        </div>
                     </div>
                 @endforeach
                 @if($shippingEnabled)

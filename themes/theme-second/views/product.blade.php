@@ -12,6 +12,35 @@
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/owl.carousel.min.css') }}" type="text/css">
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/slicknav.min.css') }}" type="text/css">
     <link rel="stylesheet" href="{{ asset('storage/themes/theme-second/css/style.css') }}" type="text/css">
+    <style>
+        .product__item__badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #e53935;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .product__item__text .price-original {
+            display: block;
+            font-size: 0.85rem;
+            color: #9e9e9e;
+            text-decoration: line-through;
+        }
+
+        .product__item__text .price-discount {
+            display: block;
+            color: #e65100;
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+    </style>
 </head>
 <body>
 @php
@@ -22,7 +51,7 @@
     use App\Support\LayoutSettings;
     $themeName = $theme ?? 'theme-second';
     $settings = PageSetting::forPage('product');
-    $query = Product::query();
+    $query = Product::query()->with(['images', 'promotions']);
     if($s = request('search')){ $query->where('name','like',"%$s%"); }
     if($cat = request('category')){ $query->whereHas('categories', fn($q)=>$q->where('slug',$cat)); }
     if($min = request('minprice')){ $query->where('price', '>=', $min); }
@@ -139,10 +168,18 @@
                 </div>
                 <div class="row">
                     @foreach($products as $product)
-                        @php $img = $product->image_url ?? optional($product->images()->first())->path; @endphp
+                        @php
+                            $imagePath = $product->image_url ?? optional($product->images->first())->path;
+                            $promotion = $product->currentPromotion();
+                            $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
+                            $finalPrice = $product->final_price;
+                        @endphp
                         <div class="col-lg-4 col-md-6 col-sm-6">
                             <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="{{ $img ? asset('storage/'.$img) : asset('storage/themes/theme-second/img/product/product-1.jpg') }}">
+                                <div class="product__item__pic set-bg" data-setbg="{{ $imagePath ? asset('storage/'.$imagePath) : asset('storage/themes/theme-second/img/product/product-1.jpg') }}">
+                                    @if($hasPromo)
+                                        <span class="product__item__badge">{{ $promotion->label }}</span>
+                                    @endif
                                     <ul class="product__item__pic__hover">
                                         <li><a href="#"><i class="fa fa-heart"></i></a></li>
                                         <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -151,7 +188,12 @@
                                 </div>
                                 <div class="product__item__text">
                                     <h6><a href="{{ route('products.show', $product) }}">{{ $product->name }}</a></h6>
-                                    <h5>{{ $product->price_formatted ?? number_format($product->price,0,',','.') }}</h5>
+                                    @if($hasPromo)
+                                        <span class="price-original">Rp {{ number_format($product->price,0,',','.') }}</span>
+                                        <span class="price-discount">Rp {{ number_format($finalPrice,0,',','.') }}</span>
+                                    @else
+                                        <span class="price-discount">Rp {{ number_format($finalPrice,0,',','.') }}</span>
+                                    @endif
                                 </div>
                             </div>
                         </div>

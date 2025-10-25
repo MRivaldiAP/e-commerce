@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class Cart
 {
@@ -54,6 +55,7 @@ class Cart
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'price' => (float) $product->price,
+                'base_price' => (float) $product->price,
                 'quantity' => $item->quantity,
                 'image' => optional($product->images()->first())->path,
                 'weight' => $weight,
@@ -64,12 +66,16 @@ class Cart
 
         if (isset($items[$productId])) {
             $items[$productId]['quantity'] += $quantity;
+            if (! array_key_exists('base_price', $items[$productId])) {
+                $items[$productId]['base_price'] = (float) $product->price;
+            }
         } else {
             $items[$productId] = [
                 'product_id' => $productId,
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'price' => (float) $product->price,
+                'base_price' => (float) $product->price,
                 'quantity' => $quantity,
                 'image' => optional($product->images()->first())->path,
                 'weight' => $weight,
@@ -161,43 +167,114 @@ class Cart
 
     public static function totalPrice(): float
     {
-        return array_sum(array_map(function ($item) {
-            $price = (float) ($item['price'] ?? 0);
-            $quantity = (int) ($item['quantity'] ?? 0);
-
-            return $price * $quantity;
-        }, self::items()));
+        return (float) (self::summary()['total_price'] ?? 0);
     }
 
     public static function summary(): array
     {
-        $items = collect(self::items())
-            ->map(function ($item) {
-                $item['price'] = (float) ($item['price'] ?? 0);
-                $item['quantity'] = (int) ($item['quantity'] ?? 0);
-                $item['weight'] = (float) ($item['weight'] ?? config('shipping.default_weight', 1));
-                $item['subtotal'] = $item['price'] * $item['quantity'];
-                $item['price_formatted'] = number_format($item['price'], 0, ',', '.');
-                $item['subtotal_formatted'] = number_format($item['subtotal'], 0, ',', '.');
-                $item['image_url'] = ! empty($item['image']) ? asset('storage/' . $item['image']) : 'https://via.placeholder.com/120x120?text=No+Image';
-                $item['product_url'] = route('products.show', $item['product_id']);
+        $rawItems = collect(self::items());
 
-                return $item;
-            })
-            ->values()
-            ->toArray();
+        if ($rawItems->isEmpty()) {
+            return [
+                'items' => [],
+                'total_quantity' => 0,
+                'total_price' => 0.0,
+                'total_price_formatted' => '0',
+                'original_total' => 0.0,
+                'original_total_formatted' => '0',
+                'discount_total' => 0.0,
+                'discount_total_formatted' => '0',
+                'total_weight' => 0.0,
+                'total_weight_formatted' => number_format(0, 2, ',', '.'),
+                'total_weight_grams' => 1,
+            ];
+        }
 
-        $totalPrice = self::totalPrice();
-        $totalWeightKg = collect($items)->sum(function ($item) {
+        $productIds = $rawItems
+            ->map(fn ($item, $key) => (int) ($item['product_id'] ?? $key))
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        $products = Product::with(['images', 'promotions'])
+            ->whereIn('id', $productIds)
+            ->get()
+            ->keyBy(fn (Product $product) => (int) $product->getKey());
+
+        $totalPrice = 0.0;
+        $originalTotal = 0.0;
+        $discountTotal = 0.0;
+
+        $items = $rawItems->map(function ($item, $key) use ($products, &$totalPrice, &$originalTotal, &$discountTotal) {
+            $productId = (int) ($item['product_id'] ?? $key);
+            $product = $products->get($productId);
+            $basePrice = (float) ($item['base_price'] ?? $item['price'] ?? $product?->price ?? 0);
+            $quantity = max(0, (int) ($item['quantity'] ?? 0));
+            $weight = (float) ($item['weight'] ?? $product?->weight ?? config('shipping.default_weight', 1));
+            $imagePath = $product?->images?->first()?->path ?? ($item['image'] ?? null);
+            $imageUrl = $imagePath
+                ? (Str::startsWith($imagePath, ['http://', 'https://'])
+                    ? $imagePath
+                    : asset('storage/' . ltrim($imagePath, '/')))
+                : 'https://via.placeholder.com/120x120?text=No+Image';
+
+            $promotion = $product?->currentPromotion();
+            if ($promotion && ! $promotion->isActive()) {
+                $promotion = null;
+            }
+
+            $finalPrice = $promotion ? $promotion->applyDiscount($basePrice) : $basePrice;
+            $discountAmount = max(0, $basePrice - $finalPrice);
+            $subtotal = $finalPrice * $quantity;
+            $originalSubtotal = $basePrice * $quantity;
+
+            $totalPrice += $subtotal;
+            $originalTotal += $originalSubtotal;
+            $discountTotal += $discountAmount * $quantity;
+
+            return [
+                'product_id' => $productId,
+                'name' => $product?->name ?? ($item['name'] ?? 'Produk'),
+                'slug' => $product?->slug ?? ($item['slug'] ?? ''),
+                'price' => $finalPrice,
+                'price_formatted' => number_format($finalPrice, 0, ',', '.'),
+                'original_price' => $basePrice,
+                'original_price_formatted' => number_format($basePrice, 0, ',', '.'),
+                'quantity' => $quantity,
+                'weight' => $weight,
+                'subtotal' => $subtotal,
+                'subtotal_formatted' => number_format($subtotal, 0, ',', '.'),
+                'original_subtotal' => $originalSubtotal,
+                'original_subtotal_formatted' => number_format($originalSubtotal, 0, ',', '.'),
+                'discount_amount' => $discountAmount,
+                'discount_amount_formatted' => number_format($discountAmount, 0, ',', '.'),
+                'total_discount' => $discountAmount * $quantity,
+                'total_discount_formatted' => number_format($discountAmount * $quantity, 0, ',', '.'),
+                'has_promo' => $promotion && $discountAmount > 0,
+                'promo_label' => $promotion?->label,
+                'promo_type' => $promotion?->discount_type,
+                'promo_expires_at' => optional($promotion?->ends_at)->toIso8601String(),
+                'image' => $imagePath,
+                'image_url' => $imageUrl,
+                'product_url' => route('products.show', $productId),
+            ];
+        })->values()->toArray();
+
+        $totalWeightKg = array_sum(array_map(function ($item) {
             return ($item['weight'] ?? 0) * ($item['quantity'] ?? 0);
-        });
+        }, $items));
         $totalWeightGrams = (int) round($totalWeightKg * 1000);
+        $totalQuantity = array_sum(array_map(fn ($item) => (int) ($item['quantity'] ?? 0), $items));
 
         return [
             'items' => $items,
-            'total_quantity' => self::totalQuantity(),
+            'total_quantity' => $totalQuantity,
             'total_price' => $totalPrice,
             'total_price_formatted' => number_format($totalPrice, 0, ',', '.'),
+            'original_total' => $originalTotal,
+            'original_total_formatted' => number_format($originalTotal, 0, ',', '.'),
+            'discount_total' => $discountTotal,
+            'discount_total_formatted' => number_format($discountTotal, 0, ',', '.'),
             'total_weight' => $totalWeightKg,
             'total_weight_formatted' => number_format($totalWeightKg, 2, ',', '.'),
             'total_weight_grams' => max(1, $totalWeightGrams),
@@ -255,6 +332,7 @@ class Cart
                         'name' => $product?->name ?? 'Produk',
                         'slug' => $product?->slug ?? '',
                         'price' => (float) $price,
+                        'base_price' => (float) $price,
                         'quantity' => (int) $item->quantity,
                         'image' => $imagePath,
                         'weight' => (float) ($product?->weight ?? config('shipping.default_weight', 1)),

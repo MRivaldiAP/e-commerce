@@ -94,6 +94,9 @@
         .feedback.visible { display:block; }
         .feedback.error { background: #fff2f0; color: #d94841; }
         .feedback.success { background: #effaf1; color: #2a7f3e; }
+        .summary-item .price-original { display:block; color: rgba(255,255,255,0.6); text-decoration: line-through; font-size: 0.85rem; }
+        .summary-item .price-current { display:block; color: #fff; font-weight: 600; }
+        .summary-item .promo-label { display:inline-flex; align-items:center; background:#e53935; color:#fff; padding:3px 10px; border-radius:999px; font-size:0.7rem; text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
     </style>
 </head>
 <body>
@@ -215,9 +218,20 @@
                     <h3>Ringkasan Pesanan</h3>
                     <div class="mt-4">
                         @foreach($cartSummary['items'] as $item)
+                            @php $hasPromo = $item['has_promo'] ?? false; @endphp
                             <div class="summary-item">
-                                <span>{{ $item['name'] }} (x{{ $item['quantity'] }})</span>
-                                <span>Rp {{ $item['subtotal_formatted'] }}</span>
+                                <div>
+                                    <span>{{ $item['name'] }} (x{{ $item['quantity'] }})</span>
+                                    @if($hasPromo && !empty($item['promo_label']))
+                                        <span class="promo-label">{{ $item['promo_label'] }}</span>
+                                    @endif
+                                </div>
+                                <div style="text-align:right;">
+                                    @if($hasPromo && !empty($item['original_subtotal_formatted']))
+                                        <span class="price-original">Rp {{ $item['original_subtotal_formatted'] }}</span>
+                                    @endif
+                                    <span class="price-current">Rp {{ $item['subtotal_formatted'] }}</span>
+                                </div>
                             </div>
                         @endforeach
                     </div>

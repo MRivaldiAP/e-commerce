@@ -19,6 +19,39 @@
     <link href="{{ asset('storage/themes/theme-restoran/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('storage/themes/theme-restoran/css/style.css') }}" rel="stylesheet">
     {!! view()->file(base_path('themes/' . $themeName . '/views/components/palette.blade.php'), ['theme' => $themeName])->render() !!}
+    <style>
+        .promo-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--theme-accent, #feA116);
+            color: #fff;
+            font-size: 0.7rem;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        }
+
+        .price-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.15rem;
+        }
+
+        .price-stack .price-original {
+            font-size: 0.85rem;
+            text-decoration: line-through;
+            color: rgba(0, 0, 0, 0.45);
+        }
+
+        .price-stack .price-current {
+            font-weight: 700;
+            color: var(--theme-accent, #feA116);
+        }
+    </style>
 </head>
 <body>
 @php
@@ -29,7 +62,7 @@
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
     $settings = PageSetting::forPage('product');
-    $query = Product::query();
+    $query = Product::query()->with(['images', 'promotions']);
     if($s = request('search')){ $query->where('name','like',"%$s%"); }
     if($cat = request('category')){ $query->whereHas('categories', fn($q)=>$q->where('slug',$cat)); }
     if($sort = request('sort')){
@@ -108,15 +141,30 @@
     </form>
     <div class="row g-4">
         @foreach($products as $product)
-        @php $img = $product->image_url ?? optional($product->images()->first())->path; @endphp
+        @php
+            $img = $product->image_url ?? optional($product->images->first())->path;
+            $promotion = $product->currentPromotion();
+            $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
+            $finalPrice = $product->final_price;
+        @endphp
         <div class="col-lg-6">
             <div class="d-flex align-items-center">
                 <img class="flex-shrink-0 img-fluid rounded" src="{{ $img ? asset('storage/'.$img) : asset('storage/themes/theme-restoran/img/menu-1.jpg') }}" alt="{{ $product->name }}" style="width: 80px;">
                 <div class="w-100 d-flex flex-column text-start ps-4">
-                    <h5 class="d-flex justify-content-between border-bottom pb-2">
-                        <span>{{ $product->name }}</span>
-                        <span class="text-primary">{{ $product->price_formatted ?? number_format($product->price,0,',','.') }}</span>
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-start border-bottom pb-2 gap-2">
+                        <div class="d-flex flex-column gap-1">
+                            <span class="fw-semibold">{{ $product->name }}</span>
+                            @if($hasPromo)
+                                <span class="promo-badge">{{ $promotion->label }}</span>
+                            @endif
+                        </div>
+                        <div class="price-stack text-end">
+                            @if($hasPromo)
+                                <span class="price-original">Rp {{ number_format($product->price,0,',','.') }}</span>
+                            @endif
+                            <span class="price-current">Rp {{ number_format($finalPrice,0,',','.') }}</span>
+                        </div>
+                    </div>
                     <small class="fst-italic">{{ $product->description }}</small>
                     <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-primary mt-2 align-self-start">Detail</a>
                 </div>

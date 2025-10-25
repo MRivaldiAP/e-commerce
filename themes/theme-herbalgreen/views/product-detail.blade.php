@@ -14,7 +14,14 @@
         #product-detail .thumbnail-slider img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: border 0.2s ease; }
         #product-detail .thumbnail-slider img.active { border-color: var(--color-primary); }
         #product-detail .product-info { text-align: left; }
-        #product-detail .price { font-size: 1.5rem; font-weight: 600; margin: 1rem 0; }
+        #product-detail .price { font-size: 1.5rem; font-weight: 600; margin: 1rem 0; display: flex; flex-direction: column; gap: .35rem; }
+        #product-detail .price .price-original { color: #9e9e9e; text-decoration: line-through; font-size: 1rem; }
+        #product-detail .price .price-current { color: #2e7d32; font-weight: 700; font-size: 1.75rem; display: inline-flex; align-items: center; gap: .75rem; }
+        #product-detail .promo-pill { background: #e53935; color: #fff; padding: 4px 12px; border-radius: 999px; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; }
+        .product-card .promo-label { position: absolute; top: 12px; left: 12px; background:#e53935; color:#fff; padding:4px 12px; border-radius:999px; font-size:.72rem; text-transform:uppercase; font-weight:600; letter-spacing:.04em; }
+        #recommendations .product-card { position: relative; }
+        #recommendations .product-card .price-original { display:block; color:#9e9e9e; text-decoration:line-through; }
+        #recommendations .product-card .price-current { display:block; color:#2e7d32; font-weight:700; }
         #product-detail .quantity-control { display: inline-flex; align-items: center; border: 1px solid var(--color-secondary); border-radius: 30px; overflow: hidden; }
         #product-detail .quantity-control button { background: transparent; border: none; padding: 0.5rem 1rem; font-size: 1.1rem; cursor: pointer; }
         #product-detail .quantity-control input { width: 60px; text-align: center; border: none; font-size: 1rem; }
@@ -55,15 +62,18 @@
     if ($product->categories && $product->categories->count()) {
         $recommendationsQuery->whereHas('categories', fn($q) => $q->whereIn('categories.id', $product->categories->pluck('id')));
     }
-    $recommendations = $recommendationsQuery->with('images')->take(5)->get();
+    $recommendations = $recommendationsQuery->with(['images', 'promotions'])->take(5)->get();
     if ($recommendations->count() < 5) {
         $fallback = Product::where('id', '!=', $product->id)
             ->whereNotIn('id', $recommendations->pluck('id'))
-            ->with('images')
+            ->with(['images', 'promotions'])
             ->take(5 - $recommendations->count())
             ->get();
         $recommendations = $recommendations->concat($fallback);
     }
+    $productPromotion = $product->currentPromotion();
+    $productHasPromo = $productPromotion && $product->promo_price !== null && $product->promo_price < $product->price;
+    $productFinalPrice = $product->final_price;
 @endphp
 {!! view()->file(base_path('themes/' . $theme . '/views/components/nav-menu.blade.php'), [
     'brand' => $navigation['brand'],
@@ -98,7 +108,14 @@
         </div>
         <div class="product-card product-info">
             <h3>{{ $product->name }}</h3>
-            <p class="price">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
+            <div class="price">
+                @if($productHasPromo)
+                    <span class="price-original">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                    <span class="price-current">Rp {{ number_format($productFinalPrice, 0, ',', '.') }}<span class="promo-pill">{{ $productPromotion->label }}</span></span>
+                @else
+                    <span class="price-current">Rp {{ number_format($productFinalPrice, 0, ',', '.') }}</span>
+                @endif
+            </div>
             <div class="quantity-control" id="quantityControl">
                 <button type="button" data-action="decrease">-</button>
                 <input type="number" value="1" min="1" id="quantityInput">
@@ -135,11 +152,24 @@
     <h2>{{ $settings['recommendations.heading'] ?? 'Produk Serupa' }}</h2>
     <div class="product-grid">
         @foreach($recommendations as $item)
-            @php $img = optional($item->images->first())->path; @endphp
+            @php
+                $img = optional($item->images->first())->path;
+                $itemPromotion = $item->currentPromotion();
+                $itemHasPromo = $itemPromotion && $item->promo_price !== null && $item->promo_price < $item->price;
+                $itemFinalPrice = $item->final_price;
+            @endphp
             <div class="product-card">
                 <img src="{{ $img ? asset('storage/'.$img) : 'https://via.placeholder.com/150' }}" alt="{{ $item->name }}">
+                @if($itemHasPromo)
+                    <span class="promo-label">{{ $itemPromotion->label }}</span>
+                @endif
                 <h3>{{ $item->name }}</h3>
-                <p>{{ $item->price_formatted ?? number_format($item->price,0,',','.') }}</p>
+                @if($itemHasPromo)
+                    <span class="price-original">Rp {{ number_format($item->price,0,',','.') }}</span>
+                    <span class="price-current">Rp {{ number_format($itemFinalPrice,0,',','.') }}</span>
+                @else
+                    <span class="price-current">Rp {{ number_format($itemFinalPrice,0,',','.') }}</span>
+                @endif
                 <a href="{{ route('products.show', $item) }}" class="btn">Detail</a>
             </div>
         @endforeach

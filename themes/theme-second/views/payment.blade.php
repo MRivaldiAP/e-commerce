@@ -39,6 +39,9 @@
         .address-card__title { font-weight: 700; font-size: 1rem; color: #7fad39; margin-bottom: .75rem; text-transform: uppercase; letter-spacing: .04em; }
         .address-card__meta { margin-top: 1rem; font-size: .9rem; color: #6c757d; }
         .address-card__meta span { display: inline-flex; align-items: center; gap: .35rem; margin-right: 1rem; text-transform: uppercase; font-weight: 600; }
+        .summary__item .price-original { display:block; color:#adb5bd; text-decoration: line-through; font-size:0.85rem; }
+        .summary__item .price-current { display:block; color:#343a40; font-weight:600; }
+        .summary__item .promo-label { display:inline-flex; align-items:center; background:#e53935; color:#fff; padding:3px 10px; border-radius:999px; font-size:0.7rem; text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
     </style>
 </head>
 <body>
@@ -79,12 +82,21 @@
                 <div class="checkout__box">
                     <h4>Ringkasan Pesanan</h4>
                     @foreach($items as $item)
+                        @php $hasPromo = $item['has_promo'] ?? false; @endphp
                         <div class="summary__item">
                             <div>
                                 <h6>{{ $item['name'] }}</h6>
                                 <small class="text-muted">x{{ $item['quantity'] }} • Rp {{ $item['price_formatted'] }}</small>
+                                @if($hasPromo && !empty($item['promo_label']))
+                                    <span class="promo-label">{{ $item['promo_label'] }}</span>
+                                @endif
                             </div>
-                            <span>Rp {{ $item['subtotal_formatted'] }}</span>
+                            <div style="text-align:right;">
+                                @if($hasPromo && !empty($item['original_subtotal_formatted']))
+                                    <span class="price-original">Rp {{ $item['original_subtotal_formatted'] }}</span>
+                                @endif
+                                <span class="price-current">Rp {{ $item['subtotal_formatted'] }}</span>
+                            </div>
                         </div>
                     @endforeach
                     <div class="summary__details">
