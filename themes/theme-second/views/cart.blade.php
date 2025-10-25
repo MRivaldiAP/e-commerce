@@ -43,6 +43,11 @@
             border-bottom: 1px solid #f2f2f2;
         }
 
+        .shoping__cart__price,
+        .shoping__cart__total {
+            text-align: right;
+        }
+
         .cart__product__item {
             display: flex;
             align-items: center;
@@ -124,17 +129,36 @@
             opacity: 0.6;
         }
 
+        .price-stack {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.35rem;
+        }
+
+        .price-stack.single-line {
+            flex-direction: row;
+            align-items: baseline;
+            gap: 0.35rem;
+        }
+
         .price-original {
-            display: block;
+            display: inline-flex;
             color: #9e9e9e;
             text-decoration: line-through;
             font-size: 0.85rem;
+            line-height: 1.2;
         }
 
         .price-current {
-            display: block;
+            display: inline-flex;
             color: #e65100;
             font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .price-stack span {
+            white-space: nowrap;
         }
 
         .promo-label {
@@ -229,12 +253,12 @@
                                         </div>
                                     </td>
                                     <td class="shoping__cart__price" data-item-price>
-                                        @if($hasPromo)
-                                            <span class="price-original">Rp {{ $item['original_price_formatted'] ?? $item['price_formatted'] }}</span>
+                                        <div class="price-stack {{ $hasPromo ? '' : 'single-line' }}">
+                                            @if($hasPromo)
+                                                <span class="price-original">Rp {{ $item['original_price_formatted'] ?? $item['price_formatted'] }}</span>
+                                            @endif
                                             <span class="price-current">Rp {{ $item['price_formatted'] }}</span>
-                                        @else
-                                            <span class="price-current">Rp {{ $item['price_formatted'] }}</span>
-                                        @endif
+                                        </div>
                                     </td>
                                     <td class="shoping__cart__quantity">
                                         <div class="quantity-control" data-quantity-control>
@@ -244,10 +268,12 @@
                                         </div>
                                     </td>
                                     <td class="shoping__cart__total" data-item-subtotal>
-                                        @if($hasPromo && !empty($item['original_subtotal_formatted']))
-                                            <span class="price-original">Rp {{ $item['original_subtotal_formatted'] }}</span>
-                                        @endif
-                                        <span class="price-current">Rp {{ $item['subtotal_formatted'] }}</span>
+                                        <div class="price-stack {{ ($hasPromo && !empty($item['original_subtotal_formatted'])) ? '' : 'single-line' }}">
+                                            @if($hasPromo && !empty($item['original_subtotal_formatted']))
+                                                <span class="price-original">Rp {{ $item['original_subtotal_formatted'] }}</span>
+                                            @endif
+                                            <span class="price-current">Rp {{ $item['subtotal_formatted'] }}</span>
+                                        </div>
                                     </td>
                                     <td class="shoping__cart__item__close"><button type="button" class="cart-remove" data-remove-item>&times;</button></td>
                                 </tr>
@@ -310,23 +336,33 @@
         const initialHasItems = {{ $hasItems ? 'true' : 'false' }};
 
         function renderPriceMarkup(item) {
-            if (item.has_promo) {
-                const original = item.original_price_formatted || item.price_formatted;
-                const originalMarkup = original ? `<span class="price-original">Rp ${original}</span>` : '';
-                return `${originalMarkup}<span class="price-current">Rp ${item.price_formatted}</span>`;
+            const hasPromo = !!item.has_promo;
+            const original = hasPromo ? (item.original_price_formatted || item.price_formatted || '') : '';
+            const parts = [];
+
+            if (hasPromo && original) {
+                parts.push(`<span class="price-original">Rp ${original}</span>`);
             }
 
-            return `<span class="price-current">Rp ${item.price_formatted}</span>`;
+            parts.push(`<span class="price-current">Rp ${item.price_formatted}</span>`);
+
+            const stackClass = hasPromo && original ? 'price-stack' : 'price-stack single-line';
+            return `<div class="${stackClass}">${parts.join('')}</div>`;
         }
 
         function renderSubtotalMarkup(item) {
-            if (item.has_promo) {
-                const originalSubtotal = item.original_subtotal_formatted || '';
-                const originalMarkup = originalSubtotal ? `<span class="price-original">Rp ${originalSubtotal}</span>` : '';
-                return `${originalMarkup}<span class="price-current">Rp ${item.subtotal_formatted}</span>`;
+            const hasPromo = !!item.has_promo;
+            const originalSubtotal = hasPromo ? (item.original_subtotal_formatted || '') : '';
+            const parts = [];
+
+            if (hasPromo && originalSubtotal) {
+                parts.push(`<span class="price-original">Rp ${originalSubtotal}</span>`);
             }
 
-            return `<span class="price-current">Rp ${item.subtotal_formatted}</span>`;
+            parts.push(`<span class="price-current">Rp ${item.subtotal_formatted}</span>`);
+
+            const stackClass = hasPromo && originalSubtotal ? 'price-stack' : 'price-stack single-line';
+            return `<div class="${stackClass}">${parts.join('')}</div>`;
         }
 
         function buildRow(item){
