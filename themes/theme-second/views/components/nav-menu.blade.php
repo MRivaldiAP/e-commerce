@@ -66,6 +66,31 @@
 
 @once
     <style>
+        .header__menu > ul {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 0;
+            flex-wrap: nowrap;
+        }
+
+        .header__menu > ul > li {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .header__menu > ul > li > a {
+            white-space: nowrap;
+        }
+
+        @media (max-width: 991.98px) {
+            .header__menu > ul {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+        }
+
         .cart-indicator {
             position: relative;
         }
