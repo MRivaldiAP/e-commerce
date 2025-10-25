@@ -81,7 +81,7 @@
                   <a class="nav-link" href="#">Merek</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ route('admin.promotions.index') }}">Promo</a>
+                  <a class="nav-link" href="{{ route('promotions.index') }}">Promo</a>
                 </li>
               </ul>
             </div>

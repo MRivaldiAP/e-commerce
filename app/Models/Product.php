@@ -48,7 +48,7 @@ class Product extends Model
 
     public function promotions(): BelongsToMany
     {
-        return $this->belongsToMany(Promotion::class)->withTimestamps();
+        return $this->belongsToMany(Promotion::class, 'promotion_product')->withTimestamps();
     }
 
     public function activePromotions(?Carbon $at = null)

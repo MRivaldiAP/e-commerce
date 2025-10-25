@@ -8,7 +8,7 @@
         <h3 class="page-title">Promo Produk</h3>
         <p class="text-muted mb-0">Kelola promo diskon untuk produk Anda dan atur periode berlakunya.</p>
       </div>
-      <a href="{{ route('admin.promotions.create') }}" class="btn btn-primary btn-icon-text">
+      <a href="{{ route('promotions.create') }}" class="btn btn-primary btn-icon-text">
         <i class="mdi mdi-plus btn-icon-prepend"></i> Tambah Promo
       </a>
     </div>
@@ -65,8 +65,8 @@
                         <span class="badge badge-{{ $isActive ? 'success' : 'secondary' }}">{{ $isActive ? 'Aktif' : 'Tidak Aktif' }}</span>
                       </td>
                       <td class="text-right">
-                        <a href="{{ route('admin.promotions.edit', $promotion) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form action="{{ route('admin.promotions.destroy', $promotion) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus promo ini?');">
+                        <a href="{{ route('promotions.edit', $promotion) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form action="{{ route('promotions.destroy', $promotion) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus promo ini?');">
                           @csrf
                           @method('DELETE')
                           <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>

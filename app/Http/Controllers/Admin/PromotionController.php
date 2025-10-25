@@ -57,7 +57,7 @@ class PromotionController extends Controller
                 $promotion->products()->sync($productIds);
             });
 
-            return redirect()->route('admin.promotions.index')
+            return redirect()->route('promotions.index')
                 ->with('success', 'Promo berhasil dibuat.');
         } catch (\Throwable $e) {
             Log::error('Failed to create promotion: ' . $e->getMessage(), ['exception' => $e]);
@@ -91,7 +91,7 @@ class PromotionController extends Controller
                 $promotion->products()->sync($productIds);
             });
 
-            return redirect()->route('admin.promotions.index')
+            return redirect()->route('promotions.index')
                 ->with('success', 'Promo berhasil diperbarui.');
         } catch (\Throwable $e) {
             Log::error('Failed to update promotion: ' . $e->getMessage(), ['exception' => $e, 'promotion_id' => $promotion->getKey()]);
@@ -105,12 +105,12 @@ class PromotionController extends Controller
         try {
             $promotion->delete();
 
-            return redirect()->route('admin.promotions.index')
+            return redirect()->route('promotions.index')
                 ->with('success', 'Promo berhasil dihapus.');
         } catch (\Throwable $e) {
             Log::error('Failed to delete promotion: ' . $e->getMessage(), ['exception' => $e, 'promotion_id' => $promotion->getKey()]);
 
-            return redirect()->route('admin.promotions.index')
+            return redirect()->route('promotions.index')
                 ->with('error', 'Gagal menghapus promo.');
         }
     }

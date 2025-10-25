@@ -7,7 +7,7 @@
       <h3 class="page-title">Promo Produk</h3>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{{ route('admin.promotions.index') }}">Promo</a></li>
+          <li class="breadcrumb-item"><a href="{{ route('promotions.index') }}">Promo</a></li>
           <li class="breadcrumb-item active" aria-current="page">Edit Promo</li>
         </ol>
       </nav>
@@ -18,7 +18,7 @@
         <div class="card">
           <div class="card-body">
             <h4 class="card-title">Perbarui Promo</h4>
-            <form action="{{ route('admin.promotions.update', $promotion) }}" method="POST">
+            <form action="{{ route('promotions.update', $promotion) }}" method="POST">
               @include('admin.promotions._form')
             </form>
           </div>

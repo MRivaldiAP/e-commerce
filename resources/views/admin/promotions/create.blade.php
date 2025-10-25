@@ -7,7 +7,7 @@
       <h3 class="page-title">Promo Produk</h3>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{{ route('admin.promotions.index') }}">Promo</a></li>
+          <li class="breadcrumb-item"><a href="{{ route('promotions.index') }}">Promo</a></li>
           <li class="breadcrumb-item active" aria-current="page">Buat Promo</li>
         </ol>
       </nav>
@@ -19,7 +19,7 @@
           <div class="card-body">
             <h4 class="card-title">Buat Promo Baru</h4>
             <p class="text-muted">Promo otomatis mencakup seluruh produk aktif, Anda dapat menyesuaikan pilihan di bawah.</p>
-            <form action="{{ route('admin.promotions.store') }}" method="POST">
+            <form action="{{ route('promotions.store') }}" method="POST">
               @include('admin.promotions._form')
             </form>
           </div>

@@ -30,7 +30,7 @@ class Promotion extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class)->withTimestamps();
+        return $this->belongsToMany(Product::class, 'promotion_product')->withTimestamps();
     }
 
     public function scopeActive($query)

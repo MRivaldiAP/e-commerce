@@ -77,7 +77,7 @@
 </div>
 <div class="row mt-4">
   <div class="col-md-12 text-right">
-    <a href="{{ route('admin.promotions.index') }}" class="btn btn-light mr-2">Batal</a>
+    <a href="{{ route('promotions.index') }}" class="btn btn-light mr-2">Batal</a>
     <button type="submit" class="btn btn-primary">Simpan</button>
   </div>
 </div>
