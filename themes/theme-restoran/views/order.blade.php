@@ -290,7 +290,7 @@
                     <div>
                         <p class="mb-1 text-muted">Total Produk: {{ $order->items->sum('quantity') }}</p>
                         @if($shippingEnabled)
-                            <p class="mb-1 text-muted">Kurir: {{ strtoupper($order->shipping->courier ?? 'Belum ditentukan') }} {{ $order->shipping->service ? '('.$order->shipping->service.')' : '' }}</p>
+                            <p class="mb-1 text-muted">Kurir: {{ strtoupper($order->shipping->courier ?? 'Belum ditentukan') }} {{ optional($order->shipping)->service ? '('.optional($order->shipping)->service.')' : '' }}</p>
                             <p class="mb-1 text-muted">Ongkir: Rp {{ number_format($order->shipping->cost ?? 0, 0, ',', '.') }}</p>
                             <p class="mb-1 text-muted">Resi: {{ $order->shipping->tracking_number ?? 'Belum tersedia' }}</p>
                             <p class="mb-0 text-muted">Status Pengiriman: {{ ucfirst(str_replace('_', ' ', $order->shipping->status ?? 'pending')) }}</p>
