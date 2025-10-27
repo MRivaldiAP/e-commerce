@@ -17,5 +17,3 @@
         </div>
     </div>
 </article>
-
-@include('themeRestoran::components.article-detail.sections.comments', ['comments' => $comments])
