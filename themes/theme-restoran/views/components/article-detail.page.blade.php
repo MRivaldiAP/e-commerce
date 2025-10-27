@@ -6,7 +6,7 @@
     use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-restoran';
-    $pageSettings = PageSetting::forPage('article-detail');
+    $pageSettings = PageSetting::forPage('article-detail', $themeName);
     $detailSettings = array_merge($pageSettings, $settings ?? []);
     $article = $article ?? [];
     $recommended = collect($recommended ?? []);

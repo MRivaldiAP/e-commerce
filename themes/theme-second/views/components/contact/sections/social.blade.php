@@ -1,4 +1,11 @@
 @php
+    $socialItems = $socialItems ?? collect(json_decode($settings['social.items'] ?? '[]', true))
+        ->filter(static function ($item) {
+            return is_array($item);
+        })
+        ->values()
+        ->all();
+
     $visibleSocials = collect($socialItems)->filter(function ($item) {
         return ($item['visible'] ?? '1') !== '0';
     });

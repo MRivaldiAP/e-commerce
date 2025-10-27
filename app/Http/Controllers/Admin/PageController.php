@@ -17,9 +17,10 @@ class PageController extends Controller
     public function home()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = collect(PageSetting::forPage('home'));
+        $settings = collect(PageSetting::forPage('home', $theme));
+        $defaultSections = PageElements::sections('home', $theme);
         [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('home', $theme, $settings);
+            $this->resolveSectionConfig($theme, $settings, $defaultSections);
 
         return view('admin.pages.home', compact(
             'sections',
@@ -47,7 +48,7 @@ class PageController extends Controller
 
         $key = $request->input('key');
 
-        PageSetting::put('home', $key, $value);
+        PageSetting::put('home', $key, $value, $theme);
 
         return response()->json(['status' => 'ok']);
     }
@@ -55,9 +56,10 @@ class PageController extends Controller
     public function product()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = collect(PageSetting::forPage('product'));
+        $settings = collect(PageSetting::forPage('product', $theme));
+        $defaultSections = PageElements::sections('product', $theme);
         [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('product', $theme, $settings);
+            $this->resolveSectionConfig($theme, $settings, $defaultSections);
 
         return view('admin.pages.product', compact(
             'sections',
@@ -85,7 +87,7 @@ class PageController extends Controller
 
         $key = $request->input('key');
 
-        PageSetting::put('product', $key, $value);
+        PageSetting::put('product', $key, $value, $theme);
 
         return response()->json(['status' => 'ok']);
     }
@@ -93,9 +95,10 @@ class PageController extends Controller
     public function productDetail()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = collect(PageSetting::forPage('product-detail'));
+        $settings = collect(PageSetting::forPage('product-detail', $theme));
+        $defaultSections = PageElements::sections('product-detail', $theme);
         [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('product-detail', $theme, $settings);
+            $this->resolveSectionConfig($theme, $settings, $defaultSections);
 
         $previewProduct = Product::first();
         $previewUrl = $previewProduct ? route('products.show', $previewProduct) : null;
@@ -129,7 +132,7 @@ class PageController extends Controller
 
         $key = $request->input('key');
 
-        PageSetting::put('product-detail', $key, $value);
+        PageSetting::put('product-detail', $key, $value, $theme);
 
         return response()->json(['status' => 'ok']);
     }
@@ -137,10 +140,11 @@ class PageController extends Controller
     public function article()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = collect(PageSetting::forPage('article'));
+        $settings = collect(PageSetting::forPage('article', $theme));
         $articles = collect(json_decode($settings->get('articles.items', '[]'), true));
+        $defaultSections = PageElements::sections('article', $theme);
         [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('article', $theme, $settings);
+            $this->resolveSectionConfig($theme, $settings, $defaultSections);
 
         $previewUrl = route('articles.index');
 
@@ -172,7 +176,7 @@ class PageController extends Controller
 
         $key = $request->input('key');
 
-        PageSetting::put('article', $key, $value);
+        PageSetting::put('article', $key, $value, $theme);
 
         return response()->json(['status' => 'ok']);
     }
@@ -180,15 +184,16 @@ class PageController extends Controller
     public function articleDetail()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = collect(PageSetting::forPage('article-detail'));
-        $articleSettings = collect(PageSetting::forPage('article'));
+        $settings = collect(PageSetting::forPage('article-detail', $theme));
+        $articleSettings = collect(PageSetting::forPage('article', $theme));
         $articles = collect(json_decode($articleSettings->get('articles.items', '[]'), true));
         $previewArticle = $articles->first(function ($item) {
             return ! empty($item['slug']);
         });
         $previewUrl = $previewArticle ? route('articles.show', ['slug' => $previewArticle['slug']]) : null;
+        $defaultSections = PageElements::sections('article-detail', $theme);
         [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('article-detail', $theme, $settings);
+            $this->resolveSectionConfig($theme, $settings, $defaultSections);
 
         return view('admin.pages.article-detail', compact(
             'sections',
@@ -218,7 +223,7 @@ class PageController extends Controller
 
         $key = $request->input('key');
 
-        PageSetting::put('article-detail', $key, $value);
+        PageSetting::put('article-detail', $key, $value, $theme);
 
         return response()->json(['status' => 'ok']);
     }
@@ -226,9 +231,10 @@ class PageController extends Controller
     public function gallery()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = collect(PageSetting::forPage('gallery'));
+        $settings = collect(PageSetting::forPage('gallery', $theme));
+        $defaultSections = PageElements::sections('gallery', $theme);
         [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('gallery', $theme, $settings);
+            $this->resolveSectionConfig($theme, $settings, $defaultSections);
         $previewUrl = route('gallery.index');
 
         return view('admin.pages.gallery', compact(
@@ -258,7 +264,7 @@ class PageController extends Controller
 
         $key = $request->input('key');
 
-        PageSetting::put('gallery', $key, $value);
+        PageSetting::put('gallery', $key, $value, $theme);
 
         return response()->json(['status' => 'ok']);
     }
@@ -266,9 +272,10 @@ class PageController extends Controller
     public function contact()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = collect(PageSetting::forPage('contact'));
+        $settings = collect(PageSetting::forPage('contact', $theme));
+        $defaultSections = PageElements::sections('contact', $theme);
         [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('contact', $theme, $settings);
+            $this->resolveSectionConfig($theme, $settings, $defaultSections);
         $previewUrl = route('contact');
 
         return view('admin.pages.contact', compact(
@@ -298,7 +305,7 @@ class PageController extends Controller
 
         $key = $request->input('key');
 
-        PageSetting::put('contact', $key, $value);
+        PageSetting::put('contact', $key, $value, $theme);
 
         return response()->json(['status' => 'ok']);
     }
@@ -306,9 +313,10 @@ class PageController extends Controller
     public function about()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = collect(PageSetting::forPage('about'));
+        $settings = collect(PageSetting::forPage('about', $theme));
+        $defaultSections = PageElements::sections('about', $theme);
         [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('about', $theme, $settings);
+            $this->resolveSectionConfig($theme, $settings, $defaultSections);
 
         $previewUrl = route('about');
 
@@ -339,7 +347,7 @@ class PageController extends Controller
 
         $key = $request->input('key');
 
-        PageSetting::put('about', $key, $value);
+        PageSetting::put('about', $key, $value, $theme);
 
         return response()->json(['status' => 'ok']);
     }
@@ -347,9 +355,10 @@ class PageController extends Controller
     public function cart()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = collect(PageSetting::forPage('cart'));
+        $settings = collect(PageSetting::forPage('cart', $theme));
+        $defaultSections = PageElements::sections('cart', $theme);
         [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('cart', $theme, $settings);
+            $this->resolveSectionConfig($theme, $settings, $defaultSections);
 
         $previewUrl = route('cart.index');
 
@@ -380,7 +389,7 @@ class PageController extends Controller
 
         $key = $request->input('key');
 
-        PageSetting::put('cart', $key, $value);
+        PageSetting::put('cart', $key, $value, $theme);
 
         return response()->json(['status' => 'ok']);
     }
@@ -388,7 +397,7 @@ class PageController extends Controller
     public function layout()
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = collect(PageSetting::forPage('layout'));
+        $settings = collect(PageSetting::forPage('layout', $theme));
         if (! $settings->has('navigation.link.articles')) {
             $settings->put('navigation.link.articles', '1');
         }
@@ -401,8 +410,9 @@ class PageController extends Controller
         if (! $settings->has('navigation.link.contact')) {
             $settings->put('navigation.link.contact', '1');
         }
+        $defaultSections = PageElements::sections('layout', $theme);
         [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('layout', $theme, $settings);
+            $this->resolveSectionConfig($theme, $settings, $defaultSections);
 
         $previewUrl = url('/');
 
@@ -434,7 +444,7 @@ class PageController extends Controller
 
         $key = $request->input('key');
 
-        PageSetting::put('layout', $key, $value);
+        PageSetting::put('layout', $key, $value, $theme);
 
         LayoutSettings::flushCache();
 
@@ -452,6 +462,8 @@ class PageController extends Controller
     /**
      * Resolve the available, active, and default sections for a page editor.
      *
+     * @param Collection $settings
+     * @param array<string, array> $defaultSections
      * @return array{
      *     0: array<string, array>,
      *     1: array<int, array{key: string, label: string}>,
@@ -460,15 +472,28 @@ class PageController extends Controller
      *     4: array<string, string>
      * }
      */
-    protected function resolveSectionConfig(string $page, string $theme, Collection $settings): array
+    protected function resolveSectionConfig(string $theme, Collection $settings, array $defaultSections = []): array
     {
-        $allSections = PageElements::sections($page, $theme);
+        $allSections = PageElements::themeSections($theme);
+
+        if ($defaultSections !== []) {
+            foreach ($defaultSections as $key => $definition) {
+                $definition['label'] = $definition['label'] ?? ($allSections[$key]['label'] ?? ucfirst($key));
+                $definition['elements'] = $definition['elements'] ?? ($allSections[$key]['elements'] ?? []);
+                $definition['origins'] = array_values(array_unique(array_merge(
+                    $allSections[$key]['origins'] ?? [],
+                    $definition['origins'] ?? []
+                )));
+
+                $allSections[$key] = $definition;
+            }
+        }
 
         if ($allSections === []) {
             return [[], [], [], [], []];
         }
 
-        $defaultOrder = array_keys($allSections);
+        $defaultOrder = array_keys($defaultSections);
 
         $rawComposition = $settings->get('__sections');
         $composition = [];
@@ -523,4 +548,5 @@ class PageController extends Controller
 
         return [$sections, $availableSections, $composition, $defaultOrder, $labels];
     }
+
 }

@@ -1,8 +1,10 @@
 @php
     use Illuminate\Support\Str;
+    use App\Support\ThemeSectionLocator;
 
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = \App\Models\PageSetting::forPage('contact');
+    $settings = \App\Models\PageSetting::forPage('contact', $themeName);
+    $elements = \App\Support\PageElements::themeSections($themeName);
     $activeSections = \App\Support\PageElements::activeSectionKeys('contact', $themeName, $settings);
     $detailItems = json_decode($settings['details.items'] ?? '[]', true);
     if (! is_array($detailItems)) {
@@ -181,6 +183,23 @@
                     'mapEmbed' => $mapEmbed,
                 ])
                 @break
+
+            @default
+                @php
+                    $sectionInfo = $elements[$sectionKey] ?? null;
+                    $viewName = $sectionInfo ? ThemeSectionLocator::resolve(
+                        $themeName,
+                        'themeHerbalGreen',
+                        'contact',
+                        $sectionKey,
+                        $sectionInfo['origins'] ?? []
+                    ) : null;
+                @endphp
+                @continue(!$viewName)
+                @include($viewName, [
+                    'settings' => $settings,
+                    'theme' => $themeName,
+                ])
         @endswitch
     @endforeach
 

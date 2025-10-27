@@ -4,9 +4,10 @@
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
     use App\Support\PageElements;
+    use App\Support\ThemeSectionLocator;
 
     $themeName = $theme ?? 'theme-restoran';
-    $pageSettings = PageSetting::forPage('contact');
+    $pageSettings = PageSetting::forPage('contact', $themeName);
     $settings = array_merge($pageSettings, $settings ?? []);
     $detailItems = json_decode($settings['details.items'] ?? '[]', true);
 
@@ -24,11 +25,15 @@
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
 
+    $elements = PageElements::themeSections($themeName);
     $activeSections = PageElements::activeSectionKeys('contact', $themeName, $settings);
     $heroActive = in_array('hero', $activeSections, true);
     $detailsActive = in_array('details', $activeSections, true);
     $socialActive = in_array('social', $activeSections, true);
     $mapActive = in_array('map', $activeSections, true);
+    $extraSections = array_values(array_filter($activeSections, function ($section) {
+        return ! in_array($section, ['hero', 'details', 'social', 'map'], true);
+    }));
 
     $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
     $heroBackground = ThemeMedia::url($settings['hero.background'] ?? null);
@@ -122,6 +127,24 @@
             'mapEmbed' => $mapEmbed,
         ])
     @endif
+
+    @foreach ($extraSections as $sectionKey)
+        @php
+            $sectionInfo = $elements[$sectionKey] ?? null;
+            $viewName = $sectionInfo ? ThemeSectionLocator::resolve(
+                $themeName,
+                'themeRestoran',
+                'contact',
+                $sectionKey,
+                $sectionInfo['origins'] ?? []
+            ) : null;
+        @endphp
+        @continue(!$viewName)
+        @include($viewName, [
+            'settings' => $settings,
+            'theme' => $themeName,
+        ])
+    @endforeach
 
     @include('themeRestoran::components.footer', ['footer' => $footerConfig])
     @include('themeRestoran::components.floating-contact-buttons', ['theme' => $themeName])

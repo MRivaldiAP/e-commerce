@@ -1,3 +1,11 @@
+@php
+    $socialItems = $socialItems ?? collect(json_decode($settings['social.items'] ?? '[]', true))
+        ->filter(static function ($item) {
+            return is_array($item) && (($item['visible'] ?? '1') !== '0');
+        })
+        ->values()
+        ->all();
+@endphp
 <div id="social" class="container-xxl py-5 bg-dark">
     <div class="container text-center">
         <h5 class="section-title ff-secondary text-primary fw-normal">{{ $settings['social.heading'] ?? 'Ikuti Kami' }}</h5>

@@ -1,6 +1,13 @@
 @php
     use Illuminate\Support\Str;
 
+    $detailItems = $detailItems ?? collect(json_decode($settings['details.items'] ?? '[]', true))
+        ->filter(static function ($item) {
+            return is_array($item);
+        })
+        ->values()
+        ->all();
+
     $formatLink = function (?string $value, ?string $link) {
         if (! $value) {
             return '';

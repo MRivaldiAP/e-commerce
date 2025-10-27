@@ -4,9 +4,11 @@
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
     use App\Support\PageElements;
+    use App\Support\ThemeSectionLocator;
 
     $themeName = $theme ?? 'theme-second';
-    $settings = PageSetting::forPage('contact');
+    $settings = PageSetting::forPage('contact', $themeName);
+    $elements = PageElements::themeSections($themeName);
     $activeSections = PageElements::activeSectionKeys('contact', $themeName, $settings);
     $detailItems = json_decode($settings['details.items'] ?? '[]', true);
     if (! is_array($detailItems)) {
@@ -84,6 +86,23 @@
                 'mapEmbed' => $mapEmbed,
             ])
             @break
+
+        @default
+            @php
+                $sectionInfo = $elements[$sectionKey] ?? null;
+                $viewName = $sectionInfo ? ThemeSectionLocator::resolve(
+                    $themeName,
+                    'themeSecond',
+                    'contact',
+                    $sectionKey,
+                    $sectionInfo['origins'] ?? []
+                ) : null;
+            @endphp
+            @continue(!$viewName)
+            @include($viewName, [
+                'settings' => $settings,
+                'theme' => $themeName,
+            ])
     @endswitch
 @endforeach
 

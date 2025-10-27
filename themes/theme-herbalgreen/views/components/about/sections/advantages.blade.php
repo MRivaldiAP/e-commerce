@@ -1,3 +1,11 @@
+@php
+    $advantages = $advantages ?? collect(json_decode($settings['advantages.items'] ?? '[]', true))
+        ->filter(static function ($item) {
+            return is_array($item);
+        })
+        ->values()
+        ->all();
+@endphp
 <section id="advantages" class="about-advantages">
     <div class="section-header">
         <h2>{{ $settings['advantages.heading'] ?? 'Keunggulan Kami' }}</h2>

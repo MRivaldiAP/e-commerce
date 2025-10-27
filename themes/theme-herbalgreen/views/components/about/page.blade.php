@@ -1,8 +1,10 @@
 @php
     use Illuminate\Support\Str;
+    use App\Support\ThemeSectionLocator;
 
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = \App\Models\PageSetting::forPage('about');
+    $settings = \App\Models\PageSetting::forPage('about', $themeName);
+    $elements = \App\Support\PageElements::themeSections($themeName);
     $activeSections = \App\Support\PageElements::activeSectionKeys('about', $themeName, $settings);
     $teamMembers = json_decode($settings['team.members'] ?? '[]', true);
     if (! is_array($teamMembers)) {
@@ -80,6 +82,23 @@
                     'advantages' => $advantages,
                 ])
                 @break
+
+            @default
+                @php
+                    $sectionInfo = $elements[$sectionKey] ?? null;
+                    $viewName = $sectionInfo ? ThemeSectionLocator::resolve(
+                        $themeName,
+                        'themeHerbalGreen',
+                        'about',
+                        $sectionKey,
+                        $sectionInfo['origins'] ?? []
+                    ) : null;
+                @endphp
+                @continue(!$viewName)
+                @include($viewName, [
+                    'settings' => $settings,
+                    'theme' => $themeName,
+                ])
         @endswitch
     @endforeach
 

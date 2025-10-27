@@ -15,6 +15,11 @@ class PageElements
     protected static array $availabilityCache = [];
 
     /**
+     * @var array<string, array<string, array<string, mixed>>>
+     */
+    protected static array $themeSectionCache = [];
+
+    /**
      * Get the master element definitions shared across themes.
      */
     public static function definitions(): array
@@ -95,8 +100,78 @@ class PageElements
             $resolved[$sectionKey] = [
                 'label' => $sectionDefinition['label'] ?? ucfirst($sectionKey),
                 'elements' => $elements,
+                'origins' => [$page],
             ];
         }
+
+        return $resolved;
+    }
+
+    /**
+     * Resolve the section catalogue available for a given theme.
+     *
+     * @return array<string, array{label: string, elements: array<int, array<string, mixed>>, origins: array<int, string>}>
+     */
+    public static function themeSections(string $theme): array
+    {
+        if (array_key_exists($theme, self::$themeSectionCache)) {
+            return self::$themeSectionCache[$theme];
+        }
+
+        $definitions = self::definitions();
+
+        if ($definitions === []) {
+            self::$themeSectionCache[$theme] = [];
+
+            return [];
+        }
+
+        $resolved = [];
+
+        foreach (array_keys($definitions) as $pageKey) {
+            $sections = self::sections($pageKey, $theme);
+
+            foreach ($sections as $sectionKey => $definition) {
+                if (! isset($resolved[$sectionKey])) {
+                    $resolved[$sectionKey] = $definition;
+                    continue;
+                }
+
+                $existing = $resolved[$sectionKey];
+
+                $existingOrigins = $existing['origins'] ?? [];
+                $existingOrigins[] = $pageKey;
+                $resolved[$sectionKey]['origins'] = array_values(array_unique($existingOrigins));
+
+                $indexed = [];
+                foreach ($existing['elements'] ?? [] as $element) {
+                    if (isset($element['id'])) {
+                        $indexed[$element['id']] = $element;
+                    }
+                }
+
+                foreach ($definition['elements'] ?? [] as $element) {
+                    if (isset($element['id'])) {
+                        $indexed[$element['id']] = $element;
+                    }
+                }
+
+                $resolved[$sectionKey]['elements'] = array_values($indexed);
+
+                $existingLabel = $resolved[$sectionKey]['label'] ?? null;
+                $nextLabel = $definition['label'] ?? null;
+
+                if (
+                    (! is_string($existingLabel) || $existingLabel === '' || $existingLabel === ucfirst($sectionKey))
+                    && is_string($nextLabel)
+                    && $nextLabel !== ''
+                ) {
+                    $resolved[$sectionKey]['label'] = $nextLabel;
+                }
+            }
+        }
+
+        self::$themeSectionCache[$theme] = $resolved;
 
         return $resolved;
     }
@@ -109,11 +184,13 @@ class PageElements
         if ($theme === null) {
             self::$definitionCache = [];
             self::$availabilityCache = [];
+            self::$themeSectionCache = [];
 
             return;
         }
 
         unset(self::$availabilityCache[$theme]);
+        unset(self::$themeSectionCache[$theme]);
     }
 
     /**
@@ -124,13 +201,30 @@ class PageElements
      */
     public static function activeSectionKeys(string $page, string $theme, array $pageSettings = []): array
     {
-        $allSections = self::sections($page, $theme);
+        $defaultSections = self::sections($page, $theme);
+        $themeSections = self::themeSections($theme);
+
+        $allSections = $themeSections;
+
+        foreach ($defaultSections as $key => $definition) {
+            $definition['label'] = $definition['label'] ?? ($themeSections[$key]['label'] ?? ucfirst($key));
+            $definition['elements'] = $definition['elements'] ?? ($themeSections[$key]['elements'] ?? []);
+            $definition['origins'] = array_values(array_unique(array_merge(
+                $themeSections[$key]['origins'] ?? [],
+                $definition['origins'] ?? [$page]
+            )));
+
+            $allSections[$key] = $definition;
+        }
 
         if ($allSections === []) {
             return [];
         }
 
-        $defaultOrder = array_keys($allSections);
+        $defaultOrder = array_keys($defaultSections);
+        if ($defaultOrder === []) {
+            $defaultOrder = array_keys($allSections);
+        }
 
         $rawComposition = $pageSettings['__sections'] ?? null;
         $composition = [];

@@ -1,3 +1,11 @@
+@php
+    $socialItems = $socialItems ?? collect(json_decode($settings['social.items'] ?? '[]', true))
+        ->filter(static function ($item) {
+            return is_array($item) && (($item['visible'] ?? '1') !== '0');
+        })
+        ->values()
+        ->all();
+@endphp
 <section id="social" class="contact-social">
     <div class="contact-details__header">
         <h2>{{ $settings['social.heading'] ?? 'Terhubung dengan Kami' }}</h2>

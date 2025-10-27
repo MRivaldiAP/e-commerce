@@ -1,3 +1,15 @@
+@php
+    $teamMembers = $teamMembers ?? collect(json_decode($settings['team.members'] ?? '[]', true))
+        ->filter(static function ($item) {
+            return is_array($item);
+        })
+        ->values()
+        ->all();
+
+    $resolveMedia = $resolveMedia ?? static function ($path) {
+        return \App\Support\ThemeMedia::url($path);
+    };
+@endphp
 <section id="team" class="about-team">
     <div class="section-header">
         <h2>{{ $settings['team.heading'] ?? 'Tim Kami' }}</h2>

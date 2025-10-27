@@ -1,6 +1,7 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = $settings ?? \App\Models\PageSetting::forPage('article');
+    $settings = $settings ?? \App\Models\PageSetting::forPage('article', $themeName);
+    $elements = \App\Support\PageElements::themeSections($themeName);
     $activeSections = \App\Support\PageElements::activeSectionKeys('article', $themeName, $settings);
     $articles = collect($articles ?? [])->filter(fn ($item) => !empty($item['slug'] ?? null));
     $timeline = collect($timeline ?? []);
@@ -82,6 +83,23 @@
                     'articleImage' => $articleImage,
                 ])
                 @break
+
+            @default
+                @php
+                    $sectionInfo = $elements[$sectionKey] ?? null;
+                    $viewName = $sectionInfo ? \App\Support\ThemeSectionLocator::resolve(
+                        $themeName,
+                        'themeHerbalGreen',
+                        'article',
+                        $sectionKey,
+                        $sectionInfo['origins'] ?? []
+                    ) : null;
+                @endphp
+                @continue(!$viewName)
+                @include($viewName, [
+                    'settings' => $settings,
+                    'theme' => $themeName,
+                ])
         @endswitch
     @endforeach
 

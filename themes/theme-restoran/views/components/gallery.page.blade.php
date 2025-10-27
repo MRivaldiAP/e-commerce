@@ -8,7 +8,7 @@
     use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-restoran';
-    $pageSettings = PageSetting::forPage('gallery');
+    $pageSettings = PageSetting::forPage('gallery', $themeName);
     $settings = array_merge($pageSettings, $settings ?? []);
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);

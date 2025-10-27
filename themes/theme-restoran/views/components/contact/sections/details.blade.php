@@ -1,3 +1,11 @@
+@php
+    $detailItems = $detailItems ?? collect(json_decode($settings['details.items'] ?? '[]', true))
+        ->filter(static function ($item) {
+            return is_array($item);
+        })
+        ->values()
+        ->all();
+@endphp
 <div id="details" class="container-xxl py-5">
     <div class="container">
         <div class="text-center mb-5">

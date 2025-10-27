@@ -1,6 +1,7 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = \App\Models\PageSetting::forPage('home');
+    $settings = \App\Models\PageSetting::forPage('home', $themeName);
+    $elements = \App\Support\PageElements::themeSections($themeName);
     $activeSections = \App\Support\PageElements::activeSectionKeys('home', $themeName, $settings);
     $products = \App\Models\Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
@@ -74,6 +75,23 @@
                     'settings' => $settings,
                 ])
                 @break
+
+            @default
+                @php
+                    $sectionInfo = $elements[$sectionKey] ?? null;
+                    $viewName = $sectionInfo ? \App\Support\ThemeSectionLocator::resolve(
+                        $themeName,
+                        'themeHerbalGreen',
+                        'home',
+                        $sectionKey,
+                        $sectionInfo['origins'] ?? []
+                    ) : null;
+                @endphp
+                @continue(!$viewName)
+                @include($viewName, [
+                    'settings' => $settings,
+                    'theme' => $themeName,
+                ])
         @endswitch
     @endforeach
 
