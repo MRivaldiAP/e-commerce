@@ -1,6 +1,6 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = \App\Models\PageSetting::forPage('product');
+    $settings = \App\Models\PageSetting::forPage('product', $themeName);
     $activeSections = \App\Support\PageElements::activeSectionKeys('product', $themeName, $settings);
     $query = \App\Models\Product::query()->with(['images', 'promotions']);
     if ($search = request('search')) {

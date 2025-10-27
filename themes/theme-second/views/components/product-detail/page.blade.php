@@ -8,7 +8,7 @@
 
     $themeName = $theme ?? 'theme-second';
     /** @var \App\Models\Product $product */
-    $settings = PageSetting::forPage('product-detail');
+    $settings = PageSetting::forPage('product-detail', $themeName);
     $activeSections = PageElements::activeSectionKeys('product-detail', $themeName, $settings);
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);

@@ -7,7 +7,7 @@
     use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-second';
-    $settings = PageSetting::forPage('home');
+    $settings = PageSetting::forPage('home', $themeName);
     $activeSections = PageElements::activeSectionKeys('home', $themeName, $settings);
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
