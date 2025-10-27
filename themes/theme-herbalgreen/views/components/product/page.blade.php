@@ -1,6 +1,7 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
     $settings = \App\Models\PageSetting::forPage('product');
+    $activeSections = \App\Support\PageElements::activeSectionKeys('product', $themeName, $settings);
     $query = \App\Models\Product::query()->with(['images', 'promotions']);
     if ($search = request('search')) {
         $query->where('name', 'like', "%{$search}%");
@@ -42,10 +43,16 @@
         'cart' => $cartSummary,
     ])
 
-    @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.product.sections.hero', [
-        'settings' => $settings,
-        'heroImage' => $heroImage,
-    ])
+    @foreach ($activeSections as $sectionKey)
+        @switch($sectionKey)
+            @case('hero')
+                @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.product.sections.hero', [
+                    'settings' => $settings,
+                    'heroImage' => $heroImage,
+                ])
+                @break
+        @endswitch
+    @endforeach
 
     @include('themeHerbalGreen::components.product.sections.list', [
         'products' => $products,

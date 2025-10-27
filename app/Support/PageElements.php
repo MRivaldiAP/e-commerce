@@ -115,4 +115,52 @@ class PageElements
 
         unset(self::$availabilityCache[$theme]);
     }
+
+    /**
+     * Resolve the active section keys for a page based on stored settings.
+     *
+     * @param array<string, mixed> $pageSettings
+     * @return array<int, string>
+     */
+    public static function activeSectionKeys(string $page, string $theme, array $pageSettings = []): array
+    {
+        $allSections = self::sections($page, $theme);
+
+        if ($allSections === []) {
+            return [];
+        }
+
+        $defaultOrder = array_keys($allSections);
+
+        $rawComposition = $pageSettings['__sections'] ?? null;
+        $composition = [];
+        $hasCustomComposition = false;
+
+        if (is_string($rawComposition) && $rawComposition !== '') {
+            $decoded = json_decode($rawComposition, true);
+            if (is_array($decoded)) {
+                $hasCustomComposition = true;
+
+                foreach ($decoded as $key) {
+                    if (
+                        is_string($key)
+                        && array_key_exists($key, $allSections)
+                        && ! in_array($key, $composition, true)
+                    ) {
+                        $composition[] = $key;
+                    }
+                }
+
+                if ($decoded !== [] && $composition === []) {
+                    $hasCustomComposition = false;
+                }
+            }
+        }
+
+        if ($composition === []) {
+            $composition = $hasCustomComposition ? [] : $defaultOrder;
+        }
+
+        return $composition;
+    }
 }

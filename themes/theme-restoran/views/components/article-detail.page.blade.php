@@ -1,39 +1,129 @@
 @php
+    use App\Models\PageSetting;
+    use App\Support\Cart;
+    use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
+    use App\Support\PageElements;
+
     $themeName = $theme ?? 'theme-restoran';
+    $pageSettings = PageSetting::forPage('article-detail');
+    $detailSettings = array_merge($pageSettings, $settings ?? []);
+    $article = $article ?? [];
+    $recommended = collect($recommended ?? []);
+    $meta = $meta ?? [];
+
+    $resolveArticleImage = static function ($path) {
+        if (empty($path)) {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        return asset('storage/' . ltrim($path, '/'));
+    };
+
+    $detailOgImage = null;
+    $primaryImage = $article['image'] ?? null;
+
+    if ($primaryImage) {
+        $detailOgImage = $resolveArticleImage($primaryImage);
+    } elseif (! empty($detailSettings['hero.image'] ?? null)) {
+        $detailOgImage = $resolveArticleImage($detailSettings['hero.image']);
+    }
+
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
+    $cartSummary = Cart::summary();
+
+    $activeSections = PageElements::activeSectionKeys('article-detail', $themeName, $detailSettings);
+    $heroActive = in_array('hero', $activeSections, true);
+    $metaActive = in_array('meta', $activeSections, true);
+    $commentsActive = in_array('comments', $activeSections, true);
+    $recommendationsActive = in_array('recommendations', $activeSections, true);
+
+    $dateObject = $article['date_object'] ?? null;
+
+    if (! $dateObject && ! empty($article['date'])) {
+        try {
+            $dateObject = \Illuminate\Support\Carbon::parse($article['date']);
+        } catch (\Exception $e) {
+            $dateObject = null;
+        }
+    }
+
+    $dateFormatted = $article['date_formatted']
+        ?? ($dateObject ? $dateObject->locale(app()->getLocale())->isoFormat('D MMMM Y') : null);
+
+    $heroMaskEnabled = ($detailSettings['hero.mask'] ?? '1') === '1';
+    $heroBackground = ThemeMedia::url($detailSettings['hero.image'] ?? null)
+        ?? asset('storage/themes/theme-restoran/img/breadcrumb.jpg');
+    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+
+    if (! $heroMaskEnabled) {
+        $heroClasses .= ' hero-no-mask';
+    }
+
+    if ($heroBackground) {
+        $heroStyle = $heroMaskEnabled
+            ? "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroBackground}'); background-size: cover; background-position: center;"
+            : "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
+            : 'background: var(--theme-accent);';
+    }
+
+    $heroSection = [
+        'visible' => $heroActive && ($detailSettings['hero.visible'] ?? '1') === '1',
+        'classes' => $heroClasses,
+        'style' => $heroStyle,
+        'title' => $article['title'] ?? ($detailSettings['hero.title'] ?? 'Artikel'),
+        'breadcrumbTitle' => $detailSettings['hero.title'] ?? ($article['title'] ?? 'Detail'),
+    ];
+
+    $articleSection = [
+        'title' => $article['title'] ?? 'Artikel',
+        'image' => $resolveArticleImage($article['image'] ?? null),
+        'content' => $article['content'] ?? '<p>Konten artikel belum tersedia.</p>',
+        'meta' => [
+            'show_date' => $metaActive && ($detailSettings['meta.show_date'] ?? '1') === '1' && ! empty($dateFormatted),
+            'date' => $dateFormatted,
+            'show_author' => $metaActive && ($detailSettings['meta.show_author'] ?? '1') === '1' && ! empty($article['author']),
+            'author' => $article['author'] ?? null,
+        ],
+    ];
+
+    $commentsSection = [
+        'visible' => $commentsActive && ($detailSettings['comments.visible'] ?? '1') === '1',
+        'heading' => $detailSettings['comments.heading'] ?? 'Komentar',
+        'disabled_text' => $detailSettings['comments.disabled_text'] ?? 'Komentar dinonaktifkan.',
+    ];
+
+    $recommendationsSection = [
+        'visible' => $recommendationsActive && ($detailSettings['recommendations.visible'] ?? '1') === '1' && $recommended->isNotEmpty(),
+        'heading' => $detailSettings['recommendations.heading'] ?? 'Artikel Lainnya',
+        'items' => $recommended->map(function ($item) {
+            $slug = $item['slug'] ?? null;
+
+            return [
+                'title' => $item['title'] ?? 'Artikel',
+                'date' => $item['date_formatted'] ?? null,
+                'url' => $slug ? route('articles.show', ['slug' => $slug]) : '#',
+            ];
+        })->values()->all(),
+    ];
 @endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>{{ $meta['title'] ?? ($article['title'] ?? 'Artikel') }}</title>
-    @if(!empty($meta['description'] ?? ''))
+    @if(! empty($meta['description'] ?? ''))
         <meta name="description" content="{{ $meta['description'] }}">
         <meta property="og:description" content="{{ $meta['description'] }}">
     @endif
-    @php
-        $detailSettings = $settings ?? [];
-        $article = $article ?? [];
-        $recommended = collect($recommended ?? []);
-        $meta = $meta ?? [];
-
-        $resolveArticleImage = function ($path) {
-            if (empty($path)) {
-                return null;
-            }
-            if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-                return $path;
-            }
-            return asset('storage/' . ltrim($path, '/'));
-        };
-
-        $detailOgImage = null;
-        $primaryImage = $article['image'] ?? null;
-        if (!empty($primaryImage)) {
-            $detailOgImage = $resolveArticleImage($primaryImage);
-        } elseif (!empty($detailSettings['hero.image'] ?? null)) {
-            $detailOgImage = $resolveArticleImage($detailSettings['hero.image']);
-        }
-    @endphp
     @if($detailOgImage)
         <meta property="og:image" content="{{ $detailOgImage }}">
     @endif
@@ -53,80 +143,6 @@
     @include('themeRestoran::components.palette', ['theme' => $themeName])
 </head>
 <body>
-@php
-    use App\Support\Cart;
-    use App\Support\LayoutSettings;
-    use App\Support\ThemeMedia;
-
-    $navigation = LayoutSettings::navigation($themeName);
-    $footerConfig = LayoutSettings::footer($themeName);
-    $cartSummary = Cart::summary();
-
-    $dateObject = $article['date_object'] ?? null;
-    if (! $dateObject && !empty($article['date'])) {
-        try {
-            $dateObject = \Illuminate\Support\Carbon::parse($article['date']);
-        } catch (\Exception $e) {
-            $dateObject = null;
-        }
-    }
-    $dateFormatted = $article['date_formatted'] ?? ($dateObject ? $dateObject->locale(app()->getLocale())->isoFormat('D MMMM Y') : null);
-
-    $heroMaskEnabled = ($detailSettings['hero.mask'] ?? '1') === '1';
-    $heroBackground = ThemeMedia::url($detailSettings['hero.image'] ?? null) ?? asset('storage/themes/theme-restoran/img/breadcrumb.jpg');
-    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
-    if (! $heroMaskEnabled) {
-        $heroClasses .= ' hero-no-mask';
-    }
-    if ($heroBackground) {
-        $heroStyle = $heroMaskEnabled
-            ? "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroBackground}'); background-size: cover; background-position: center;"
-            : "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
-    } else {
-        $heroStyle = $heroMaskEnabled
-            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
-            : 'background: var(--theme-accent);';
-    }
-
-    $heroSection = [
-        'visible' => ($detailSettings['hero.visible'] ?? '1') === '1',
-        'classes' => $heroClasses,
-        'style' => $heroStyle,
-        'title' => $article['title'] ?? ($detailSettings['hero.title'] ?? 'Artikel'),
-        'breadcrumbTitle' => $detailSettings['hero.title'] ?? ($article['title'] ?? 'Detail'),
-    ];
-
-    $articleSection = [
-        'title' => $article['title'] ?? 'Artikel',
-        'image' => $resolveArticleImage($article['image'] ?? null),
-        'content' => $article['content'] ?? '<p>Konten artikel belum tersedia.</p>',
-        'meta' => [
-            'show_date' => ($detailSettings['meta.show_date'] ?? '1') === '1' && !empty($dateFormatted),
-            'date' => $dateFormatted,
-            'show_author' => ($detailSettings['meta.show_author'] ?? '1') === '1' && !empty($article['author']),
-            'author' => $article['author'] ?? null,
-        ],
-    ];
-
-    $commentsSection = [
-        'visible' => ($detailSettings['comments.visible'] ?? '1') === '1',
-        'heading' => $detailSettings['comments.heading'] ?? 'Komentar',
-        'disabled_text' => $detailSettings['comments.disabled_text'] ?? 'Komentar dinonaktifkan.',
-    ];
-
-    $recommendationsSection = [
-        'visible' => ($detailSettings['recommendations.visible'] ?? '1') === '1' && $recommended->isNotEmpty(),
-        'heading' => $detailSettings['recommendations.heading'] ?? 'Artikel Lainnya',
-        'items' => $recommended->map(function ($item) {
-            $slug = $item['slug'] ?? null;
-            return [
-                'title' => $item['title'] ?? 'Artikel',
-                'date' => $item['date_formatted'] ?? null,
-                'url' => $slug ? route('articles.show', ['slug' => $slug]) : '#',
-            ];
-        })->values()->all(),
-    ];
-@endphp
 <div class="container-xxl position-relative p-0">
     @include('themeRestoran::components.nav-menu', [
         'brand' => $navigation['brand'],
@@ -136,7 +152,9 @@
         'cart' => $cartSummary,
     ])
 
-    @include('themeRestoran::components.article-detail.sections.hero', ['hero' => $heroSection])
+    @if($heroSection['visible'] ?? false)
+        @include('themeRestoran::components.article-detail.sections.hero', ['hero' => $heroSection])
+    @endif
 </div>
 
 <div id="content" class="container py-5">
@@ -144,11 +162,16 @@
         <div class="col-lg-8">
             @include('themeRestoran::components.article-detail.sections.content', [
                 'article' => $articleSection,
-                'comments' => $commentsSection,
             ])
+
+            @if($commentsSection['visible'] ?? false)
+                @include('themeRestoran::components.article-detail.sections.comments', ['comments' => $commentsSection])
+            @endif
         </div>
         <div class="col-lg-4">
-            @include('themeRestoran::components.article-detail.sections.recommendations', ['recommendations' => $recommendationsSection])
+            @if($recommendationsSection['visible'] ?? false)
+                @include('themeRestoran::components.article-detail.sections.recommendations', ['recommendations' => $recommendationsSection])
+            @endif
         </div>
     </div>
 </div>
