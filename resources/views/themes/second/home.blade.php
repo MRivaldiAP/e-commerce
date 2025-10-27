@@ -20,7 +20,8 @@
 @php
     use App\Models\PageSetting;
     use App\Models\Product;
-    $settings = PageSetting::forPage('home');
+    $themeName = $theme ?? 'theme-second';
+    $settings = PageSetting::forPage('home', $themeName);
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
     $services = json_decode($settings['services.items'] ?? '[]', true);
@@ -33,7 +34,7 @@
     $aboutImage = $settings['about.image'] ?? null;
 @endphp
 
-{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks])->render() !!}
+{!! view()->file(base_path('themes/theme-second/views/components/nav-menu.blade.php'), ['links' => $navLinks, 'theme' => $themeName])->render() !!}
 
 @if(($settings['hero.visible'] ?? '1') == '1')
 <section id="hero" class="hero">

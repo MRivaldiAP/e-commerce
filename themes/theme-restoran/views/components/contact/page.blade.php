@@ -6,7 +6,7 @@
     use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-restoran';
-    $pageSettings = PageSetting::forPage('contact');
+    $pageSettings = PageSetting::forPage('contact', $themeName);
     $settings = array_merge($pageSettings, $settings ?? []);
     $detailItems = json_decode($settings['details.items'] ?? '[]', true);
 

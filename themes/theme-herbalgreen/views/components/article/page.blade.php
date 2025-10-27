@@ -1,6 +1,6 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = $settings ?? \App\Models\PageSetting::forPage('article');
+    $settings = $settings ?? \App\Models\PageSetting::forPage('article', $themeName);
     $activeSections = \App\Support\PageElements::activeSectionKeys('article', $themeName, $settings);
     $articles = collect($articles ?? [])->filter(fn ($item) => !empty($item['slug'] ?? null));
     $timeline = collect($timeline ?? []);

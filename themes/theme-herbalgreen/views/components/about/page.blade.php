@@ -2,7 +2,7 @@
     use Illuminate\Support\Str;
 
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = \App\Models\PageSetting::forPage('about');
+    $settings = \App\Models\PageSetting::forPage('about', $themeName);
     $activeSections = \App\Support\PageElements::activeSectionKeys('about', $themeName, $settings);
     $teamMembers = json_decode($settings['team.members'] ?? '[]', true);
     if (! is_array($teamMembers)) {

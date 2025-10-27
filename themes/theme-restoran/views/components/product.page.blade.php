@@ -8,7 +8,7 @@
     use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-restoran';
-    $pageSettings = PageSetting::forPage('product');
+    $pageSettings = PageSetting::forPage('product', $themeName);
     $settings = array_merge($pageSettings, $settings ?? []);
 
     $query = Product::query()->with(['images', 'promotions']);
