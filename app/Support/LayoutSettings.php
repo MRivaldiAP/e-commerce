@@ -18,7 +18,7 @@ class LayoutSettings
     public static function get(string $theme): array
     {
         if (! array_key_exists($theme, self::$settingsCache)) {
-            self::$settingsCache[$theme] = PageSetting::forPage('layout');
+            self::$settingsCache[$theme] = PageSetting::forPage('layout', $theme);
         }
 
         return self::$settingsCache[$theme];
@@ -41,7 +41,7 @@ class LayoutSettings
             $brandIcon = $brandIconSettingExists ? null : 'fa fa-utensils';
         }
 
-        $articleDetailUrl = self::firstArticleDetailUrl();
+        $articleDetailUrl = self::firstArticleDetailUrl($theme);
 
         $links = [
             [
@@ -264,9 +264,9 @@ class LayoutSettings
         };
     }
 
-    protected static function firstArticleDetailUrl(): ?string
+    protected static function firstArticleDetailUrl(string $theme): ?string
     {
-        $articleSettings = PageSetting::forPage('article');
+        $articleSettings = PageSetting::forPage('article', $theme);
         $items = json_decode($articleSettings['articles.items'] ?? '[]', true);
 
         if (! is_array($items)) {

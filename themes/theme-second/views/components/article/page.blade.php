@@ -6,7 +6,7 @@
     use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-second';
-    $pageSettings = PageSetting::forPage('article');
+    $pageSettings = PageSetting::forPage('article', $themeName);
     $settings = array_merge($pageSettings, $settings ?? []);
     $meta = $meta ?? [];
     $articleCollection = collect($articles ?? [])->filter(fn ($item) => ! empty($item['slug'] ?? null));

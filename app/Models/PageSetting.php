@@ -6,27 +6,38 @@ use Illuminate\Database\Eloquent\Model;
 
 class PageSetting extends Model
 {
-    protected $fillable = ['page', 'key', 'value'];
+    protected $fillable = ['theme', 'page', 'key', 'value'];
 
     /**
-     * Retrieve settings for a page.
+     * Retrieve settings for a page, optionally scoped to a theme.
      */
-    public static function forPage(string $page): array
+    public static function forPage(string $page, ?string $theme = null): array
     {
-        return self::query()
-            ->where('page', $page)
-            ->pluck('value', 'key')
-            ->toArray();
+        $query = self::query()->where('page', $page);
+
+        if ($theme !== null) {
+            $query->where(function ($builder) use ($theme) {
+                $builder->where('theme', $theme)
+                    ->orWhereNull('theme');
+            })->orderByRaw('CASE WHEN theme = ? THEN 1 ELSE 0 END', [$theme]);
+        } else {
+            $query->whereNull('theme');
+        }
+
+        return $query->pluck('value', 'key')->toArray();
     }
 
     /**
      * Persist a page setting.
      */
-    public static function put(string $page, string $key, ?string $value): void
+    public static function put(string $page, string $key, ?string $value, ?string $theme = null): void
     {
-        self::updateOrCreate(
-            ['page' => $page, 'key' => $key],
-            ['value' => $value]
-        );
+        $attributes = [
+            'page' => $page,
+            'key' => $key,
+            'theme' => $theme ?: null,
+        ];
+
+        self::updateOrCreate($attributes, ['value' => $value]);
     }
 }

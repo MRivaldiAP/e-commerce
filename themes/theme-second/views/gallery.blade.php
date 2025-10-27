@@ -7,7 +7,7 @@
     use App\Models\GalleryItem;
 
     $themeName = $theme ?? 'theme-second';
-    $settings = PageSetting::forPage('gallery');
+    $settings = PageSetting::forPage('gallery', $themeName);
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
     $cartSummary = Cart::summary();

@@ -1,6 +1,6 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = \App\Models\PageSetting::forPage('gallery');
+    $settings = \App\Models\PageSetting::forPage('gallery', $themeName);
     $activeSections = \App\Support\PageElements::activeSectionKeys('gallery', $themeName, $settings);
     $navigation = \App\Support\LayoutSettings::navigation($themeName);
     $footerConfig = \App\Support\LayoutSettings::footer($themeName);

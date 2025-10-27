@@ -2,7 +2,7 @@
     use Illuminate\Support\Str;
 
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = \App\Models\PageSetting::forPage('contact');
+    $settings = \App\Models\PageSetting::forPage('contact', $themeName);
     $activeSections = \App\Support\PageElements::activeSectionKeys('contact', $themeName, $settings);
     $detailItems = json_decode($settings['details.items'] ?? '[]', true);
     if (! is_array($detailItems)) {

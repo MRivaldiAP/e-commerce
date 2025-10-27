@@ -25,7 +25,7 @@
     use Illuminate\Support\Str;
 
     $themeName = $theme ?? 'theme-second';
-    $settings = PageSetting::forPage('about');
+    $settings = PageSetting::forPage('about', $themeName);
     $teamMembers = json_decode($settings['team.members'] ?? '[]', true);
     $advantages = json_decode($settings['advantages.items'] ?? '[]', true);
     if (!is_array($teamMembers)) {
