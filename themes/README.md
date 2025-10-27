@@ -15,6 +15,21 @@ STRICT RULES
 4) Do not rename core classes or restructure nested elements unless strictly required to integrate with Blade.
 5) Convert only what’s needed to Blade (asset() paths, loops/vars). No framework-specific rewrites beyond that.
 
+## Default section compositions for Kelola Halaman
+
+`themes/element.php` defines the canonical section order for every editable page. Kelola Halaman loads these sequences as the default composition, and the **Reset Default** action restores the list below. Editors may remove any section from the active list or re-add available sections at any time.
+
+- **Home**: hero, about, products, testimonials, services, contact
+- **Product**: hero
+- **Product Detail**: hero, comments, recommendations
+- **Article**: hero, list, timeline
+- **Article Detail**: hero, meta, comments, recommendations
+- **Gallery**: hero, filters, grid
+- **Contact**: hero, details, social, map
+- **About**: hero, intro, quote, team, advantages
+- **Cart**: header, empty, actions
+- **Layout**: appearance, navigation, footer, floating
+
 PROMO DISPLAY RULES
 - Every product list (landing, detail recommendations, cart summary, shipping, payment) must surface an active promotion by showing the promo label badge and rendering the original price with a strike-through above the discounted price.
 - When no promotion is active or the promo period has ended, only the normal price should be shown and the promo badge must be hidden.
