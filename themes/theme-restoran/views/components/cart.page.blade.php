@@ -1,11 +1,25 @@
 @php
+    use App\Models\PageSetting;
+    use App\Support\Cart;
+    use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
+    use App\Support\PageElements;
+
     $themeName = $theme ?? 'theme-restoran';
+    $pageSettings = PageSetting::forPage('cart');
+    $incomingSettings = $settings ?? [];
+    if ($incomingSettings instanceof \Illuminate\Support\Collection) {
+        $incomingSettings = $incomingSettings->toArray();
+    } elseif (! is_array($incomingSettings)) {
+        $incomingSettings = [];
+    }
+    $settings = array_merge($pageSettings, $incomingSettings);
 @endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Keranjang</title>
+    <title>{{ $settings['title'] ?? 'Keranjang' }}</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link href="{{ asset('storage/themes/theme-restoran/img/favicon.ico') }}" rel="icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -156,11 +170,6 @@
 </head>
 <body>
 @php
-    use App\Support\Cart;
-    use App\Support\LayoutSettings;
-    use App\Support\ThemeMedia;
-
-    $settings = $settings ?? collect();
     $cartSummary = $cartSummary ?? Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
@@ -172,22 +181,25 @@
     $paymentLabel = $settings['button.payment'] ?? 'Lanjut ke Pembayaran';
     $primaryButton = $shippingEnabled ? $shippingLabel : $paymentLabel;
     $actionUrl = $shippingEnabled ? route('checkout.shipping') : route('checkout.payment');
-    $hasItems = !empty($cartSummary['items']);
+    $hasItems = ! empty($cartSummary['items']);
 
-    $heroVisible = ($settings['hero.visible'] ?? '1') === '1';
+    $activeSections = PageElements::activeSectionKeys($themeName, $settings);
+    $headerActive = in_array('header', $activeSections, true);
+    $emptyActive = in_array('empty', $activeSections, true);
+    $actionsActive = in_array('actions', $activeSections, true);
+
     $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
     $heroImage = ThemeMedia::url($settings['hero.image'] ?? null);
     $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+
     if (! $heroMaskEnabled) {
         $heroClasses .= ' hero-no-mask';
     }
-    $heroStyle = '';
+
     if ($heroImage) {
-        if ($heroMaskEnabled) {
-            $heroStyle = "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroImage}'); background-size: cover; background-position: center;";
-        } else {
-            $heroStyle = "background-image: url('{$heroImage}'); background-size: cover; background-position: center;";
-        }
+        $heroStyle = $heroMaskEnabled
+            ? "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroImage}'); background-size: cover; background-position: center;"
+            : "background-image: url('{$heroImage}'); background-size: cover; background-position: center;";
     } else {
         $heroStyle = $heroMaskEnabled
             ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
@@ -203,13 +215,13 @@
         'showLogin' => $navigation['show_login'],
         'cart' => $cartSummary,
     ])
-    @if($heroVisible)
-    <div id="hero" class="{{ $heroClasses }}" style="{{ $heroStyle }}">
-        <div class="container text-center my-5 pt-5 pb-4">
-            <h1 class="display-3 text-white mb-3">{{ $title }}</h1>
-            <p class="text-white-50 mb-0">{{ $subtitle }}</p>
+    @if($headerActive)
+        <div id="hero" class="{{ $heroClasses }}" style="{{ $heroStyle }}">
+            <div class="container text-center my-5 pt-5 pb-4">
+                <h1 class="display-3 text-white mb-3">{{ $title }}</h1>
+                <p class="text-white-50 mb-0">{{ $subtitle }}</p>
+            </div>
         </div>
-    </div>
     @endif
 </div>
 
@@ -269,31 +281,35 @@
                 </tbody>
             </table>
         </div>
-        <div class="row g-4 align-items-center">
-            <div class="col-lg-6">
-                <div class="cart-feedback" data-cart-status></div>
-                <a href="{{ url('/produk') }}" class="btn btn-outline-primary">Lanjut Belanja</a>
-            </div>
-            <div class="col-lg-6 text-lg-end">
-                <div class="d-inline-flex flex-column align-items-end gap-3">
-                    <div class="cart-total-meta {{ ($cartSummary['discount_total'] ?? 0) > 0 ? '' : 'd-none' }}" data-cart-original-wrapper>
-                        Harga Normal: Rp <span data-cart-original-total>{{ $cartSummary['original_total_formatted'] }}</span>
+        @if($actionsActive)
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-6">
+                    <div class="cart-feedback" data-cart-status></div>
+                    <a href="{{ url('/produk') }}" class="btn btn-outline-primary">Lanjut Belanja</a>
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    <div class="d-inline-flex flex-column align-items-end gap-3">
+                        <div class="cart-total-meta {{ ($cartSummary['discount_total'] ?? 0) > 0 ? '' : 'd-none' }}" data-cart-original-wrapper>
+                            Harga Normal: Rp <span data-cart-original-total>{{ $cartSummary['original_total_formatted'] }}</span>
+                        </div>
+                        <div class="cart-total-meta text-success {{ ($cartSummary['discount_total'] ?? 0) > 0 ? '' : 'd-none' }}" data-cart-discount-wrapper>
+                            Hemat Promo: -Rp <span data-cart-discount-total>{{ $cartSummary['discount_total_formatted'] }}</span>
+                        </div>
+                        <div class="fs-4 fw-bold">Total: Rp <span data-cart-grand-total>{{ $cartSummary['total_price_formatted'] }}</span></div>
+                        <a href="{{ $actionUrl }}" class="btn btn-primary btn-lg {{ empty($cartSummary['items']) ? 'disabled' : '' }}" data-cart-action aria-disabled="{{ empty($cartSummary['items']) ? 'true' : 'false' }}" tabindex="{{ empty($cartSummary['items']) ? '-1' : '0' }}">{{ $primaryButton }}</a>
                     </div>
-                    <div class="cart-total-meta text-success {{ ($cartSummary['discount_total'] ?? 0) > 0 ? '' : 'd-none' }}" data-cart-discount-wrapper>
-                        Hemat Promo: -Rp <span data-cart-discount-total>{{ $cartSummary['discount_total_formatted'] }}</span>
-                    </div>
-                    <div class="fs-4 fw-bold">Total: Rp <span data-cart-grand-total>{{ $cartSummary['total_price_formatted'] }}</span></div>
-                    <a href="{{ $actionUrl }}" class="btn btn-primary btn-lg {{ empty($cartSummary['items']) ? 'disabled' : '' }}" data-cart-action aria-disabled="{{ empty($cartSummary['items']) ? 'true' : 'false' }}" tabindex="{{ empty($cartSummary['items']) ? '-1' : '0' }}">{{ $primaryButton }}</a>
                 </div>
             </div>
+        @endif
+    </div>
+    @if($emptyActive)
+        <div id="cart-empty" class="cart-empty" @class(['d-none' => !empty($cartSummary['items'])]) style="{{ $hasItems ? 'display:none;' : '' }}">
+            <h3 class="mb-3">{{ $title }}</h3>
+            <p class="text-muted">{{ $subtitle }}</p>
+            <p>{{ $emptyMessage }}</p>
+            <a href="{{ url('/produk') }}" class="btn btn-primary">{{ $emptyButton }}</a>
         </div>
-    </div>
-    <div id="cart-empty" class="cart-empty" @class(['d-none' => !empty($cartSummary['items'])]) style="{{ $hasItems ? 'display:none;' : '' }}">
-        <h3 class="mb-3">{{ $title }}</h3>
-        <p class="text-muted">{{ $subtitle }}</p>
-        <p>{{ $emptyMessage }}</p>
-        <a href="{{ url('/produk') }}" class="btn btn-primary">{{ $emptyButton }}</a>
-    </div>
+    @endif
 </div>
 
 @include('themeRestoran::components.footer', ['footer' => $footerConfig])

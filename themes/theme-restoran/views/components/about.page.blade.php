@@ -1,5 +1,88 @@
 @php
+    use App\Models\PageSetting;
+    use App\Support\Cart;
+    use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
+    use App\Support\PageElements;
+
     $themeName = $theme ?? 'theme-restoran';
+    $pageSettings = PageSetting::forPage('about');
+    $settings = array_merge($pageSettings, $settings ?? []);
+    $teamMembers = json_decode($settings['team.members'] ?? '[]', true);
+    $advantages = json_decode($settings['advantages.items'] ?? '[]', true);
+
+    if (! is_array($teamMembers)) {
+        $teamMembers = [];
+    }
+
+    if (! is_array($advantages)) {
+        $advantages = [];
+    }
+
+    $cartSummary = Cart::summary();
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
+
+    $activeSections = PageElements::activeSectionKeys($themeName, $settings);
+    $heroActive = in_array('hero', $activeSections, true);
+    $introActive = in_array('intro', $activeSections, true);
+    $quoteActive = in_array('quote', $activeSections, true);
+    $teamActive = in_array('team', $activeSections, true);
+    $advantagesActive = in_array('advantages', $activeSections, true);
+
+    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
+    $heroBackground = ThemeMedia::url($settings['hero.background'] ?? null);
+    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+
+    if (! $heroMaskEnabled) {
+        $heroClasses .= ' hero-no-mask';
+    }
+
+    if ($heroBackground) {
+        $heroStyle = $heroMaskEnabled
+            ? "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroBackground}'); background-size: cover; background-position: center;"
+            : "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
+            : 'background: var(--theme-accent);';
+    }
+
+    $heroSection = [
+        'visible' => $heroActive && ($settings['hero.visible'] ?? '1') === '1',
+        'classes' => $heroClasses,
+        'style' => $heroStyle,
+        'heading' => $settings['hero.heading'] ?? 'Tentang Kami',
+        'text' => $settings['hero.text'] ?? null,
+    ];
+
+    $introSection = [
+        'visible' => $introActive && ($settings['intro.visible'] ?? '1') === '1',
+        'image' => ThemeMedia::url($settings['intro.image'] ?? null),
+        'heading' => $settings['intro.heading'] ?? 'Cerita Kami',
+        'description' => $settings['intro.description'] ?? 'Kami menyajikan pengalaman kuliner terbaik dengan bahan pilihan dan layanan penuh kehangatan.',
+        'badge' => $settings['hero.heading'] ?? 'Tentang Kami',
+    ];
+
+    $quoteSection = [
+        'visible' => $quoteActive && ($settings['quote.visible'] ?? '1') === '1' && ! empty($settings['quote.text']),
+        'text' => $settings['quote.text'] ?? null,
+        'author' => $settings['quote.author'] ?? null,
+    ];
+
+    $teamSection = [
+        'visible' => $teamActive && ($settings['team.visible'] ?? '1') === '1' && count($teamMembers),
+        'heading' => $settings['team.heading'] ?? 'Tim Kami',
+        'description' => $settings['team.description'] ?? null,
+        'members' => $teamMembers,
+    ];
+
+    $advantagesSection = [
+        'visible' => $advantagesActive && ($settings['advantages.visible'] ?? '1') === '1' && count($advantages),
+        'heading' => $settings['advantages.heading'] ?? 'Keunggulan Kami',
+        'description' => $settings['advantages.description'] ?? null,
+        'items' => $advantages,
+    ];
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -26,78 +109,6 @@
     </style>
 </head>
 <body>
-@php
-    use App\Models\PageSetting;
-    use App\Support\Cart;
-    use App\Support\LayoutSettings;
-    use App\Support\ThemeMedia;
-
-    $settings = PageSetting::forPage('about');
-    $teamMembers = json_decode($settings['team.members'] ?? '[]', true);
-    $advantages = json_decode($settings['advantages.items'] ?? '[]', true);
-    if (!is_array($teamMembers)) {
-        $teamMembers = [];
-    }
-    if (!is_array($advantages)) {
-        $advantages = [];
-    }
-
-    $cartSummary = Cart::summary();
-    $navigation = LayoutSettings::navigation($themeName);
-    $footerConfig = LayoutSettings::footer($themeName);
-
-    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
-    $heroBackground = ThemeMedia::url($settings['hero.background'] ?? null);
-    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
-    if (! $heroMaskEnabled) {
-        $heroClasses .= ' hero-no-mask';
-    }
-    if ($heroBackground) {
-        $heroStyle = $heroMaskEnabled
-            ? "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroBackground}'); background-size: cover; background-position: center;"
-            : "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
-    } else {
-        $heroStyle = $heroMaskEnabled
-            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
-            : 'background: var(--theme-accent);';
-    }
-
-    $heroSection = [
-        'visible' => ($settings['hero.visible'] ?? '1') === '1',
-        'classes' => $heroClasses,
-        'style' => $heroStyle,
-        'heading' => $settings['hero.heading'] ?? 'Tentang Kami',
-        'text' => $settings['hero.text'] ?? null,
-    ];
-
-    $introSection = [
-        'visible' => ($settings['intro.visible'] ?? '1') === '1',
-        'image' => ThemeMedia::url($settings['intro.image'] ?? null),
-        'heading' => $settings['intro.heading'] ?? 'Cerita Kami',
-        'description' => $settings['intro.description'] ?? 'Kami menyajikan pengalaman kuliner terbaik dengan bahan pilihan dan layanan penuh kehangatan.',
-        'badge' => $settings['hero.heading'] ?? 'Tentang Kami',
-    ];
-
-    $quoteSection = [
-        'visible' => ($settings['quote.visible'] ?? '1') === '1' && ! empty($settings['quote.text']),
-        'text' => $settings['quote.text'] ?? null,
-        'author' => $settings['quote.author'] ?? null,
-    ];
-
-    $teamSection = [
-        'visible' => ($settings['team.visible'] ?? '1') === '1' && count($teamMembers),
-        'heading' => $settings['team.heading'] ?? 'Tim Kami',
-        'description' => $settings['team.description'] ?? null,
-        'members' => $teamMembers,
-    ];
-
-    $advantagesSection = [
-        'visible' => ($settings['advantages.visible'] ?? '1') === '1' && count($advantages),
-        'heading' => $settings['advantages.heading'] ?? 'Keunggulan Kami',
-        'description' => $settings['advantages.description'] ?? null,
-        'items' => $advantages,
-    ];
-@endphp
 <div class="container-xxl position-relative p-0">
     @include('themeRestoran::components.nav-menu', [
         'brand' => $navigation['brand'],
@@ -107,16 +118,26 @@
         'cart' => $cartSummary,
     ])
 
-    @include('themeRestoran::components.about.sections.hero', ['hero' => $heroSection])
+    @if($heroSection['visible'] ?? false)
+        @include('themeRestoran::components.about.sections.hero', ['hero' => $heroSection])
+    @endif
 </div>
 
-@include('themeRestoran::components.about.sections.intro', ['intro' => $introSection])
+@if($introSection['visible'] ?? false)
+    @include('themeRestoran::components.about.sections.intro', ['intro' => $introSection])
+@endif
 
-@include('themeRestoran::components.about.sections.quote', ['quote' => $quoteSection])
+@if($quoteSection['visible'] ?? false)
+    @include('themeRestoran::components.about.sections.quote', ['quote' => $quoteSection])
+@endif
 
-@include('themeRestoran::components.about.sections.team', ['team' => $teamSection])
+@if($teamSection['visible'] ?? false)
+    @include('themeRestoran::components.about.sections.team', ['team' => $teamSection])
+@endif
 
-@include('themeRestoran::components.about.sections.advantages', ['advantages' => $advantagesSection])
+@if($advantagesSection['visible'] ?? false)
+    @include('themeRestoran::components.about.sections.advantages', ['advantages' => $advantagesSection])
+@endif
 
 @include('themeRestoran::components.footer', ['footer' => $footerConfig])
 

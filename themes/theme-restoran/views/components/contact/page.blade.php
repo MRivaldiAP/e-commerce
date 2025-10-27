@@ -1,38 +1,57 @@
 @php
+    use App\Models\PageSetting;
+    use App\Support\Cart;
+    use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
+    use App\Support\PageElements;
+
     $themeName = $theme ?? 'theme-restoran';
-    $settings = \App\Models\PageSetting::forPage('contact');
+    $pageSettings = PageSetting::forPage('contact');
+    $settings = array_merge($pageSettings, $settings ?? []);
     $detailItems = json_decode($settings['details.items'] ?? '[]', true);
+
     if (! is_array($detailItems)) {
         $detailItems = [];
     }
+
     $socialItems = json_decode($settings['social.items'] ?? '[]', true);
+
     if (! is_array($socialItems)) {
         $socialItems = [];
     }
-    $cartSummary = \App\Support\Cart::summary();
-    $navigation = \App\Support\LayoutSettings::navigation($themeName);
-    $footerConfig = \App\Support\LayoutSettings::footer($themeName);
+
+    $cartSummary = Cart::summary();
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
+
+    $activeSections = PageElements::activeSectionKeys($themeName, $settings);
+    $heroActive = in_array('hero', $activeSections, true);
+    $detailsActive = in_array('details', $activeSections, true);
+    $socialActive = in_array('social', $activeSections, true);
+    $mapActive = in_array('map', $activeSections, true);
+
     $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
-    $heroBackground = \App\Support\ThemeMedia::url($settings['hero.background'] ?? null);
+    $heroBackground = ThemeMedia::url($settings['hero.background'] ?? null);
     $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+
     if (! $heroMaskEnabled) {
         $heroClasses .= ' hero-no-mask';
     }
-    $heroStyle = '';
+
     if ($heroBackground) {
-        if ($heroMaskEnabled) {
-            $heroStyle = "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.88), rgba(var(--theme-accent-rgb), 0.88)), url('{$heroBackground}'); background-size: cover; background-position: center;";
-        } else {
-            $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
-        }
+        $heroStyle = $heroMaskEnabled
+            ? "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.88), rgba(var(--theme-accent-rgb), 0.88)), url('{$heroBackground}'); background-size: cover; background-position: center;"
+            : "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
     } else {
         $heroStyle = $heroMaskEnabled
             ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.88), rgba(var(--theme-accent-rgb), 0.88));'
             : 'background: var(--theme-accent);';
     }
-    $visibleSocials = collect($socialItems)->filter(function ($item) {
+
+    $visibleSocials = collect($socialItems)->filter(static function ($item) {
         return ($item['visible'] ?? '1') !== '0';
     });
+
     $mapEmbed = $settings['map.embed'] ?? '';
 @endphp
 <!DOCTYPE html>
@@ -73,27 +92,36 @@
             'showLogin' => $navigation['show_login'],
             'cart' => $cartSummary,
         ])
-        @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeRestoran::components.contact.sections.hero', [
-            'settings' => $settings,
-            'heroClasses' => $heroClasses,
-            'heroStyle' => $heroStyle,
-        ])
+
+        @if($heroActive && ($settings['hero.visible'] ?? '1') === '1')
+            @include('themeRestoran::components.contact.sections.hero', [
+                'settings' => $settings,
+                'heroClasses' => $heroClasses,
+                'heroStyle' => $heroStyle,
+            ])
+        @endif
     </div>
 
-    @includeWhen(($settings['details.visible'] ?? '1') == '1', 'themeRestoran::components.contact.sections.details', [
-        'settings' => $settings,
-        'detailItems' => $detailItems,
-    ])
+    @if($detailsActive && ($settings['details.visible'] ?? '1') === '1')
+        @include('themeRestoran::components.contact.sections.details', [
+            'settings' => $settings,
+            'detailItems' => $detailItems,
+        ])
+    @endif
 
-    @includeWhen(($settings['social.visible'] ?? '1') == '1', 'themeRestoran::components.contact.sections.social', [
-        'settings' => $settings,
-        'socialItems' => $visibleSocials,
-    ])
+    @if($socialActive && ($settings['social.visible'] ?? '1') === '1')
+        @include('themeRestoran::components.contact.sections.social', [
+            'settings' => $settings,
+            'socialItems' => $visibleSocials,
+        ])
+    @endif
 
-    @includeWhen(($settings['map.visible'] ?? '1') == '1' && ! empty($mapEmbed), 'themeRestoran::components.contact.sections.map', [
-        'settings' => $settings,
-        'mapEmbed' => $mapEmbed,
-    ])
+    @if($mapActive && ($settings['map.visible'] ?? '1') === '1' && ! empty($mapEmbed))
+        @include('themeRestoran::components.contact.sections.map', [
+            'settings' => $settings,
+            'mapEmbed' => $mapEmbed,
+        ])
+    @endif
 
     @include('themeRestoran::components.footer', ['footer' => $footerConfig])
     @include('themeRestoran::components.floating-contact-buttons', ['theme' => $themeName])

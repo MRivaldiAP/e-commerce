@@ -115,4 +115,80 @@ class PageElements
 
         unset(self::$availabilityCache[$theme]);
     }
+
+    /**
+     * Resolve the active section keys for a page based on stored settings.
+     *
+     * @param array<string, mixed> $pageSettings
+     * @return array<int, string>
+     */
+    public static function activeSectionKeys(string $theme, array $pageSettings = []): array
+    {
+        $definitions = self::definitions();
+        $availability = self::availability($theme);
+
+        $availableSectionKeys = [];
+        foreach ($availability as $pageAvailability) {
+            foreach (array_keys($pageAvailability) as $sectionKey) {
+                $availableSectionKeys[$sectionKey] = true;
+            }
+        }
+
+        $defaultOrder = [];
+
+        foreach ($definitions as $definition) {
+            $sections = $definition['sections'] ?? [];
+            if (! is_array($sections)) {
+                continue;
+            }
+
+            foreach (array_keys($sections) as $sectionKey) {
+                if ($availableSectionKeys !== [] && ! array_key_exists($sectionKey, $availableSectionKeys)) {
+                    continue;
+                }
+
+                if (! in_array($sectionKey, $defaultOrder, true)) {
+                    $defaultOrder[] = $sectionKey;
+                }
+            }
+        }
+
+        if ($defaultOrder === [] && $availableSectionKeys !== []) {
+            $defaultOrder = array_keys($availableSectionKeys);
+        }
+
+        $rawComposition = $pageSettings['__sections'] ?? null;
+        $composition = [];
+        $hasCustomComposition = false;
+
+        if (is_string($rawComposition) && $rawComposition !== '') {
+            $decoded = json_decode($rawComposition, true);
+            if (is_array($decoded)) {
+                $hasCustomComposition = true;
+
+                foreach ($decoded as $key) {
+                    if (! is_string($key)) {
+                        continue;
+                    }
+
+                    if (
+                        ($availableSectionKeys === [] || array_key_exists($key, $availableSectionKeys))
+                        && ! in_array($key, $composition, true)
+                    ) {
+                        $composition[] = $key;
+                    }
+                }
+
+                if ($decoded !== [] && $composition === []) {
+                    $hasCustomComposition = false;
+                }
+            }
+        }
+
+        if ($composition === []) {
+            $composition = $hasCustomComposition ? [] : $defaultOrder;
+        }
+
+        return $composition;
+    }
 }

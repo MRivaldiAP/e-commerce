@@ -3,6 +3,7 @@
 
     $themeName = $theme ?? 'theme-herbalgreen';
     $settings = \App\Models\PageSetting::forPage('about');
+    $activeSections = \App\Support\PageElements::activeSectionKeys($themeName, $settings);
     $teamMembers = json_decode($settings['team.members'] ?? '[]', true);
     if (! is_array($teamMembers)) {
         $teamMembers = [];
@@ -43,30 +44,44 @@
         'cart' => $cartSummary,
     ])
 
-    @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.about.sections.hero', [
-        'settings' => $settings,
-        'resolveMedia' => $resolveMedia,
-    ])
+    @foreach ($activeSections as $sectionKey)
+        @switch($sectionKey)
+            @case('hero')
+                @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.about.sections.hero', [
+                    'settings' => $settings,
+                    'resolveMedia' => $resolveMedia,
+                ])
+                @break
 
-    @includeWhen(($settings['intro.visible'] ?? '1') == '1', 'themeHerbalGreen::components.about.sections.intro', [
-        'settings' => $settings,
-        'resolveMedia' => $resolveMedia,
-    ])
+            @case('intro')
+                @includeWhen(($settings['intro.visible'] ?? '1') == '1', 'themeHerbalGreen::components.about.sections.intro', [
+                    'settings' => $settings,
+                    'resolveMedia' => $resolveMedia,
+                ])
+                @break
 
-    @includeWhen(($settings['quote.visible'] ?? '1') == '1' && !empty($settings['quote.text']), 'themeHerbalGreen::components.about.sections.quote', [
-        'settings' => $settings,
-    ])
+            @case('quote')
+                @includeWhen(($settings['quote.visible'] ?? '1') == '1' && !empty($settings['quote.text']), 'themeHerbalGreen::components.about.sections.quote', [
+                    'settings' => $settings,
+                ])
+                @break
 
-    @includeWhen(($settings['team.visible'] ?? '1') == '1' && count($teamMembers), 'themeHerbalGreen::components.about.sections.team', [
-        'settings' => $settings,
-        'teamMembers' => $teamMembers,
-        'resolveMedia' => $resolveMedia,
-    ])
+            @case('team')
+                @includeWhen(($settings['team.visible'] ?? '1') == '1' && count($teamMembers), 'themeHerbalGreen::components.about.sections.team', [
+                    'settings' => $settings,
+                    'teamMembers' => $teamMembers,
+                    'resolveMedia' => $resolveMedia,
+                ])
+                @break
 
-    @includeWhen(($settings['advantages.visible'] ?? '1') == '1' && count($advantages), 'themeHerbalGreen::components.about.sections.advantages', [
-        'settings' => $settings,
-        'advantages' => $advantages,
-    ])
+            @case('advantages')
+                @includeWhen(($settings['advantages.visible'] ?? '1') == '1' && count($advantages), 'themeHerbalGreen::components.about.sections.advantages', [
+                    'settings' => $settings,
+                    'advantages' => $advantages,
+                ])
+                @break
+        @endswitch
+    @endforeach
 
     @include('themeHerbalGreen::components.footer', ['footer' => $footerConfig])
     @include('themeHerbalGreen::components.floating-contact-buttons', ['theme' => $themeName])

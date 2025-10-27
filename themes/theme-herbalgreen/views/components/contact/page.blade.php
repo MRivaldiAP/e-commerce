@@ -3,6 +3,7 @@
 
     $themeName = $theme ?? 'theme-herbalgreen';
     $settings = \App\Models\PageSetting::forPage('contact');
+    $activeSections = \App\Support\PageElements::activeSectionKeys($themeName, $settings);
     $detailItems = json_decode($settings['details.items'] ?? '[]', true);
     if (! is_array($detailItems)) {
         $detailItems = [];
@@ -151,25 +152,37 @@
         'cart' => $cartSummary,
     ])
 
-    @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.contact.sections.hero', [
-        'settings' => $settings,
-        'heroStyle' => $heroStyle,
-    ])
+    @foreach ($activeSections as $sectionKey)
+        @switch($sectionKey)
+            @case('hero')
+                @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.contact.sections.hero', [
+                    'settings' => $settings,
+                    'heroStyle' => $heroStyle,
+                ])
+                @break
 
-    @includeWhen(($settings['details.visible'] ?? '1') == '1', 'themeHerbalGreen::components.contact.sections.details', [
-        'settings' => $settings,
-        'detailItems' => $detailItems,
-    ])
+            @case('details')
+                @includeWhen(($settings['details.visible'] ?? '1') == '1', 'themeHerbalGreen::components.contact.sections.details', [
+                    'settings' => $settings,
+                    'detailItems' => $detailItems,
+                ])
+                @break
 
-    @includeWhen(($settings['social.visible'] ?? '1') == '1', 'themeHerbalGreen::components.contact.sections.social', [
-        'settings' => $settings,
-        'socialItems' => $visibleSocials,
-    ])
+            @case('social')
+                @includeWhen(($settings['social.visible'] ?? '1') == '1', 'themeHerbalGreen::components.contact.sections.social', [
+                    'settings' => $settings,
+                    'socialItems' => $visibleSocials,
+                ])
+                @break
 
-    @includeWhen(($settings['map.visible'] ?? '1') == '1' && ! empty($mapEmbed), 'themeHerbalGreen::components.contact.sections.map', [
-        'settings' => $settings,
-        'mapEmbed' => $mapEmbed,
-    ])
+            @case('map')
+                @includeWhen(($settings['map.visible'] ?? '1') == '1' && ! empty($mapEmbed), 'themeHerbalGreen::components.contact.sections.map', [
+                    'settings' => $settings,
+                    'mapEmbed' => $mapEmbed,
+                ])
+                @break
+        @endswitch
+    @endforeach
 
     @include('themeHerbalGreen::components.footer', ['footer' => $footerConfig])
     @include('themeHerbalGreen::components.floating-contact-buttons', ['theme' => $themeName])

@@ -1,6 +1,7 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
     $settings = \App\Models\PageSetting::forPage('product-detail');
+    $activeSections = \App\Support\PageElements::activeSectionKeys($themeName, $settings);
     $navigation = \App\Support\LayoutSettings::navigation($themeName);
     $footerConfig = \App\Support\LayoutSettings::footer($themeName);
     $cartSummary = \App\Support\Cart::summary();
@@ -53,30 +54,74 @@
         'cart' => $cartSummary,
     ])
 
-    @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.product-detail.sections.hero', [
-        'settings' => $settings,
-        'product' => $product,
-        'heroImage' => $heroImage,
-    ])
+    @php($detailsRendered = false)
+    @foreach ($activeSections as $sectionKey)
+        @switch($sectionKey)
+            @case('hero')
+                @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.product-detail.sections.hero', [
+                    'settings' => $settings,
+                    'product' => $product,
+                    'heroImage' => $heroImage,
+                ])
+                @include('themeHerbalGreen::components.product-detail.sections.details', [
+                    'product' => $product,
+                    'productHasPromo' => $productHasPromo,
+                    'productPromotion' => $productPromotion,
+                    'productFinalPrice' => $productFinalPrice,
+                    'mainImageUrl' => $mainImageUrl,
+                    'imageSources' => $imageSources,
+                ])
+                @php($detailsRendered = true)
+                @break
 
-    @include('themeHerbalGreen::components.product-detail.sections.details', [
-        'product' => $product,
-        'productHasPromo' => $productHasPromo,
-        'productPromotion' => $productPromotion,
-        'productFinalPrice' => $productFinalPrice,
-        'mainImageUrl' => $mainImageUrl,
-        'imageSources' => $imageSources,
-    ])
+            @case('comments')
+                @if (! $detailsRendered)
+                    @include('themeHerbalGreen::components.product-detail.sections.details', [
+                        'product' => $product,
+                        'productHasPromo' => $productHasPromo,
+                        'productPromotion' => $productPromotion,
+                        'productFinalPrice' => $productFinalPrice,
+                        'mainImageUrl' => $mainImageUrl,
+                        'imageSources' => $imageSources,
+                    ])
+                    @php($detailsRendered = true)
+                @endif
+                @includeWhen(($settings['comments.visible'] ?? '1') == '1', 'themeHerbalGreen::components.product-detail.sections.comments', [
+                    'settings' => $settings,
+                    'comments' => $comments,
+                ])
+                @break
 
-    @includeWhen(($settings['comments.visible'] ?? '1') == '1', 'themeHerbalGreen::components.product-detail.sections.comments', [
-        'settings' => $settings,
-        'comments' => $comments,
-    ])
+            @case('recommendations')
+                @if (! $detailsRendered)
+                    @include('themeHerbalGreen::components.product-detail.sections.details', [
+                        'product' => $product,
+                        'productHasPromo' => $productHasPromo,
+                        'productPromotion' => $productPromotion,
+                        'productFinalPrice' => $productFinalPrice,
+                        'mainImageUrl' => $mainImageUrl,
+                        'imageSources' => $imageSources,
+                    ])
+                    @php($detailsRendered = true)
+                @endif
+                @includeWhen(($settings['recommendations.visible'] ?? '1') == '1' && $recommendations->count(), 'themeHerbalGreen::components.product-detail.sections.recommendations', [
+                    'settings' => $settings,
+                    'recommendations' => $recommendations,
+                ])
+                @break
+        @endswitch
+    @endforeach
 
-    @includeWhen(($settings['recommendations.visible'] ?? '1') == '1' && $recommendations->count(), 'themeHerbalGreen::components.product-detail.sections.recommendations', [
-        'settings' => $settings,
-        'recommendations' => $recommendations,
-    ])
+    @if (! $detailsRendered)
+        @include('themeHerbalGreen::components.product-detail.sections.details', [
+            'product' => $product,
+            'productHasPromo' => $productHasPromo,
+            'productPromotion' => $productPromotion,
+            'productFinalPrice' => $productFinalPrice,
+            'mainImageUrl' => $mainImageUrl,
+            'imageSources' => $imageSources,
+        ])
+    @endif
 
     @include('themeHerbalGreen::components.footer', ['footer' => $footerConfig])
     @include('themeHerbalGreen::components.floating-contact-buttons', ['theme' => $themeName])

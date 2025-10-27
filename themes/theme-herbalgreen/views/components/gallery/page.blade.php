@@ -1,6 +1,7 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
     $settings = \App\Models\PageSetting::forPage('gallery');
+    $activeSections = \App\Support\PageElements::activeSectionKeys($themeName, $settings);
     $navigation = \App\Support\LayoutSettings::navigation($themeName);
     $footerConfig = \App\Support\LayoutSettings::footer($themeName);
     $cartSummary = \App\Support\Cart::summary();
@@ -31,17 +32,47 @@
         'cart' => $cartSummary,
     ])
 
-    @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.gallery.sections.hero', [
-        'settings' => $settings,
-        'heroBackground' => $heroBackground,
-    ])
+    @php
+        $showFiltersSection = in_array('filters', $activeSections, true);
+        $showGridSection = in_array('grid', $activeSections, true);
+        $renderSections = [];
+        $listInserted = false;
+        foreach ($activeSections as $sectionKey) {
+            if (in_array($sectionKey, ['filters', 'grid'], true)) {
+                if (! $listInserted && ($showFiltersSection || $showGridSection)) {
+                    $renderSections[] = 'list';
+                    $listInserted = true;
+                }
+            } else {
+                $renderSections[] = $sectionKey;
+            }
+        }
+        if (! $listInserted && ($showFiltersSection || $showGridSection)) {
+            $renderSections[] = 'list';
+        }
+    @endphp
 
-    @include('themeHerbalGreen::components.gallery.sections.list', [
-        'settings' => $settings,
-        'categoryCollection' => $categoryCollection,
-        'itemCollection' => $itemCollection,
-        'hasUncategorized' => $hasUncategorized,
-    ])
+    @foreach ($renderSections as $sectionKey)
+        @switch($sectionKey)
+            @case('hero')
+                @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.gallery.sections.hero', [
+                    'settings' => $settings,
+                    'heroBackground' => $heroBackground,
+                ])
+                @break
+
+            @case('list')
+                @includeWhen($showFiltersSection || $showGridSection, 'themeHerbalGreen::components.gallery.sections.list', [
+                    'settings' => $settings,
+                    'categoryCollection' => $categoryCollection,
+                    'itemCollection' => $itemCollection,
+                    'hasUncategorized' => $hasUncategorized,
+                    'showFiltersSection' => $showFiltersSection,
+                    'showGridSection' => $showGridSection,
+                ])
+                @break
+        @endswitch
+    @endforeach
 
     @include('themeHerbalGreen::components.footer', ['footer' => $footerConfig])
     @include('themeHerbalGreen::components.floating-contact-buttons', ['theme' => $themeName])

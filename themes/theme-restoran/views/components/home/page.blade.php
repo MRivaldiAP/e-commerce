@@ -1,6 +1,7 @@
 @php
     $themeName = $theme ?? 'theme-restoran';
     $settings = \App\Models\PageSetting::forPage('home');
+    $activeSections = \App\Support\PageElements::activeSectionKeys($themeName, $settings);
     $products = \App\Models\Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
     if (! is_array($testimonials)) {
@@ -71,35 +72,53 @@
             'showLogin' => $navigation['show_login'],
             'cart' => $cartSummary,
         ])
-        @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeRestoran::components.home.sections.hero', [
-            'settings' => $settings,
-            'heroClasses' => $heroClasses,
-            'heroStyle' => $heroStyle,
-            'heroSpinImage' => $heroSpinImage,
-        ])
+        @foreach ($activeSections as $sectionKey)
+            @if($sectionKey === 'hero')
+                @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeRestoran::components.home.sections.hero', [
+                    'settings' => $settings,
+                    'heroClasses' => $heroClasses,
+                    'heroStyle' => $heroStyle,
+                    'heroSpinImage' => $heroSpinImage,
+                ])
+            @endif
+        @endforeach
     </div>
 
-    @includeWhen(($settings['services.visible'] ?? '1') == '1' && count($services), 'themeRestoran::components.home.sections.services', [
-        'services' => $services,
-    ])
+    @foreach ($activeSections as $sectionKey)
+        @switch($sectionKey)
+            @case('services')
+                @includeWhen(($settings['services.visible'] ?? '1') == '1' && count($services), 'themeRestoran::components.home.sections.services', [
+                    'services' => $services,
+                ])
+                @break
 
-    @includeWhen(($settings['about.visible'] ?? '1') == '1', 'themeRestoran::components.home.sections.about', [
-        'settings' => $settings,
-        'aboutImage' => $aboutImage,
-    ])
+            @case('about')
+                @includeWhen(($settings['about.visible'] ?? '1') == '1', 'themeRestoran::components.home.sections.about', [
+                    'settings' => $settings,
+                    'aboutImage' => $aboutImage,
+                ])
+                @break
 
-    @includeWhen(($settings['products.visible'] ?? '1') == '1', 'themeRestoran::components.home.sections.products', [
-        'settings' => $settings,
-        'products' => $products,
-    ])
+            @case('products')
+                @includeWhen(($settings['products.visible'] ?? '1') == '1', 'themeRestoran::components.home.sections.products', [
+                    'settings' => $settings,
+                    'products' => $products,
+                ])
+                @break
 
-    @includeWhen(($settings['testimonials.visible'] ?? '1') == '1' && count($testimonials), 'themeRestoran::components.home.sections.testimonials', [
-        'testimonials' => $testimonials,
-    ])
+            @case('testimonials')
+                @includeWhen(($settings['testimonials.visible'] ?? '1') == '1' && count($testimonials), 'themeRestoran::components.home.sections.testimonials', [
+                    'testimonials' => $testimonials,
+                ])
+                @break
 
-    @includeWhen(($settings['contact.visible'] ?? '1') == '1', 'themeRestoran::components.home.sections.contact', [
-        'settings' => $settings,
-    ])
+            @case('contact')
+                @includeWhen(($settings['contact.visible'] ?? '1') == '1', 'themeRestoran::components.home.sections.contact', [
+                    'settings' => $settings,
+                ])
+                @break
+        @endswitch
+    @endforeach
 
     @include('themeRestoran::components.footer', ['footer' => $footerConfig])
     <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
