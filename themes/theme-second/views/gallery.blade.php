@@ -2,6 +2,7 @@
     use App\Models\PageSetting;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
+    use App\Support\PageElements;
     use App\Models\GalleryCategory;
     use App\Models\GalleryItem;
 
@@ -20,12 +21,17 @@
 
     $hasUncategorized = $itemCollection->contains(fn ($item) => $item->category === null);
 
+    $activeSections = PageElements::activeSectionKeys('gallery', $themeName, $settings);
+    $showHeroSection = in_array('hero', $activeSections, true);
+    $showFiltersSection = in_array('filters', $activeSections, true);
+    $showGridSection = in_array('grid', $activeSections, true);
+
     $heroVisible = ($settings['hero.visible'] ?? '1') === '1';
     $heroMask = ($settings['hero.mask'] ?? '0') === '1';
     $heroImage = !empty($settings['hero.background'])
         ? asset('storage/' . ltrim($settings['hero.background'], '/'))
         : asset('storage/themes/theme-second/img/breadcrumb.jpg');
-    $filterVisible = ($settings['filters.visible'] ?? '1') === '1' && ($categoryCollection->isNotEmpty() || $hasUncategorized);
+    $filterVisible = $showFiltersSection && ($settings['filters.visible'] ?? '1') === '1' && ($categoryCollection->isNotEmpty() || $hasUncategorized);
     $filterHeading = $settings['filters.heading'] ?? 'Kategori';
     $allLabel = $settings['filters.all_label'] ?? 'Semua';
     $gridHeading = $settings['grid.heading'] ?? 'Galeri Kami';
@@ -54,7 +60,7 @@
     'cart' => $cartSummary,
 ])->render() !!}
 
-@if($heroVisible)
+@if($showHeroSection && $heroVisible)
 <section id="hero" class="breadcrumb-section set-bg {{ $heroMask ? 'breadcrumb-section--mask' : '' }}" data-setbg="{{ $heroImage }}">
     <div class="container">
         <div class="row">
@@ -100,27 +106,29 @@
                 <div class="blog__item">
                     <div class="blog__item__text">
                         <h4 class="mb-4">{{ $gridHeading }}</h4>
-                        @if($itemCollection->isEmpty())
-                            <div class="alert alert-light border">{{ $emptyText }}</div>
-                        @else
-                        <div class="row g-4 gallery__grid" data-gallery-grid>
-                            @foreach($itemCollection as $item)
-                                @php
-                                    $categorySlug = $item->category?->slug ?? '__uncategorized__';
-                                    $categoryName = $item->category?->name ?? 'Tanpa Kategori';
-                                    $imageUrl = asset('storage/' . ltrim($item->image_path, '/'));
-                                @endphp
-                                <div class="col-lg-6 col-md-6 col-sm-6" data-category="{{ $categorySlug }}">
-                                    <div class="gallery__card" data-gallery-open data-image="{{ $imageUrl }}" data-title="{{ e($item->title) }}" data-description="{{ e($item->description ?? '') }}" data-category-name="{{ e($categoryName) }}">
-                                        <div class="gallery__card__image" style="background-image:url('{{ $imageUrl }}')"></div>
-                                        <div class="gallery__card__content">
-                                            <h6>{{ $item->title }}</h6>
-                                            <span>{{ $categoryName }}</span>
+                        @if($showGridSection)
+                            @if($itemCollection->isEmpty())
+                                <div class="alert alert-light border">{{ $emptyText }}</div>
+                            @else
+                            <div class="row g-4 gallery__grid" data-gallery-grid>
+                                @foreach($itemCollection as $item)
+                                    @php
+                                        $categorySlug = $item->category?->slug ?? '__uncategorized__';
+                                        $categoryName = $item->category?->name ?? 'Tanpa Kategori';
+                                        $imageUrl = asset('storage/' . ltrim($item->image_path, '/'));
+                                    @endphp
+                                    <div class="col-lg-6 col-md-6 col-sm-6" data-category="{{ $categorySlug }}">
+                                        <div class="gallery__card" data-gallery-open data-image="{{ $imageUrl }}" data-title="{{ e($item->title) }}" data-description="{{ e($item->description ?? '') }}" data-category-name="{{ e($categoryName) }}">
+                                            <div class="gallery__card__image" style="background-image:url('{{ $imageUrl }}')"></div>
+                                            <div class="gallery__card__content">
+                                                <h6>{{ $item->title }}</h6>
+                                                <span>{{ $categoryName }}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            @endforeach
-                        </div>
+                                @endforeach
+                            </div>
+                            @endif
                         @endif
                     </div>
                 </div>

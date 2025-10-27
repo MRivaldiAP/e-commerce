@@ -206,8 +206,14 @@
 @php
     use App\Support\Cart;
     use App\Support\LayoutSettings;
+    use App\Support\PageElements;
 
     $settings = $settings ?? collect();
+    $settingsArray = $settings instanceof \Illuminate\Support\Collection ? $settings->toArray() : (array) $settings;
+    $activeSections = PageElements::activeSectionKeys('cart', $theme, $settingsArray);
+    $showHeaderSection = in_array('header', $activeSections, true);
+    $showEmptySection = in_array('empty', $activeSections, true);
+    $showActionsSection = in_array('actions', $activeSections, true);
     $cartSummary = $cartSummary ?? Cart::summary();
     $navigation = LayoutSettings::navigation($theme);
     $footerConfig = LayoutSettings::footer($theme);
@@ -231,8 +237,10 @@
 ])->render() !!}
 
 <section id="cart">
-    <h1>{{ $title }}</h1>
-    <p class="subtitle">{{ $subtitle }}</p>
+    @if($showHeaderSection)
+        <h1>{{ $title }}</h1>
+        <p class="subtitle">{{ $subtitle }}</p>
+    @endif
 
     <div id="cart-content" @class(['d-none' => empty($cartSummary['items'])]) style="{{ $hasItems ? '' : 'display:none;' }}">
         <table class="cart-table">
@@ -289,17 +297,21 @@
         <div class="cart-summary">
             <div class="cart-feedback" data-cart-status></div>
             <div class="total-line">Total: Rp <span data-cart-grand-total>{{ $cartSummary['total_price_formatted'] }}</span></div>
+            @if($showActionsSection)
                 <div class="cart-actions">
                     <a href="{{ url('/produk') }}" class="cta" style="background: transparent; color: var(--color-primary); border:1px solid var(--color-primary);">Lanjut Belanja</a>
                     <a href="{{ $actionUrl }}" class="cta {{ empty($cartSummary['items']) ? 'is-disabled' : '' }}" data-cart-action aria-disabled="{{ empty($cartSummary['items']) ? 'true' : 'false' }}">{{ $primaryButton }}</a>
                 </div>
+            @endif
         </div>
     </div>
 
-    <div id="cart-empty" class="cart-empty" @class(['d-none' => !empty($cartSummary['items'])]) style="{{ $hasItems ? 'display:none;' : '' }}">
-        <p>{{ $emptyMessage }}</p>
-        <a href="{{ url('/produk') }}" class="cta">{{ $emptyButton }}</a>
-    </div>
+    @if($showEmptySection)
+        <div id="cart-empty" class="cart-empty" @class(['d-none' => !empty($cartSummary['items'])]) style="{{ $hasItems ? 'display:none;' : '' }}">
+            <p>{{ $emptyMessage }}</p>
+            <a href="{{ url('/produk') }}" class="cta">{{ $emptyButton }}</a>
+        </div>
+    @endif
 </section>
 
 {!! view()->file(base_path('themes/' . $theme . '/views/components/footer.blade.php'), [

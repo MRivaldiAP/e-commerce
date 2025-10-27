@@ -1,5 +1,7 @@
 @php
-    $filterVisible = ($settings['filters.visible'] ?? '1') === '1' && ($categoryCollection->isNotEmpty() || $hasUncategorized);
+    $allowFilters = $showFiltersSection ?? true;
+    $allowGrid = $showGridSection ?? true;
+    $filterVisible = $allowFilters && ($settings['filters.visible'] ?? '1') === '1' && ($categoryCollection->isNotEmpty() || $hasUncategorized);
     $filterHeading = $settings['filters.heading'] ?? 'Kategori Galeri';
     $allLabel = $settings['filters.all_label'] ?? 'Semua Foto';
     $gridHeading = $settings['grid.heading'] ?? 'Galeri Kami';
@@ -224,33 +226,35 @@
                 </ul>
             </aside>
         @endif
-        <div class="gallery-content">
-            <div class="gallery-heading">
-                <h2>{{ $gridHeading }}</h2>
-            </div>
-            @if($itemCollection->isEmpty())
-                <div class="gallery-empty">{{ $emptyText }}</div>
-            @else
-                <div class="gallery-grid" data-gallery-grid>
-                    @foreach($itemCollection as $item)
-                        @php
-                            $categorySlug = $item->category?->slug ?? '__uncategorized__';
-                            $categoryName = $item->category?->name ?? 'Tanpa Kategori';
-                            $imageUrl = \App\Support\ThemeMedia::url($item->image_path ?? null);
-                        @endphp
-                        <figure class="gallery-card" data-category="{{ $categorySlug }}">
-                            <button type="button" class="gallery-card__link" data-gallery-open data-image="{{ $imageUrl }}" data-title="{{ e($item->title) }}" data-description="{{ e($item->description ?? '') }}" data-category-name="{{ e($categoryName) }}">
-                                <img src="{{ $imageUrl }}" alt="{{ $item->title }}">
-                                <figcaption>
-                                    <span class="gallery-card__title">{{ $item->title }}</span>
-                                    <span class="gallery-card__category">{{ $categoryName }}</span>
-                                </figcaption>
-                            </button>
-                        </figure>
-                    @endforeach
+        @if($allowGrid)
+            <div class="gallery-content">
+                <div class="gallery-heading">
+                    <h2>{{ $gridHeading }}</h2>
                 </div>
-            @endif
-        </div>
+                @if($itemCollection->isEmpty())
+                    <div class="gallery-empty">{{ $emptyText }}</div>
+                @else
+                    <div class="gallery-grid" data-gallery-grid>
+                        @foreach($itemCollection as $item)
+                            @php
+                                $categorySlug = $item->category?->slug ?? '__uncategorized__';
+                                $categoryName = $item->category?->name ?? 'Tanpa Kategori';
+                                $imageUrl = \App\Support\ThemeMedia::url($item->image_path ?? null);
+                            @endphp
+                            <figure class="gallery-card" data-category="{{ $categorySlug }}">
+                                <button type="button" class="gallery-card__link" data-gallery-open data-image="{{ $imageUrl }}" data-title="{{ e($item->title) }}" data-description="{{ e($item->description ?? '') }}" data-category-name="{{ e($categoryName) }}">
+                                    <img src="{{ $imageUrl }}" alt="{{ $item->title }}">
+                                    <figcaption>
+                                        <span class="gallery-card__title">{{ $item->title }}</span>
+                                        <span class="gallery-card__category">{{ $categoryName }}</span>
+                                    </figcaption>
+                                </button>
+                            </figure>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        @endif
     </div>
     <div class="gallery-modal" data-gallery-modal hidden>
         <div class="gallery-modal__backdrop" data-gallery-close></div>

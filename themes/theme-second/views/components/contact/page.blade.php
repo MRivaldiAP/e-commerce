@@ -3,9 +3,11 @@
     use App\Support\Cart;
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
+    use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-second';
     $settings = PageSetting::forPage('contact');
+    $activeSections = PageElements::activeSectionKeys('contact', $themeName, $settings);
     $detailItems = json_decode($settings['details.items'] ?? '[]', true);
     if (! is_array($detailItems)) {
         $detailItems = [];
@@ -53,25 +55,37 @@
     'cart' => $cartSummary,
 ])
 
-@includeWhen(($settings['hero.visible'] ?? '1') === '1', 'themeSecond::components.contact.sections.hero', [
-    'settings' => $settings,
-    'heroBackground' => $heroBackground,
-])
+@foreach ($activeSections as $sectionKey)
+    @switch($sectionKey)
+        @case('hero')
+            @includeWhen(($settings['hero.visible'] ?? '1') === '1', 'themeSecond::components.contact.sections.hero', [
+                'settings' => $settings,
+                'heroBackground' => $heroBackground,
+            ])
+            @break
 
-@includeWhen(($settings['details.visible'] ?? '1') === '1', 'themeSecond::components.contact.sections.details', [
-    'settings' => $settings,
-    'detailItems' => $detailItems,
-])
+        @case('details')
+            @includeWhen(($settings['details.visible'] ?? '1') === '1', 'themeSecond::components.contact.sections.details', [
+                'settings' => $settings,
+                'detailItems' => $detailItems,
+            ])
+            @break
 
-@includeWhen(($settings['social.visible'] ?? '1') === '1', 'themeSecond::components.contact.sections.social', [
-    'settings' => $settings,
-    'socialItems' => $socialItems,
-])
+        @case('social')
+            @includeWhen(($settings['social.visible'] ?? '1') === '1', 'themeSecond::components.contact.sections.social', [
+                'settings' => $settings,
+                'socialItems' => $socialItems,
+            ])
+            @break
 
-@includeWhen(($settings['map.visible'] ?? '1') === '1' && ! empty($mapEmbed), 'themeSecond::components.contact.sections.map', [
-    'settings' => $settings,
-    'mapEmbed' => $mapEmbed,
-])
+        @case('map')
+            @includeWhen(($settings['map.visible'] ?? '1') === '1' && ! empty($mapEmbed), 'themeSecond::components.contact.sections.map', [
+                'settings' => $settings,
+                'mapEmbed' => $mapEmbed,
+            ])
+            @break
+    @endswitch
+@endforeach
 
 @include('themeSecond::components.footer', ['footer' => $footerConfig])
 
