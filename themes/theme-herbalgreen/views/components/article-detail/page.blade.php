@@ -1,8 +1,8 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
-    $detailSettings = $settings ?? \App\Models\PageSetting::forPage('article-detail', $themeName);
+    $detailSettings = $settings ?? \App\Models\PageSetting::forPage('article-detail');
     $activeSections = \App\Support\PageElements::activeSectionKeys('article-detail', $themeName, $detailSettings);
-    $listSettings = $listSettings ?? \App\Models\PageSetting::forPage('article', $themeName);
+    $listSettings = $listSettings ?? \App\Models\PageSetting::forPage('article');
     $current = $article ?? [];
     $recommended = collect($recommended ?? []);
     $navigation = \App\Support\LayoutSettings::navigation($themeName);

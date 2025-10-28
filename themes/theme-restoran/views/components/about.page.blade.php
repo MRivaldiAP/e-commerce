@@ -6,7 +6,7 @@
     use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-restoran';
-    $pageSettings = PageSetting::forPage('about', $themeName);
+    $pageSettings = PageSetting::forPage('about');
     $settings = array_merge($pageSettings, $settings ?? []);
     $teamMembers = json_decode($settings['team.members'] ?? '[]', true);
     $advantages = json_decode($settings['advantages.items'] ?? '[]', true);

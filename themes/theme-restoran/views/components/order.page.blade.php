@@ -137,7 +137,7 @@
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
 
-    $pageSettings = PageSetting::forPage('orders', $themeName);
+    $pageSettings = PageSetting::forPage('orders');
     $heroVisible = ($pageSettings['hero.visible'] ?? '1') === '1';
     $heroMaskEnabled = ($pageSettings['hero.mask'] ?? '1') === '1';
     $heroImage = ThemeMedia::url($pageSettings['hero.image'] ?? null);

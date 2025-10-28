@@ -6,7 +6,7 @@
     use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-second';
-    $settings = PageSetting::forPage('contact', $themeName);
+    $settings = PageSetting::forPage('contact');
     $activeSections = PageElements::activeSectionKeys('contact', $themeName, $settings);
     $detailItems = json_decode($settings['details.items'] ?? '[]', true);
     if (! is_array($detailItems)) {

@@ -6,7 +6,7 @@
     use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-restoran';
-    $pageSettings = PageSetting::forPage('cart', $themeName);
+    $pageSettings = PageSetting::forPage('cart');
     $incomingSettings = $settings ?? [];
     if ($incomingSettings instanceof \Illuminate\Support\Collection) {
         $incomingSettings = $incomingSettings->toArray();

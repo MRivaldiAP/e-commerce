@@ -20,7 +20,7 @@ class ArticleController extends Controller
             abort(404);
         }
 
-        $settings = PageSetting::forPage('article', $activeTheme);
+        $settings = PageSetting::forPage('article');
 
         $articlesQuery = Article::published();
 
@@ -99,8 +99,8 @@ class ArticleController extends Controller
 
         $article = Article::published()->where('slug', $slug)->firstOrFail();
 
-        $settings = PageSetting::forPage('article-detail', $activeTheme);
-        $listSettings = PageSetting::forPage('article', $activeTheme);
+        $settings = PageSetting::forPage('article-detail');
+        $listSettings = PageSetting::forPage('article');
 
         $recommended = Article::published()
             ->where('id', '!=', $article->id)

@@ -44,7 +44,7 @@ class ShippingController extends Controller
             abort(404);
         }
 
-        $pageSettings = PageSetting::forPage('shipping', $theme);
+        $pageSettings = PageSetting::forPage('shipping');
         $shippingData = $request->session()->get('checkout.shipping', []);
         $shippingCost = (int) Arr::get($shippingData, 'selected_rate.cost', Arr::get($shippingData, 'rate.cost', 0));
         $totals = [
