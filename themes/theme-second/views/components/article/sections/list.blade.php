@@ -8,7 +8,6 @@
         }
         return asset('storage/' . ltrim($path, '/'));
     };
-    $timelineEnabled = ($settings['timeline.visible'] ?? '1') === '1' && ($timelineActive ?? true);
 @endphp
 <section id="list" class="blog spad">
     <div class="container">
@@ -55,7 +54,7 @@
                             <a href="{{ route('articles.index') }}" class="site-btn w-100 text-center">Reset Filter</a>
                         </div>
                     @endif
-                    @includeWhen($timelineEnabled, 'themeSecond::components.article.sections.timeline', [
+                    @includeWhen(($settings['timeline.visible'] ?? '1') === '1', 'themeSecond::components.article.sections.timeline', [
                         'settings' => $settings,
                         'timeline' => $timeline,
                         'filters' => $filters,

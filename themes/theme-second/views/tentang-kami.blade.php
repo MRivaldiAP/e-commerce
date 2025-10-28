@@ -21,7 +21,6 @@
     use App\Models\PageSetting;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
-    use App\Support\PageElements;
     use Illuminate\Support\Str;
 
     $themeName = $theme ?? 'theme-second';
@@ -34,13 +33,6 @@
     if (!is_array($advantages)) {
         $advantages = [];
     }
-    $activeSections = PageElements::activeSectionKeys('about', $themeName, $settings);
-    $showHeroSection = in_array('hero', $activeSections, true);
-    $showIntroSection = in_array('intro', $activeSections, true);
-    $showQuoteSection = in_array('quote', $activeSections, true);
-    $showTeamSection = in_array('team', $activeSections, true);
-    $showAdvantagesSection = in_array('advantages', $activeSections, true);
-
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
@@ -63,7 +55,7 @@
     'cart' => $cartSummary,
 ])->render() !!}
 
-@if($showHeroSection && ($settings['hero.visible'] ?? '1') == '1')
+@if(($settings['hero.visible'] ?? '1') == '1')
 <section id="hero" class="breadcrumb-section set-bg" data-setbg="{{ !empty($settings['hero.background']) ? $resolveMedia($settings['hero.background']) : asset('storage/themes/theme-second/img/breadcrumb.jpg') }}">
     <div class="container">
         <div class="row">
@@ -80,7 +72,7 @@
 </section>
 @endif
 
-@if($showIntroSection && ($settings['intro.visible'] ?? '1') == '1')
+@if(($settings['intro.visible'] ?? '1') == '1')
 <section id="intro" class="about spad">
     <div class="container">
         <div class="row">
@@ -101,7 +93,7 @@
 </section>
 @endif
 
-@if($showQuoteSection && ($settings['quote.visible'] ?? '1') == '1' && !empty($settings['quote.text']))
+@if(($settings['quote.visible'] ?? '1') == '1' && !empty($settings['quote.text']))
 <section id="quote" class="testimonial spad">
     <div class="container">
         <div class="row justify-content-center">
@@ -120,7 +112,7 @@
 </section>
 @endif
 
-@if($showTeamSection && ($settings['team.visible'] ?? '1') == '1' && count($teamMembers))
+@if(($settings['team.visible'] ?? '1') == '1' && count($teamMembers))
 <section id="team" class="team spad">
     <div class="container">
         <div class="row">
@@ -156,7 +148,7 @@
 </section>
 @endif
 
-@if($showAdvantagesSection && ($settings['advantages.visible'] ?? '1') == '1' && count($advantages))
+@if(($settings['advantages.visible'] ?? '1') == '1' && count($advantages))
 <section id="advantages" class="services spad">
     <div class="container">
         <div class="row">

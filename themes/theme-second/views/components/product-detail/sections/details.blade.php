@@ -1,6 +1,3 @@
-@php
-    $commentsEnabled = ($settings['comments.visible'] ?? '1') === '1' && ($showCommentsSection ?? true);
-@endphp
 <section class="product-details spad">
     <div class="container">
         <div class="row">
@@ -61,7 +58,7 @@
                         <li class="nav-item">
                             <a class="nav-link" data-toggle="tab" href="#tabs-2" role="tab" aria-selected="false">Informasi</a>
                         </li>
-                        @if($commentsEnabled)
+                        @if(($settings['comments.visible'] ?? '1') === '1')
                             <li class="nav-item">
                                 <a class="nav-link" data-toggle="tab" href="#tabs-3" role="tab" aria-selected="false">Komentar <span>({{ $comments->count() }})</span></a>
                             </li>
@@ -83,7 +80,7 @@
                                 </ul>
                             </div>
                         </div>
-                        @if($commentsEnabled)
+                        @if(($settings['comments.visible'] ?? '1') === '1')
                             <div class="tab-pane" id="tabs-3" role="tabpanel">
                                 <div class="product__details__tab__desc">
                                     @if($comments->isEmpty())

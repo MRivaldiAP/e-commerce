@@ -3,7 +3,6 @@
     use App\Support\Cart;
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
-    use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-second';
     $pageSettings = PageSetting::forPage('article');
@@ -34,12 +33,6 @@
     if (! $listOgImage && ! empty($settings['hero.image'] ?? null)) {
         $listOgImage = ThemeMedia::url($settings['hero.image']);
     }
-
-    $activeSections = PageElements::activeSectionKeys('article', $themeName, $settings);
-    $timelineActive = in_array('timeline', $activeSections, true);
-    $renderSections = array_values(array_filter($activeSections, function ($section) {
-        return $section !== 'timeline';
-    }));
 
     $heroBackground = ThemeMedia::url($settings['hero.image'] ?? null)
         ?? asset('storage/themes/' . $themeName . '/img/breadcrumb.jpg');
@@ -76,33 +69,24 @@
     'cart' => $cartSummary,
 ])
 
-@foreach ($renderSections as $sectionKey)
-    @switch($sectionKey)
-        @case('hero')
-            @includeWhen(($settings['hero.visible'] ?? '1') === '1', 'themeSecond::components.article.sections.hero', [
-                'settings' => $settings,
-                'pageTitle' => $pageTitle,
-                'heroBackground' => $heroBackground,
-                'heroMasked' => $heroMasked,
-            ])
-            @break
+@includeWhen(($settings['hero.visible'] ?? '1') === '1', 'themeSecond::components.article.sections.hero', [
+    'settings' => $settings,
+    'pageTitle' => $pageTitle,
+    'heroBackground' => $heroBackground,
+    'heroMasked' => $heroMasked,
+])
 
-        @case('list')
-            @include('themeSecond::components.article.sections.list', [
-                'settings' => $settings,
-                'articles' => $articleCollection,
-                'filters' => $filters,
-                'timeline' => $timeline,
-                'buttonLabel' => $buttonLabel,
-                'emptyText' => $emptyText,
-                'searchPlaceholder' => $searchPlaceholder,
-                'pageTitle' => $pageTitle,
-                'theme' => $themeName,
-                'timelineActive' => $timelineActive,
-            ])
-            @break
-    @endswitch
-@endforeach
+@include('themeSecond::components.article.sections.list', [
+    'settings' => $settings,
+    'articles' => $articleCollection,
+    'filters' => $filters,
+    'timeline' => $timeline,
+    'buttonLabel' => $buttonLabel,
+    'emptyText' => $emptyText,
+    'searchPlaceholder' => $searchPlaceholder,
+    'pageTitle' => $pageTitle,
+    'theme' => $themeName,
+])
 
 @include('themeSecond::components.footer', ['footer' => $footerConfig])
 

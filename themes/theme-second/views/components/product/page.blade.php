@@ -5,11 +5,9 @@
     use App\Support\Cart;
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
-    use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-second';
     $settings = PageSetting::forPage('product');
-    $activeSections = PageElements::activeSectionKeys('product', $themeName, $settings);
     $query = Product::query()->with(['images', 'promotions']);
 
     $filters = [
@@ -102,14 +100,10 @@
     'cart' => $cartSummary,
 ])
 
-@foreach ($activeSections as $sectionKey)
-    @if($sectionKey === 'hero')
-        @include('themeSecond::components.product.sections.hero', [
-            'settings' => $settings,
-            'heroBackground' => $heroBackground,
-        ])
-    @endif
-@endforeach
+@include('themeSecond::components.product.sections.hero', [
+    'settings' => $settings,
+    'heroBackground' => $heroBackground,
+])
 
 @include('themeSecond::components.product.sections.list', [
     'settings' => $settings,

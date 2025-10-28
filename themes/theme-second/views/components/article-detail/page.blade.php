@@ -3,7 +3,6 @@
     use App\Support\Cart;
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
-    use App\Support\PageElements;
     use Illuminate\Support\Carbon;
 
     $themeName = $theme ?? 'theme-second';
@@ -29,12 +28,6 @@
     $pageTitle = $meta['title'] ?? ($article['title'] ?? 'Artikel');
     $detailOgImage = ThemeMedia::url($article['image'] ?? null)
         ?? ThemeMedia::url($detailSettings['hero.image'] ?? null);
-
-    $activeSections = PageElements::activeSectionKeys('article-detail', $themeName, $detailSettings);
-    $showHeroSection = in_array('hero', $activeSections, true);
-    $showMetaSection = in_array('meta', $activeSections, true);
-    $showCommentsSection = in_array('comments', $activeSections, true);
-    $showRecommendationsSection = in_array('recommendations', $activeSections, true);
 
     $heroBackground = ThemeMedia::url($detailSettings['hero.image'] ?? null)
         ?? asset('storage/themes/' . $themeName . '/img/breadcrumb.jpg');
@@ -71,7 +64,7 @@
     'cart' => $cartSummary,
 ])
 
-@includeWhen($showHeroSection && ($detailSettings['hero.visible'] ?? '1') === '1', 'themeSecond::components.article-detail.sections.hero', [
+@includeWhen(($detailSettings['hero.visible'] ?? '1') === '1', 'themeSecond::components.article-detail.sections.hero', [
     'settings' => $detailSettings,
     'article' => $article,
     'heroBackground' => $heroBackground,
@@ -86,18 +79,14 @@
                     'settings' => $detailSettings,
                     'article' => $article,
                     'dateFormatted' => $dateFormatted,
-                    'showMetaSection' => $showMetaSection,
                 ])
 
-                @if($showCommentsSection)
-                    @include('themeSecond::components.article-detail.sections.comments', [
-                        'settings' => $detailSettings,
-                        'showCommentsSection' => $showCommentsSection,
-                    ])
-                @endif
+                @include('themeSecond::components.article-detail.sections.comments', [
+                    'settings' => $detailSettings,
+                ])
             </div>
             <div class="col-lg-4 col-md-4">
-                @includeWhen($showRecommendationsSection && ($detailSettings['recommendations.visible'] ?? '1') === '1' && $recommended->isNotEmpty(), 'themeSecond::components.article-detail.sections.recommendations', [
+                @includeWhen(($detailSettings['recommendations.visible'] ?? '1') === '1' && $recommended->isNotEmpty(), 'themeSecond::components.article-detail.sections.recommendations', [
                     'settings' => $detailSettings,
                     'recommended' => $recommended,
                 ])
