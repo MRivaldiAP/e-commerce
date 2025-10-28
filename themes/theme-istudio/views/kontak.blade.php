@@ -38,9 +38,7 @@
     };
 
     $heroVisible = ($settings['hero.visible'] ?? '1') === '1';
-    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
     $heroBackground = $resolveMedia($settings['hero.background'] ?? null, $assetBase('img/hero-slider-1.jpg'));
-    $heroOverlay = $heroMaskEnabled ? 'linear-gradient(rgba(15, 23, 43, 0.78), rgba(15, 23, 43, 0.78)),' : '';
 
     $formatLink = function (?string $value, ?string $link) {
         if (! $value) {
@@ -91,7 +89,7 @@
 ])->render() !!}
 
 @if($heroVisible)
-    <div id="hero" class="container-fluid pb-5 bg-primary hero-header" style="background-image: {{ $heroOverlay }} url('{{ $heroBackground }}'); background-size: cover; background-position: center;">
+    <div id="hero" class="container-fluid pb-5 bg-primary hero-header" style="background-image: url('{{ $heroBackground }}'); background-size: cover; background-position: center;">
         <div class="container py-5">
             <div class="row g-3 align-items-center">
                 <div class="col-lg-6 text-center text-lg-start">

@@ -221,9 +221,7 @@
     };
 
     $heroVisible = ($settings['hero.visible'] ?? '1') === '1';
-    $heroMask = ($settings['hero.mask'] ?? '1') === '1';
     $heroBackground = $resolveMedia($settings['hero.background'] ?? null, $assetBase('img/hero-slider-1.jpg'));
-    $heroOverlay = $heroMask ? 'linear-gradient(rgba(15,23,43,0.78), rgba(15,23,43,0.78)),' : '';
     $heroHeading = $settings['hero.heading'] ?? 'Pesanan Saya';
     $heroDescription = $settings['hero.description'] ?? 'Pantau status pembayaran dan pengiriman terbaru untuk pesanan Anda.';
 
@@ -243,7 +241,7 @@
 ])->render() !!}
 
 @if($heroVisible)
-    <section class="container-fluid hero-header" style="background-image: {{ $heroOverlay }} url('{{ $heroBackground }}');">
+    <section class="container-fluid hero-header" style="background-image: url('{{ $heroBackground }}');">
         <div class="container">
             <div class="row align-items-center g-4">
                 <div class="col-lg-7">
