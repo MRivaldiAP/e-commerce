@@ -4,11 +4,9 @@
     use App\Support\Cart;
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
-    use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-second';
     $settings = PageSetting::forPage('home');
-    $activeSections = PageElements::activeSectionKeys('home', $themeName, $settings);
     $products = Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);
     if (! is_array($testimonials)) {
@@ -72,52 +70,36 @@
     'cart' => $cartSummary,
 ])
 
-@foreach ($activeSections as $sectionKey)
-    @switch($sectionKey)
-        @case('hero')
-            @includeWhen(($settings['hero.visible'] ?? '1') === '1', 'themeSecond::components.home.sections.hero', [
-                'settings' => $settings,
-                'heroBackground' => $heroBackground,
-            ])
-            @break
+@includeWhen(($settings['hero.visible'] ?? '1') === '1', 'themeSecond::components.home.sections.hero', [
+    'settings' => $settings,
+    'heroBackground' => $heroBackground,
+])
 
-        @case('about')
-            @includeWhen(($settings['about.visible'] ?? '1') === '1', 'themeSecond::components.home.sections.about', [
-                'settings' => $settings,
-                'aboutImage' => $aboutImage,
-            ])
-            @break
+@includeWhen(($settings['about.visible'] ?? '1') === '1', 'themeSecond::components.home.sections.about', [
+    'settings' => $settings,
+    'aboutImage' => $aboutImage,
+])
 
-        @case('products')
-            @includeWhen(($settings['products.visible'] ?? '1') === '1', 'themeSecond::components.home.sections.products', [
-                'settings' => $settings,
-                'products' => $products,
-                'theme' => $themeName,
-            ])
-            @break
+@includeWhen(($settings['products.visible'] ?? '1') === '1', 'themeSecond::components.home.sections.products', [
+    'settings' => $settings,
+    'products' => $products,
+    'theme' => $themeName,
+])
 
-        @case('services')
-            @includeWhen(($settings['services.visible'] ?? '1') === '1' && count($services), 'themeSecond::components.home.sections.services', [
-                'settings' => $settings,
-                'services' => $services,
-            ])
-            @break
+@includeWhen(($settings['services.visible'] ?? '1') === '1' && count($services), 'themeSecond::components.home.sections.services', [
+    'settings' => $settings,
+    'services' => $services,
+])
 
-        @case('testimonials')
-            @includeWhen(($settings['testimonials.visible'] ?? '1') === '1' && count($testimonials), 'themeSecond::components.home.sections.testimonials', [
-                'testimonials' => $testimonials,
-                'theme' => $themeName,
-            ])
-            @break
+@includeWhen(($settings['testimonials.visible'] ?? '1') === '1' && count($testimonials), 'themeSecond::components.home.sections.testimonials', [
+    'testimonials' => $testimonials,
+    'theme' => $themeName,
+])
 
-        @case('contact')
-            @includeWhen(($settings['contact.visible'] ?? '1') === '1', 'themeSecond::components.home.sections.contact', [
-                'settings' => $settings,
-                'contactMap' => $contactMap,
-            ])
-            @break
-    @endswitch
-@endforeach
+@includeWhen(($settings['contact.visible'] ?? '1') === '1', 'themeSecond::components.home.sections.contact', [
+    'settings' => $settings,
+    'contactMap' => $contactMap,
+])
 
 @include('themeSecond::components.footer', ['footer' => $footerConfig])
 

@@ -1,7 +1,6 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
     $detailSettings = $settings ?? \App\Models\PageSetting::forPage('article-detail');
-    $activeSections = \App\Support\PageElements::activeSectionKeys('article-detail', $themeName, $detailSettings);
     $listSettings = $listSettings ?? \App\Models\PageSetting::forPage('article');
     $current = $article ?? [];
     $recommended = collect($recommended ?? []);
@@ -19,20 +18,12 @@
     $seoTitle = $meta['title'] ?? ($current['title'] ?? 'Artikel');
     $seoDescription = $meta['description'] ?? null;
 
-    $showHeroSection = in_array('hero', $activeSections, true);
-    $showMetaSection = in_array('meta', $activeSections, true);
-    $showCommentsSection = in_array('comments', $activeSections, true);
-    $showRecommendationsSection = in_array('recommendations', $activeSections, true);
-
-    $commentsView = '';
-    if ($showCommentsSection && ($detailSettings['comments.visible'] ?? '1') == '1') {
-        $commentsView = view('themeHerbalGreen::components.article-detail.sections.comments', [
-            'settings' => $detailSettings,
-        ])->render();
-    }
+    $commentsView = view('themeHerbalGreen::components.article-detail.sections.comments', [
+        'settings' => $detailSettings,
+    ])->render();
 
     $recommendationsView = '';
-    if ($showRecommendationsSection && ($detailSettings['recommendations.visible'] ?? '1') == '1' && $recommended->isNotEmpty()) {
+    if (($detailSettings['recommendations.visible'] ?? '1') == '1' && $recommended->isNotEmpty()) {
         $recommendationsView = view('themeHerbalGreen::components.article-detail.sections.recommendations', [
             'settings' => $detailSettings,
             'recommended' => $recommended,
@@ -64,7 +55,7 @@
         'cart' => $cartSummary,
     ])
 
-    @includeWhen($showHeroSection && ($detailSettings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.article-detail.sections.hero', [
+    @includeWhen(($detailSettings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.article-detail.sections.hero', [
         'settings' => $detailSettings,
         'article' => $current,
         'heroImage' => $heroImage,
@@ -76,9 +67,6 @@
         'dateFormatted' => $dateFormatted,
         'commentsView' => $commentsView,
         'recommendationsView' => $recommendationsView,
-        'showMetaSection' => $showMetaSection,
-        'showCommentsSection' => $showCommentsSection,
-        'showRecommendationsSection' => $showRecommendationsSection,
     ])
 
     @include('themeHerbalGreen::components.footer', ['footer' => $footerConfig])

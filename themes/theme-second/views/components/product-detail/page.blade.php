@@ -4,12 +4,10 @@
     use App\Support\Cart;
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
-    use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-second';
     /** @var \App\Models\Product $product */
     $settings = PageSetting::forPage('product-detail');
-    $activeSections = PageElements::activeSectionKeys('product-detail', $themeName, $settings);
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
@@ -42,9 +40,6 @@
 
     $heroBackground = ThemeMedia::url($settings['hero.image'] ?? null)
         ?? asset('storage/themes/' . $themeName . '/img/breadcrumb.jpg');
-    $showHeroSection = in_array('hero', $activeSections, true);
-    $showCommentsSection = in_array('comments', $activeSections, true);
-    $showRecommendationsSection = in_array('recommendations', $activeSections, true);
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -81,89 +76,27 @@
     'cart' => $cartSummary,
 ])
 
-@php($detailsRendered = false)
-@foreach ($activeSections as $sectionKey)
-    @switch($sectionKey)
-        @case('hero')
-            @includeWhen($showHeroSection && ($settings['hero.visible'] ?? '1') === '1', 'themeSecond::components.product-detail.sections.hero', [
-                'settings' => $settings,
-                'product' => $product,
-                'heroBackground' => $heroBackground,
-            ])
-            @if (! $detailsRendered)
-                @include('themeSecond::components.product-detail.sections.details', [
-                    'settings' => $settings,
-                    'product' => $product,
-                    'images' => $imageSources,
-                    'productHasPromo' => $productHasPromo,
-                    'productPromotion' => $productPromotion,
-                    'productFinalPrice' => $productFinalPrice,
-                    'comments' => $comments,
-                    'showCommentsSection' => $showCommentsSection,
-                ])
-                @php($detailsRendered = true)
-            @endif
-            @break
+@include('themeSecond::components.product-detail.sections.hero', [
+    'settings' => $settings,
+    'product' => $product,
+    'heroBackground' => $heroBackground,
+])
 
-        @case('comments')
-            @if (! $detailsRendered)
-                @include('themeSecond::components.product-detail.sections.details', [
-                    'settings' => $settings,
-                    'product' => $product,
-                    'images' => $imageSources,
-                    'productHasPromo' => $productHasPromo,
-                    'productPromotion' => $productPromotion,
-                    'productFinalPrice' => $productFinalPrice,
-                    'comments' => $comments,
-                    'showCommentsSection' => $showCommentsSection,
-                ])
-                @php($detailsRendered = true)
-            @endif
-            @break
+@include('themeSecond::components.product-detail.sections.details', [
+    'settings' => $settings,
+    'product' => $product,
+    'images' => $imageSources,
+    'productHasPromo' => $productHasPromo,
+    'productPromotion' => $productPromotion,
+    'productFinalPrice' => $productFinalPrice,
+    'comments' => $comments,
+])
 
-        @case('recommendations')
-            @if (! $detailsRendered)
-                @include('themeSecond::components.product-detail.sections.details', [
-                    'settings' => $settings,
-                    'product' => $product,
-                    'images' => $imageSources,
-                    'productHasPromo' => $productHasPromo,
-                    'productPromotion' => $productPromotion,
-                    'productFinalPrice' => $productFinalPrice,
-                    'comments' => $comments,
-                    'showCommentsSection' => $showCommentsSection,
-                ])
-                @php($detailsRendered = true)
-            @endif
-            @includeWhen($showRecommendationsSection && ($settings['recommendations.visible'] ?? '1') === '1' && $recommendations->count(), 'themeSecond::components.product-detail.sections.recommendations', [
-                'settings' => $settings,
-                'recommendations' => $recommendations,
-                'theme' => $themeName,
-            ])
-            @break
-    @endswitch
-@endforeach
-
-@if (! $detailsRendered)
-    @include('themeSecond::components.product-detail.sections.details', [
-        'settings' => $settings,
-        'product' => $product,
-        'images' => $imageSources,
-        'productHasPromo' => $productHasPromo,
-        'productPromotion' => $productPromotion,
-        'productFinalPrice' => $productFinalPrice,
-        'comments' => $comments,
-        'showCommentsSection' => $showCommentsSection,
-    ])
-@endif
-
-@if ($showRecommendationsSection)
-    @includeWhen(($settings['recommendations.visible'] ?? '1') === '1' && $recommendations->count(), 'themeSecond::components.product-detail.sections.recommendations', [
-        'settings' => $settings,
-        'recommendations' => $recommendations,
-        'theme' => $themeName,
-    ])
-@endif
+@includeWhen(($settings['recommendations.visible'] ?? '1') === '1' && $recommendations->count(), 'themeSecond::components.product-detail.sections.recommendations', [
+    'settings' => $settings,
+    'recommendations' => $recommendations,
+    'theme' => $themeName,
+])
 
 @include('themeSecond::components.footer', ['footer' => $footerConfig])
 

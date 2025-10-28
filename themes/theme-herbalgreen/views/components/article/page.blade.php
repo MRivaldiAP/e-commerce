@@ -1,7 +1,6 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
     $settings = $settings ?? \App\Models\PageSetting::forPage('article');
-    $activeSections = \App\Support\PageElements::activeSectionKeys('article', $themeName, $settings);
     $articles = collect($articles ?? [])->filter(fn ($item) => !empty($item['slug'] ?? null));
     $timeline = collect($timeline ?? []);
     $filters = $filters ?? [
@@ -30,10 +29,6 @@
     $articleImage = function (?string $path) {
         return \App\Support\ThemeMedia::url($path);
     };
-    $timelineActive = in_array('timeline', $activeSections, true);
-    $renderSections = array_values(array_filter($activeSections, function ($section) {
-        return $section !== 'timeline';
-    }));
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -60,30 +55,22 @@
         'cart' => $cartSummary,
     ])
 
-    @foreach ($renderSections as $sectionKey)
-        @switch($sectionKey)
-            @case('hero')
-                @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.article.sections.hero', [
-                    'settings' => $settings,
-                    'heroImage' => $heroImage,
-                ])
-                @break
+    @includeWhen(($settings['hero.visible'] ?? '1') == '1', 'themeHerbalGreen::components.article.sections.hero', [
+        'settings' => $settings,
+        'heroImage' => $heroImage,
+    ])
 
-            @case('list')
-                @include('themeHerbalGreen::components.article.sections.list', [
-                    'articles' => $articles,
-                    'buttonLabel' => $buttonLabel,
-                    'emptyText' => $emptyText,
-                    'filters' => $filters,
-                    'searchPlaceholder' => $searchPlaceholder,
-                    'timelineVisible' => ($settings['timeline.visible'] ?? '1') == '1' && $timelineActive,
-                    'timelineHeading' => $settings['timeline.heading'] ?? 'Arsip',
-                    'timeline' => $timeline,
-                    'articleImage' => $articleImage,
-                ])
-                @break
-        @endswitch
-    @endforeach
+    @include('themeHerbalGreen::components.article.sections.list', [
+        'articles' => $articles,
+        'buttonLabel' => $buttonLabel,
+        'emptyText' => $emptyText,
+        'filters' => $filters,
+        'searchPlaceholder' => $searchPlaceholder,
+        'timelineVisible' => ($settings['timeline.visible'] ?? '1') == '1',
+        'timelineHeading' => $settings['timeline.heading'] ?? 'Arsip',
+        'timeline' => $timeline,
+        'articleImage' => $articleImage,
+    ])
 
     @include('themeHerbalGreen::components.footer', ['footer' => $footerConfig])
 
