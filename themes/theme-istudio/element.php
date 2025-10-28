@@ -73,7 +73,6 @@ return [
     'contact' => [
         'hero' => [
             'hero.visible',
-            'hero.mask',
             'hero.background',
             'hero.heading',
             'hero.description',
@@ -99,7 +98,6 @@ return [
     'product' => [
         'hero' => [
             'hero.visible',
-            'hero.mask',
             'hero.image',
             'title',
             'hero.description',
@@ -125,7 +123,6 @@ return [
     'product-detail' => [
         'hero' => [
             'hero.visible',
-            'hero.mask',
             'hero.image',
             'hero.title',
             'hero.description',
@@ -151,7 +148,6 @@ return [
     'article' => [
         'hero' => [
             'hero.visible',
-            'hero.mask',
             'hero.image',
             'hero.heading',
             'hero.description',
@@ -170,7 +166,6 @@ return [
     'article-detail' => [
         'hero' => [
             'hero.visible',
-            'hero.mask',
             'hero.image',
             'hero.title',
         ],
@@ -205,7 +200,6 @@ return [
     'gallery' => [
         'hero' => [
             'hero.visible',
-            'hero.mask',
             'hero.background',
             'hero.heading',
             'hero.description',
@@ -275,7 +269,6 @@ return [
     'order' => [
         'hero' => [
             'hero.visible',
-            'hero.mask',
             'hero.background',
             'hero.heading',
             'hero.description',

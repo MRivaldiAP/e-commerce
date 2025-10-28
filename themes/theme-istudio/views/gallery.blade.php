@@ -39,9 +39,7 @@
     };
 
     $heroVisible = ($settings['hero.visible'] ?? '1') === '1';
-    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
     $heroBackground = $resolveMedia($settings['hero.background'] ?? $settings['hero.image'] ?? null, $assetBase('img/hero-slider-1.jpg'));
-    $heroOverlay = $heroMaskEnabled ? 'linear-gradient(rgba(15, 23, 43, 0.78), rgba(15, 23, 43, 0.78)),' : '';
 
     $filterVisible = ($settings['filters.visible'] ?? '1') === '1' && ($categoryCollection->isNotEmpty() || $hasUncategorized);
     $filterHeading = $settings['filters.heading'] ?? 'Kategori Galeri';
@@ -81,11 +79,11 @@
 ])->render() !!}
 
 @if($heroVisible)
-    <div id="hero" class="container-fluid pb-5 bg-primary hero-header" style="background-image: {{ $heroOverlay }} url('{{ $heroBackground }}'); background-size: cover; background-position: center;">
+    <div id="hero" class="container-fluid pb-5 bg-primary hero-header" style="background-image: url('{{ $heroBackground }}'); background-size: cover; background-position: center;">
         <div class="container py-5">
             <div class="row g-3 align-items-center">
                 <div class="col-lg-6 text-center text-lg-start">
-                    <h1 class="display-1 mb-0 text-white animated slideInLeft">{{ $settings['hero.heading'] ?? 'Galeri' }}</h1>
+                    <h1 class="display-1 mb-0 animated slideInLeft">{{ $settings['hero.heading'] ?? 'Galeri' }}</h1>
                 </div>
                 <div class="col-lg-6 animated slideInRight">
                     <nav aria-label="breadcrumb">
@@ -95,7 +93,7 @@
                         </ol>
                     </nav>
                     @if(!empty($settings['hero.description']))
-                        <p class="text-white-50 mt-3 mb-0">{{ $settings['hero.description'] }}</p>
+                        <p class="text-muted mt-3 mb-0">{{ $settings['hero.description'] }}</p>
                     @endif
                 </div>
             </div>
