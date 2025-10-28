@@ -30,40 +30,38 @@
                 </div>
             </div>
         @endif
-        @if($gridActive ?? true)
-            <div class="col-lg-8">
-                <div class="mb-4">
-                    <h2 class="fw-bold">{{ $gridHeading }}</h2>
-                </div>
-                @if(($itemCollection ?? collect())->isEmpty())
-                    <div class="alert alert-light border">{{ $emptyText }}</div>
-                @else
-                    <div class="row g-4" data-gallery-grid>
-                        @foreach($itemCollection as $item)
-                            @php
-                                $categorySlug = $item->category?->slug ?? '__uncategorized__';
-                                $categoryName = $item->category?->name ?? 'Tanpa Kategori';
-                                $imageUrl = asset('storage/' . ltrim($item->image_path, '/'));
-                            @endphp
-                            <div class="col-md-6" data-category="{{ $categorySlug }}">
-                                <div class="card border-0 shadow-sm h-100 gallery-card" data-gallery-open
-                                    data-image="{{ $imageUrl }}"
-                                    data-title="{{ e($item->title) }}"
-                                    data-description="{{ e($item->description ?? '') }}"
-                                    data-category-name="{{ e($categoryName) }}">
-                                    <div class="ratio ratio-4x3 bg-light rounded-top"
-                                        style="background-image:url('{{ $imageUrl }}'); background-size:cover; background-position:center;"></div>
-                                    <div class="card-body">
-                                        <h5 class="card-title mb-1">{{ $item->title }}</h5>
-                                        <p class="card-text text-muted mb-0">{{ $categoryName }}</p>
-                                    </div>
+        <div class="col-lg-8">
+            <div class="mb-4">
+                <h2 class="fw-bold">{{ $gridHeading }}</h2>
+            </div>
+            @if($itemCollection->isEmpty())
+                <div class="alert alert-light border">{{ $emptyText }}</div>
+            @else
+                <div class="row g-4" data-gallery-grid>
+                    @foreach($itemCollection as $item)
+                        @php
+                            $categorySlug = $item->category?->slug ?? '__uncategorized__';
+                            $categoryName = $item->category?->name ?? 'Tanpa Kategori';
+                            $imageUrl = asset('storage/' . ltrim($item->image_path, '/'));
+                        @endphp
+                        <div class="col-md-6" data-category="{{ $categorySlug }}">
+                            <div class="card border-0 shadow-sm h-100 gallery-card" data-gallery-open
+                                data-image="{{ $imageUrl }}"
+                                data-title="{{ e($item->title) }}"
+                                data-description="{{ e($item->description ?? '') }}"
+                                data-category-name="{{ e($categoryName) }}">
+                                <div class="ratio ratio-4x3 bg-light rounded-top"
+                                    style="background-image:url('{{ $imageUrl }}'); background-size:cover; background-position:center;"></div>
+                                <div class="card-body">
+                                    <h5 class="card-title mb-1">{{ $item->title }}</h5>
+                                    <p class="card-text text-muted mb-0">{{ $categoryName }}</p>
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-        @endif
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
     </div>
 </div>
 

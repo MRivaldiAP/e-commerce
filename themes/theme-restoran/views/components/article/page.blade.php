@@ -1,121 +1,48 @@
 @php
-    use App\Models\PageSetting;
-    use App\Support\Cart;
-    use App\Support\LayoutSettings;
-    use App\Support\ThemeMedia;
-    use App\Support\PageElements;
-
     $themeName = $theme ?? 'theme-restoran';
-    $pageSettings = PageSetting::forPage('article');
-    $settings = array_merge($pageSettings, $settings ?? []);
-    $meta = $meta ?? [];
-    $articles = collect($articles ?? [])->filter(fn ($item) => ! empty($item['slug'] ?? null));
-    $timeline = collect($timeline ?? []);
-    $filters = array_merge([
-        'search' => request('search'),
-        'year' => request('year'),
-        'month' => request('month'),
-    ], $filters ?? []);
-
-    $resolveArticleImage = static function ($path) {
-        if (empty($path)) {
-            return null;
-        }
-
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            return $path;
-        }
-
-        return asset('storage/' . ltrim($path, '/'));
-    };
-
-    $collectionForMeta = $articles;
-    $listOgImage = null;
-    $firstImage = $collectionForMeta->first()['image'] ?? null;
-
-    if ($firstImage) {
-        $listOgImage = $resolveArticleImage($firstImage);
-    } elseif (! empty($settings['hero.image'] ?? null)) {
-        $listOgImage = $resolveArticleImage($settings['hero.image']);
-    }
-
-    $pageTitle = $settings['hero.heading'] ?? ($meta['title'] ?? 'Artikel');
-
-    $navigation = LayoutSettings::navigation($themeName);
-    $footerConfig = LayoutSettings::footer($themeName);
-    $cartSummary = Cart::summary();
-
-    $activeSections = PageElements::activeSectionKeys('article', $themeName, $settings);
-    $timelineActive = in_array('timeline', $activeSections, true);
-
-    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
-    $heroBackground = ThemeMedia::url($settings['hero.image'] ?? null)
-        ?? asset('storage/themes/theme-restoran/img/breadcrumb.jpg');
-    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
-
-    if (! $heroMaskEnabled) {
-        $heroClasses .= ' hero-no-mask';
-    }
-
-    if ($heroBackground) {
-        $heroStyle = $heroMaskEnabled
-            ? "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroBackground}'); background-size: cover; background-position: center;"
-            : "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
-    } else {
-        $heroStyle = $heroMaskEnabled
-            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
-            : 'background: var(--theme-accent);';
-    }
-
-    $listSection = [
-        'articles' => $articles->map(function ($article) use ($resolveArticleImage) {
-            $slug = $article['slug'] ?? null;
-
-            return [
-                'title' => $article['title'] ?? 'Artikel',
-                'excerpt' => $article['excerpt'] ?? null,
-                'date' => $article['date_formatted'] ?? null,
-                'author' => $article['author'] ?? null,
-                'image' => $resolveArticleImage($article['image'] ?? null),
-                'url' => $slug ? route('articles.show', ['slug' => $slug]) : '#',
-            ];
-        })->values()->all(),
-        'button_label' => $settings['list.button_label'] ?? 'Baca Selengkapnya',
-        'empty_text' => $settings['list.empty_text'] ?? 'Belum ada artikel tersedia.',
-        'search' => [
-            'placeholder' => $settings['search.placeholder'] ?? 'Cari artikel...',
-            'filters' => $filters,
-        ],
-    ];
-
-    $timelineSection = [
-        'visible' => $timelineActive && ($settings['timeline.visible'] ?? '1') === '1' && $timeline->isNotEmpty(),
-        'heading' => $settings['timeline.heading'] ?? 'Arsip Artikel',
-        'items' => $timeline->map(function ($item) {
-            $year = $item['year'] ?? null;
-            $month = $item['month'] ?? null;
-
-            return [
-                'label' => $item['label'] ?? trim(($item['month_name'] ?? '') . ' ' . ($item['year'] ?? '')),
-                'count' => $item['count'] ?? 0,
-                'url' => route('articles.index', array_filter([
-                    'year' => $year,
-                    'month' => $month,
-                ])),
-            ];
-        })->values()->all(),
-    ];
 @endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>{{ $meta['title'] ?? $pageTitle }}</title>
-    @if(! empty($meta['description'] ?? ''))
+    <title>{{ $meta['title'] ?? ($settings['hero.heading'] ?? 'Artikel') }}</title>
+    @if(!empty($meta['description'] ?? ''))
         <meta name="description" content="{{ $meta['description'] }}">
         <meta property="og:description" content="{{ $meta['description'] }}">
     @endif
-    <meta property="og:title" content="{{ $meta['title'] ?? $pageTitle }}">
+    <meta property="og:title" content="{{ $meta['title'] ?? ($settings['hero.heading'] ?? 'Artikel') }}">
+    @php
+        $settings = $settings ?? [];
+        $meta = $meta ?? [];
+        $articles = collect($articles ?? [])->filter(fn ($item) => !empty($item['slug'] ?? null));
+        $timeline = collect($timeline ?? []);
+        $filters = $filters ?? [
+            'search' => request('search'),
+            'year' => request('year'),
+            'month' => request('month'),
+        ];
+
+        $resolveArticleImage = function ($path) {
+            if (empty($path)) {
+                return null;
+            }
+            if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                return $path;
+            }
+            return asset('storage/' . ltrim($path, '/'));
+        };
+
+        $collectionForMeta = $articles;
+        $listOgImage = null;
+        $firstImage = $collectionForMeta->first()['image'] ?? null;
+        if (!empty($firstImage)) {
+            $listOgImage = $resolveArticleImage($firstImage);
+        } elseif (!empty($settings['hero.image'] ?? null)) {
+            $listOgImage = $resolveArticleImage($settings['hero.image']);
+        }
+
+        $pageTitle = $settings['hero.heading'] ?? ($meta['title'] ?? 'Artikel');
+    @endphp
     @if($listOgImage)
         <meta property="og:image" content="{{ $listOgImage }}">
     @endif
@@ -134,6 +61,76 @@
     @include('themeRestoran::components.palette', ['theme' => $themeName])
 </head>
 <body>
+@php
+    use App\Support\Cart;
+    use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
+
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
+    $cartSummary = Cart::summary();
+
+    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
+    $heroBackground = ThemeMedia::url($settings['hero.image'] ?? null) ?? asset('storage/themes/theme-restoran/img/breadcrumb.jpg');
+    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+    if (! $heroMaskEnabled) {
+        $heroClasses .= ' hero-no-mask';
+    }
+    if ($heroBackground) {
+        $heroStyle = $heroMaskEnabled
+            ? "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroBackground}'); background-size: cover; background-position: center;"
+            : "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
+            : 'background: var(--theme-accent);';
+    }
+
+    $heroSection = [
+        'visible' => ($settings['hero.visible'] ?? '1') === '1',
+        'classes' => $heroClasses,
+        'style' => $heroStyle,
+        'title' => $pageTitle,
+        'description' => $settings['hero.description'] ?? null,
+    ];
+
+    $listSection = [
+        'articles' => $articles->map(function ($article) use ($resolveArticleImage) {
+            $slug = $article['slug'] ?? null;
+            return [
+                'title' => $article['title'] ?? 'Artikel',
+                'excerpt' => $article['excerpt'] ?? null,
+                'date' => $article['date_formatted'] ?? null,
+                'author' => $article['author'] ?? null,
+                'image' => $resolveArticleImage($article['image'] ?? null),
+                'url' => $slug ? route('articles.show', ['slug' => $slug]) : '#',
+            ];
+        })->values()->all(),
+        'button_label' => $settings['list.button_label'] ?? 'Baca Selengkapnya',
+        'empty_text' => $settings['list.empty_text'] ?? 'Belum ada artikel tersedia.',
+        'search' => [
+            'placeholder' => $settings['search.placeholder'] ?? 'Cari artikel...',
+            'filters' => $filters,
+        ],
+    ];
+
+    $timelineSection = [
+        'visible' => ($settings['timeline.visible'] ?? '1') === '1' && $timeline->isNotEmpty(),
+        'heading' => $settings['timeline.heading'] ?? 'Arsip Artikel',
+        'items' => $timeline->map(function ($item) {
+            $year = $item['year'] ?? null;
+            $month = $item['month'] ?? null;
+            return [
+                'label' => $item['label'] ?? trim(($item['month_name'] ?? '') . ' ' . ($item['year'] ?? '')),
+                'count' => $item['count'] ?? 0,
+                'url' => route('articles.index', array_filter([
+                    'year' => $year,
+                    'month' => $month,
+                ])),
+            ];
+        })->values()->all(),
+    ];
+@endphp
 <div class="container-xxl position-relative p-0">
     @include('themeRestoran::components.nav-menu', [
         'brand' => $navigation['brand'],
@@ -143,29 +140,13 @@
         'cart' => $cartSummary,
     ])
 
-    @foreach ($activeSections as $sectionKey)
-        @if($sectionKey === 'hero' && ($settings['hero.visible'] ?? '1') === '1')
-            @include('themeRestoran::components.article.sections.hero', [
-                'hero' => [
-                    'visible' => true,
-                    'classes' => $heroClasses,
-                    'style' => $heroStyle,
-                    'title' => $pageTitle,
-                    'description' => $settings['hero.description'] ?? null,
-                ],
-            ])
-        @endif
-    @endforeach
+    @include('themeRestoran::components.article.sections.hero', ['hero' => $heroSection])
 </div>
 
-@foreach ($activeSections as $sectionKey)
-    @if($sectionKey === 'list')
-        @include('themeRestoran::components.article.sections.list', [
-            'list' => $listSection,
-            'timeline' => $timelineSection,
-        ])
-    @endif
-@endforeach
+@include('themeRestoran::components.article.sections.list', [
+    'list' => $listSection,
+    'timeline' => $timelineSection,
+])
 
 @include('themeRestoran::components.footer', ['footer' => $footerConfig])
 

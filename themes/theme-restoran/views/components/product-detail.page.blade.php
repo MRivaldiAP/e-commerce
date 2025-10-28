@@ -1,129 +1,11 @@
 @php
-    use App\Models\PageSetting;
-    use App\Models\Product;
-    use App\Support\Cart;
-    use App\Support\LayoutSettings;
-    use App\Support\ThemeMedia;
-    use App\Support\PageElements;
-
     $themeName = $theme ?? 'theme-restoran';
-    $pageSettings = PageSetting::forPage('product-detail');
-    $settings = array_merge($pageSettings, $settings ?? []);
-    $cartSummary = Cart::summary();
-    $navigation = LayoutSettings::navigation($themeName);
-    $footerConfig = LayoutSettings::footer($themeName);
-
-    $promotion = $product->currentPromotion();
-    $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
-    $finalPrice = $product->final_price;
-
-    $activeSections = PageElements::activeSectionKeys('product-detail', $themeName, $settings);
-    $heroActive = in_array('hero', $activeSections, true);
-    $commentsActive = in_array('comments', $activeSections, true);
-    $recommendationsActive = in_array('recommendations', $activeSections, true);
-
-    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
-    $heroBackground = ThemeMedia::url($settings['hero.image'] ?? null);
-    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
-
-    if (! $heroMaskEnabled) {
-        $heroClasses .= ' hero-no-mask';
-    }
-
-    if ($heroBackground) {
-        $heroStyle = $heroMaskEnabled
-            ? "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroBackground}'); background-size: cover; background-position: center;"
-            : "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
-    } else {
-        $heroStyle = $heroMaskEnabled
-            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
-            : 'background: var(--theme-accent);';
-    }
-
-    $images = ($product->images ?? collect())->pluck('path')->filter()->map(fn ($path) => asset('storage/' . ltrim($path, '/')))->values();
-
-    if ($images->isEmpty()) {
-        $images = collect(['https://via.placeholder.com/600x400?text=No+Image']);
-    }
-
-    $heroSection = [
-        'visible' => $heroActive && ($settings['hero.visible'] ?? '1') === '1',
-        'classes' => $heroClasses,
-        'style' => $heroStyle,
-        'title' => $settings['hero.title'] ?? $product->name,
-        'breadcrumbTitle' => $product->name,
-    ];
-
-    $productSection = [
-        'id' => $product->id,
-        'name' => $product->name,
-        'primary_image' => $images->first(),
-        'images' => $images,
-        'has_promo' => $hasPromo,
-        'promotion_label' => $promotion?->label,
-        'price_original' => $product->price,
-        'price_current' => $finalPrice,
-        'short_description' => $product->short_description ?? 'Nikmati cita rasa terbaik dari produk pilihan kami.',
-        'description' => $product->description,
-        'cart_endpoint' => route('cart.items.store'),
-        'csrf' => csrf_token(),
-    ];
-
-    $commentsSection = [
-        'visible' => $commentsActive && ($settings['comments.visible'] ?? '1') === '1',
-        'heading' => $settings['comments.heading'] ?? 'Komentar Pelanggan',
-        'items' => ($product->comments ?? collect())->map(function ($comment) {
-            return [
-                'author' => $comment->user?->name ?? $comment->name ?? 'Pengguna',
-                'date' => optional($comment->created_at)->format('d M Y'),
-                'content' => $comment->content,
-            ];
-        })->values()->all(),
-    ];
-
-    $recommendationsQuery = Product::query()->where('id', '!=', $product->id);
-
-    if ($product->categories && $product->categories->count()) {
-        $recommendationsQuery->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $product->categories->pluck('id')));
-    }
-
-    $recommendations = $recommendationsQuery->with(['images', 'promotions'])->take(5)->get();
-
-    if ($recommendations->count() < 5) {
-        $fallback = Product::where('id', '!=', $product->id)
-            ->whereNotIn('id', $recommendations->pluck('id'))
-            ->with(['images', 'promotions'])
-            ->take(5 - $recommendations->count())
-            ->get();
-        $recommendations = $recommendations->concat($fallback);
-    }
-
-    $recommendationsSection = [
-        'visible' => $recommendationsActive && ($settings['recommendations.visible'] ?? '1') === '1' && $recommendations->count(),
-        'heading' => $settings['recommendations.heading'] ?? 'Produk Serupa',
-        'items' => $recommendations->map(function ($item) {
-            $imagePath = optional($item->images->first())->path;
-            $itemPromotion = $item->currentPromotion();
-            $itemHasPromo = $itemPromotion && $item->promo_price !== null && $item->promo_price < $item->price;
-
-            return [
-                'name' => $item->name,
-                'image' => $imagePath ? asset('storage/' . ltrim($imagePath, '/')) : asset('storage/themes/theme-restoran/img/menu-1.jpg'),
-                'has_promo' => $itemHasPromo,
-                'promotion_label' => $itemPromotion?->label,
-                'price_original' => $item->price,
-                'price_current' => $item->final_price,
-                'description' => \Illuminate\Support\Str::limit($item->short_description ?? $item->description, 80),
-                'url' => route('products.show', $item),
-            ];
-        })->values()->all(),
-    ];
 @endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>{{ $settings['hero.title'] ?? 'Detail Produk' }}</title>
+    <title>Detail Produk</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link href="{{ asset('storage/themes/theme-restoran/img/favicon.ico') }}" rel="icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -202,6 +84,112 @@
     </style>
 </head>
 <body>
+@php
+    use App\Models\PageSetting;
+    use App\Models\Product;
+    use App\Support\Cart;
+    use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
+
+    $settings = PageSetting::forPage('product-detail');
+    $cartSummary = Cart::summary();
+    $navigation = LayoutSettings::navigation($themeName);
+    $footerConfig = LayoutSettings::footer($themeName);
+
+    $promotion = $product->currentPromotion();
+    $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
+    $finalPrice = $product->final_price;
+
+    $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
+    $heroBackground = ThemeMedia::url($settings['hero.image'] ?? null);
+    $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
+    if (! $heroMaskEnabled) {
+        $heroClasses .= ' hero-no-mask';
+    }
+    if ($heroBackground) {
+        $heroStyle = $heroMaskEnabled
+            ? "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9)), url('{$heroBackground}'); background-size: cover; background-position: center;"
+            : "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+    } else {
+        $heroStyle = $heroMaskEnabled
+            ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.9), rgba(var(--theme-accent-rgb), 0.9));'
+            : 'background: var(--theme-accent);';
+    }
+
+    $images = ($product->images ?? collect())->pluck('path')->filter()->map(fn ($path) => asset('storage/' . ltrim($path, '/')))->values();
+    if ($images->isEmpty()) {
+        $images = collect(['https://via.placeholder.com/600x400?text=No+Image']);
+    }
+
+    $heroSection = [
+        'visible' => ($settings['hero.visible'] ?? '1') === '1',
+        'classes' => $heroClasses,
+        'style' => $heroStyle,
+        'title' => $settings['hero.title'] ?? $product->name,
+        'breadcrumbTitle' => $product->name,
+    ];
+
+    $productSection = [
+        'id' => $product->id,
+        'name' => $product->name,
+        'primary_image' => $images->first(),
+        'images' => $images,
+        'has_promo' => $hasPromo,
+        'promotion_label' => $promotion?->label,
+        'price_original' => $product->price,
+        'price_current' => $finalPrice,
+        'short_description' => $product->short_description ?? 'Nikmati cita rasa terbaik dari produk pilihan kami.',
+        'description' => $product->description,
+        'cart_endpoint' => route('cart.items.store'),
+        'csrf' => csrf_token(),
+    ];
+
+    $commentsSection = [
+        'visible' => ($settings['comments.visible'] ?? '1') === '1',
+        'heading' => $settings['comments.heading'] ?? 'Komentar Pelanggan',
+        'items' => ($product->comments ?? collect())->map(function ($comment) {
+            return [
+                'author' => $comment->user?->name ?? $comment->name ?? 'Pengguna',
+                'date' => optional($comment->created_at)->format('d M Y'),
+                'content' => $comment->content,
+            ];
+        })->values()->all(),
+    ];
+
+    $recommendationsQuery = Product::query()->where('id', '!=', $product->id);
+    if ($product->categories && $product->categories->count()) {
+        $recommendationsQuery->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $product->categories->pluck('id')));
+    }
+    $recommendations = $recommendationsQuery->with(['images', 'promotions'])->take(5)->get();
+    if ($recommendations->count() < 5) {
+        $fallback = Product::where('id', '!=', $product->id)
+            ->whereNotIn('id', $recommendations->pluck('id'))
+            ->with(['images', 'promotions'])
+            ->take(5 - $recommendations->count())
+            ->get();
+        $recommendations = $recommendations->concat($fallback);
+    }
+
+    $recommendationsSection = [
+        'visible' => ($settings['recommendations.visible'] ?? '1') === '1' && $recommendations->count(),
+        'heading' => $settings['recommendations.heading'] ?? 'Produk Serupa',
+        'items' => $recommendations->map(function ($item) {
+            $imagePath = optional($item->images->first())->path;
+            $itemPromotion = $item->currentPromotion();
+            $itemHasPromo = $itemPromotion && $item->promo_price !== null && $item->promo_price < $item->price;
+            return [
+                'name' => $item->name,
+                'image' => $imagePath ? asset('storage/' . ltrim($imagePath, '/')) : asset('storage/themes/theme-restoran/img/menu-1.jpg'),
+                'has_promo' => $itemHasPromo,
+                'promotion_label' => $itemPromotion?->label,
+                'price_original' => $item->price,
+                'price_current' => $item->final_price,
+                'description' => \Illuminate\Support\Str::limit($item->short_description ?? $item->description, 80),
+                'url' => route('products.show', $item),
+            ];
+        })->values()->all(),
+    ];
+@endphp
 <div class="container-xxl position-relative p-0">
     @include('themeRestoran::components.nav-menu', [
         'brand' => $navigation['brand'],
@@ -211,20 +199,14 @@
         'cart' => $cartSummary,
     ])
 
-    @if($heroSection['visible'] ?? false)
-        @include('themeRestoran::components.product-detail.sections.hero', ['hero' => $heroSection])
-    @endif
+    @include('themeRestoran::components.product-detail.sections.hero', ['hero' => $heroSection])
 </div>
 
 @include('themeRestoran::components.product-detail.sections.details', ['product' => $productSection])
 
-@if($commentsSection['visible'] ?? false)
-    @include('themeRestoran::components.product-detail.sections.comments', ['comments' => $commentsSection])
-@endif
+@include('themeRestoran::components.product-detail.sections.comments', ['comments' => $commentsSection])
 
-@if($recommendationsSection['visible'] ?? false)
-    @include('themeRestoran::components.product-detail.sections.recommendations', ['recommendations' => $recommendationsSection])
-@endif
+@include('themeRestoran::components.product-detail.sections.recommendations', ['recommendations' => $recommendationsSection])
 
 @include('themeRestoran::components.footer', ['footer' => $footerConfig])
 
