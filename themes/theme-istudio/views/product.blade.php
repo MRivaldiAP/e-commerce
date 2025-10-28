@@ -180,7 +180,7 @@
         <div class="container py-5">
             <div class="row g-3 align-items-center">
                 <div class="col-lg-6 text-center text-lg-start">
-                    <h1 class="display-1 mb-0 text-white animated slideInLeft">{{ $pageTitle }}</h1>
+                    <h1 class="display-1 mb-0 animated slideInLeft">{{ $pageTitle }}</h1>
                 </div>
                 <div class="col-lg-6 animated slideInRight">
                     <nav aria-label="breadcrumb">
@@ -190,7 +190,7 @@
                         </ol>
                     </nav>
                     @if($heroDescription)
-                        <p class="text-white-50 mt-3 mb-0">{{ $heroDescription }}</p>
+                        <p class="text-muted mt-3 mb-0">{{ $heroDescription }}</p>
                     @endif
                 </div>
             </div>

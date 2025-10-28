@@ -96,7 +96,7 @@
         <div class="container py-5">
             <div class="row g-3 align-items-center">
                 <div class="col-lg-7 text-center text-lg-start">
-                    <h1 class="display-3 mb-0 text-white animated slideInLeft">{{ $article['title'] ?? ($detailSettings['hero.title'] ?? 'Artikel') }}</h1>
+                    <h1 class="display-3 mb-0 animated slideInLeft">{{ $article['title'] ?? ($detailSettings['hero.title'] ?? 'Artikel') }}</h1>
                 </div>
                 <div class="col-lg-5 animated slideInRight">
                     <nav aria-label="breadcrumb">

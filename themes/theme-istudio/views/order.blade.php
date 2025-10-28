@@ -33,10 +33,10 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: .08em;
-            color: #fff;
+            color: #0f172b;
         }
         .hero-header p {
-            color: rgba(255, 255, 255, 0.75);
+            color: rgba(15, 23, 43, 0.7);
             max-width: 540px;
         }
         .hero-breadcrumb {
@@ -45,10 +45,10 @@
             gap: 0.5rem;
             padding: 0.6rem 1.2rem;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(15, 23, 43, 0.08);
             letter-spacing: .08em;
             text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(15, 23, 43, 0.85);
         }
         .hero-breadcrumb a { color: inherit; text-decoration: none; }
         .orders-section { margin-top: -60px; position: relative; z-index: 5; }
