@@ -10,7 +10,6 @@ use App\Models\Comment;
 use App\Models\Product;
 use App\Support\LayoutSettings;
 use App\Support\PageElements;
-use Illuminate\Support\Collection;
 
 class PageController extends Controller
 {
@@ -18,17 +17,9 @@ class PageController extends Controller
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('home'));
-        [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('home', $theme, $settings);
+        $sections = PageElements::sections('home', $theme);
 
-        return view('admin.pages.home', compact(
-            'sections',
-            'settings',
-            'availableSections',
-            'composition',
-            'defaultComposition',
-            'sectionLabels'
-        ));
+        return view('admin.pages.home', compact('sections', 'settings'));
     }
 
     public function updateHome(Request $request)
@@ -56,17 +47,9 @@ class PageController extends Controller
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('product'));
-        [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('product', $theme, $settings);
+        $sections = PageElements::sections('product', $theme);
 
-        return view('admin.pages.product', compact(
-            'sections',
-            'settings',
-            'availableSections',
-            'composition',
-            'defaultComposition',
-            'sectionLabels'
-        ));
+        return view('admin.pages.product', compact('sections', 'settings'));
     }
 
     public function updateProduct(Request $request)
@@ -94,23 +77,13 @@ class PageController extends Controller
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('product-detail'));
-        [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('product-detail', $theme, $settings);
+        $sections = PageElements::sections('product-detail', $theme);
 
         $previewProduct = Product::first();
         $previewUrl = $previewProduct ? route('products.show', $previewProduct) : null;
         $comments = Comment::with(['product', 'user'])->latest()->get();
 
-        return view('admin.pages.product-detail', compact(
-            'sections',
-            'settings',
-            'comments',
-            'previewUrl',
-            'availableSections',
-            'composition',
-            'defaultComposition',
-            'sectionLabels'
-        ));
+        return view('admin.pages.product-detail', compact('sections', 'settings', 'comments', 'previewUrl'));
     }
 
     public function updateProductDetail(Request $request)
@@ -139,21 +112,11 @@ class PageController extends Controller
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('article'));
         $articles = collect(json_decode($settings->get('articles.items', '[]'), true));
-        [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('article', $theme, $settings);
+        $sections = PageElements::sections('article', $theme);
 
         $previewUrl = route('articles.index');
 
-        return view('admin.pages.article', compact(
-            'sections',
-            'settings',
-            'previewUrl',
-            'articles',
-            'availableSections',
-            'composition',
-            'defaultComposition',
-            'sectionLabels'
-        ));
+        return view('admin.pages.article', compact('sections', 'settings', 'previewUrl', 'articles'));
     }
 
     public function updateArticle(Request $request)
@@ -187,19 +150,9 @@ class PageController extends Controller
             return ! empty($item['slug']);
         });
         $previewUrl = $previewArticle ? route('articles.show', ['slug' => $previewArticle['slug']]) : null;
-        [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('article-detail', $theme, $settings);
+        $sections = PageElements::sections('article-detail', $theme);
 
-        return view('admin.pages.article-detail', compact(
-            'sections',
-            'settings',
-            'previewUrl',
-            'articles',
-            'availableSections',
-            'composition',
-            'defaultComposition',
-            'sectionLabels'
-        ));
+        return view('admin.pages.article-detail', compact('sections', 'settings', 'previewUrl', 'articles'));
     }
 
     public function updateArticleDetail(Request $request)
@@ -227,19 +180,10 @@ class PageController extends Controller
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('gallery'));
-        [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('gallery', $theme, $settings);
+        $sections = PageElements::sections('gallery', $theme);
         $previewUrl = route('gallery.index');
 
-        return view('admin.pages.gallery', compact(
-            'sections',
-            'settings',
-            'previewUrl',
-            'availableSections',
-            'composition',
-            'defaultComposition',
-            'sectionLabels'
-        ));
+        return view('admin.pages.gallery', compact('sections', 'settings', 'previewUrl'));
     }
 
     public function updateGallery(Request $request)
@@ -267,19 +211,10 @@ class PageController extends Controller
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('contact'));
-        [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('contact', $theme, $settings);
+        $sections = PageElements::sections('contact', $theme);
         $previewUrl = route('contact');
 
-        return view('admin.pages.contact', compact(
-            'sections',
-            'settings',
-            'previewUrl',
-            'availableSections',
-            'composition',
-            'defaultComposition',
-            'sectionLabels'
-        ));
+        return view('admin.pages.contact', compact('sections', 'settings', 'previewUrl'));
     }
 
     public function updateContact(Request $request)
@@ -307,20 +242,11 @@ class PageController extends Controller
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('about'));
-        [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('about', $theme, $settings);
+        $sections = PageElements::sections('about', $theme);
 
         $previewUrl = route('about');
 
-        return view('admin.pages.about', compact(
-            'sections',
-            'settings',
-            'previewUrl',
-            'availableSections',
-            'composition',
-            'defaultComposition',
-            'sectionLabels'
-        ));
+        return view('admin.pages.about', compact('sections', 'settings', 'previewUrl'));
     }
 
     public function updateAbout(Request $request)
@@ -348,20 +274,11 @@ class PageController extends Controller
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('cart'));
-        [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('cart', $theme, $settings);
+        $sections = PageElements::sections('cart', $theme);
 
         $previewUrl = route('cart.index');
 
-        return view('admin.pages.cart', compact(
-            'sections',
-            'settings',
-            'previewUrl',
-            'availableSections',
-            'composition',
-            'defaultComposition',
-            'sectionLabels'
-        ));
+        return view('admin.pages.cart', compact('sections', 'settings', 'previewUrl'));
     }
 
     public function updateCart(Request $request)
@@ -401,21 +318,11 @@ class PageController extends Controller
         if (! $settings->has('navigation.link.contact')) {
             $settings->put('navigation.link.contact', '1');
         }
-        [$sections, $availableSections, $composition, $defaultComposition, $sectionLabels] =
-            $this->resolveSectionConfig('layout', $theme, $settings);
+        $sections = PageElements::sections('layout', $theme);
 
         $previewUrl = url('/');
 
-        return view('admin.pages.layout', compact(
-            'sections',
-            'settings',
-            'previewUrl',
-            'theme',
-            'availableSections',
-            'composition',
-            'defaultComposition',
-            'sectionLabels'
-        ));
+        return view('admin.pages.layout', compact('sections', 'settings', 'previewUrl', 'theme'));
     }
 
     public function updateLayout(Request $request)
@@ -447,80 +354,5 @@ class PageController extends Controller
         $comment->save();
 
         return back()->with('success', 'Status komentar diperbarui.');
-    }
-
-    /**
-     * Resolve the available, active, and default sections for a page editor.
-     *
-     * @return array{
-     *     0: array<string, array>,
-     *     1: array<int, array{key: string, label: string}>,
-     *     2: array<int, string>,
-     *     3: array<int, string>,
-     *     4: array<string, string>
-     * }
-     */
-    protected function resolveSectionConfig(string $page, string $theme, Collection $settings): array
-    {
-        $allSections = PageElements::sections($page, $theme);
-
-        if ($allSections === []) {
-            return [[], [], [], [], []];
-        }
-
-        $defaultOrder = array_keys($allSections);
-
-        $rawComposition = $settings->get('__sections');
-        $composition = [];
-        $hasCustomComposition = false;
-
-        if (is_string($rawComposition) && $rawComposition !== '') {
-            $decoded = json_decode($rawComposition, true);
-            if (is_array($decoded)) {
-                $hasCustomComposition = true;
-
-                foreach ($decoded as $key) {
-                    if (
-                        is_string($key)
-                        && array_key_exists($key, $allSections)
-                        && ! in_array($key, $composition, true)
-                    ) {
-                        $composition[] = $key;
-                    }
-                }
-
-                if ($decoded !== [] && $composition === []) {
-                    $hasCustomComposition = false;
-                }
-            }
-        }
-
-        if ($composition === []) {
-            $composition = $hasCustomComposition ? [] : $defaultOrder;
-        }
-
-        $sections = [];
-        foreach ($composition as $key) {
-            if (isset($allSections[$key])) {
-                $sections[$key] = $allSections[$key];
-            }
-        }
-
-        $availableSections = [];
-        foreach ($allSections as $key => $section) {
-            if (! in_array($key, $composition, true)) {
-                $availableSections[] = [
-                    'key' => $key,
-                    'label' => $section['label'] ?? ucfirst($key),
-                ];
-            }
-        }
-
-        $labels = [];
-        foreach ($allSections as $key => $section) {
-            $labels[$key] = $section['label'] ?? ucfirst($key);
-        }
-
-        return [$sections, $availableSections, $composition, $defaultOrder, $labels];
     }
 }
