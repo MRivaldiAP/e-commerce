@@ -260,6 +260,7 @@ class LayoutSettings
             'theme-herbalgreen' => 'Herbal Green',
             'theme-restoran' => 'Restoran',
             'theme-second' => 'Ogani Store',
+            'theme-istudio' => 'iSTUDIO',
             default => 'Storefront',
         };
     }
