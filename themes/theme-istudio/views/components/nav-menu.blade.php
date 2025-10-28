@@ -63,9 +63,9 @@
 @once
     <style>
         .navbar .nav-link {
-            font-weight: 600;
-            letter-spacing: 0.02em;
-            text-transform: uppercase;
+            font-weight: 500;
+            letter-spacing: normal;
+            text-transform: none;
         }
 
         .navbar .nav-link.active,
