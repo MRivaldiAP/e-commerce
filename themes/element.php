@@ -16,6 +16,21 @@ return [
                     'hero.description' => ['type' => 'textarea', 'label' => 'Description'],
                     'hero.button_label' => ['type' => 'text', 'label' => 'Button Label'],
                     'hero.button_link' => ['type' => 'text', 'label' => 'Button Link'],
+                    'hero.slides' => [
+                        'type' => 'repeatable',
+                        'label' => 'Hero Slides',
+                        'fields' => [
+                            ['name' => 'image', 'placeholder' => 'Slide Image', 'type' => 'image'],
+                        ],
+                    ],
+                    'hero.highlights' => [
+                        'type' => 'repeatable',
+                        'label' => 'Highlights',
+                        'fields' => [
+                            ['name' => 'icon', 'placeholder' => 'Icon class'],
+                            ['name' => 'label', 'placeholder' => 'Highlight text'],
+                        ],
+                    ],
                 ],
             ],
             'about' => [
@@ -24,7 +39,53 @@ return [
                     'about.visible' => ['type' => 'checkbox', 'label' => 'Show Section'],
                     'about.heading' => ['type' => 'text', 'label' => 'Heading'],
                     'about.image' => ['type' => 'image', 'label' => 'Image'],
+                    'about.image_primary' => ['type' => 'image', 'label' => 'Primary Image'],
+                    'about.image_secondary' => ['type' => 'image', 'label' => 'Secondary Image'],
+                    'about.badge_text' => ['type' => 'text', 'label' => 'Badge Text'],
                     'about.text' => ['type' => 'textarea', 'label' => 'Description'],
+                    'about.text_primary' => ['type' => 'textarea', 'label' => 'Primary Description'],
+                    'about.text_secondary' => ['type' => 'textarea', 'label' => 'Secondary Description'],
+                    'about.checklist' => [
+                        'type' => 'repeatable',
+                        'label' => 'Checklist',
+                        'fields' => [
+                            ['name' => 'text', 'placeholder' => 'Checklist item'],
+                        ],
+                    ],
+                ],
+            ],
+            'features' => [
+                'label' => 'Features',
+                'elements' => [
+                    'features.visible' => ['type' => 'checkbox', 'label' => 'Show Section'],
+                    'features.heading' => ['type' => 'text', 'label' => 'Heading'],
+                    'features.items' => [
+                        'type' => 'repeatable',
+                        'label' => 'Feature Items',
+                        'fields' => [
+                            ['name' => 'icon', 'placeholder' => 'Icon class'],
+                            ['name' => 'title', 'placeholder' => 'Title'],
+                            ['name' => 'text', 'placeholder' => 'Description', 'type' => 'textarea'],
+                        ],
+                    ],
+                ],
+            ],
+            'projects' => [
+                'label' => 'Projects',
+                'elements' => [
+                    'projects.visible' => ['type' => 'checkbox', 'label' => 'Show Section'],
+                    'projects.heading' => ['type' => 'text', 'label' => 'Heading'],
+                    'projects.subheading' => ['type' => 'textarea', 'label' => 'Description'],
+                    'projects.items' => [
+                        'type' => 'repeatable',
+                        'label' => 'Project Items',
+                        'fields' => [
+                            ['name' => 'image', 'placeholder' => 'Image', 'type' => 'image'],
+                            ['name' => 'title', 'placeholder' => 'Project Title'],
+                            ['name' => 'count', 'placeholder' => 'Project Count'],
+                            ['name' => 'link', 'placeholder' => 'Link URL'],
+                        ],
+                    ],
                 ],
             ],
             'products' => [
@@ -55,6 +116,10 @@ return [
                 'elements' => [
                     'services.visible' => ['type' => 'checkbox', 'label' => 'Show Section'],
                     'services.heading' => ['type' => 'text', 'label' => 'Heading'],
+                    'services.description' => ['type' => 'textarea', 'label' => 'Description'],
+                    'services.description_secondary' => ['type' => 'textarea', 'label' => 'Secondary Description'],
+                    'services.phone' => ['type' => 'text', 'label' => 'Phone Number'],
+                    'services.phone_label' => ['type' => 'text', 'label' => 'Phone Label'],
                     'services.items' => [
                         'type' => 'repeatable',
                         'label' => 'Items',
@@ -62,6 +127,27 @@ return [
                             ['name' => 'icon', 'placeholder' => 'Icon class'],
                             ['name' => 'title', 'placeholder' => 'Service Title'],
                             ['name' => 'text', 'placeholder' => 'Description', 'type' => 'textarea'],
+                            ['name' => 'image', 'placeholder' => 'Image', 'type' => 'image'],
+                            ['name' => 'link', 'placeholder' => 'Link URL'],
+                        ],
+                    ],
+                ],
+            ],
+            'team' => [
+                'label' => 'Team',
+                'elements' => [
+                    'team.visible' => ['type' => 'checkbox', 'label' => 'Show Section'],
+                    'team.heading' => ['type' => 'text', 'label' => 'Heading'],
+                    'team.description' => ['type' => 'textarea', 'label' => 'Description'],
+                    'team.members' => [
+                        'type' => 'repeatable',
+                        'label' => 'Members',
+                        'fields' => [
+                            ['name' => 'name', 'placeholder' => 'Name'],
+                            ['name' => 'title', 'placeholder' => 'Title'],
+                            ['name' => 'photo', 'placeholder' => 'Photo Path', 'type' => 'image'],
+                            ['name' => 'description', 'placeholder' => 'Description', 'type' => 'textarea'],
+                            ['name' => 'social', 'placeholder' => 'Social Links (comma separated)'],
                         ],
                     ],
                 ],
@@ -74,6 +160,16 @@ return [
                     'contact.map' => ['type' => 'textarea', 'label' => 'Map Embed'],
                 ],
             ],
+            'newsletter' => [
+                'label' => 'Newsletter',
+                'elements' => [
+                    'newsletter.visible' => ['type' => 'checkbox', 'label' => 'Show Section'],
+                    'newsletter.heading' => ['type' => 'text', 'label' => 'Heading'],
+                    'newsletter.description' => ['type' => 'textarea', 'label' => 'Description'],
+                    'newsletter.placeholder' => ['type' => 'text', 'label' => 'Input Placeholder'],
+                    'newsletter.image' => ['type' => 'image', 'label' => 'Illustration'],
+                ],
+            ],
         ],
     ],
     'contact' => [
@@ -82,6 +178,7 @@ return [
                 'label' => 'Header',
                 'elements' => [
                     'hero.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
+                    'hero.mask' => ['type' => 'checkbox', 'label' => 'Gunakan Overlay Gelap'],
                     'hero.background' => ['type' => 'image', 'label' => 'Gambar Latar'],
                     'hero.heading' => ['type' => 'text', 'label' => 'Judul'],
                     'hero.description' => ['type' => 'textarea', 'label' => 'Deskripsi'],
@@ -164,6 +261,30 @@ return [
                     'hero.mask' => ['type' => 'checkbox', 'label' => 'Use Dark Overlay'],
                     'hero.image' => ['type' => 'image', 'label' => 'Background Image'],
                     'title' => ['type' => 'text', 'label' => 'Title'],
+                    'hero.description' => ['type' => 'textarea', 'label' => 'Description'],
+                ],
+            ],
+            'filters' => [
+                'label' => 'Filters',
+                'elements' => [
+                    'filters.search_label' => ['type' => 'text', 'label' => 'Search Label'],
+                    'filters.search_placeholder' => ['type' => 'text', 'label' => 'Search Placeholder'],
+                    'filters.category_label' => ['type' => 'text', 'label' => 'Category Label'],
+                    'filters.category_all_label' => ['type' => 'text', 'label' => 'All Categories Label'],
+                    'filters.sort_label' => ['type' => 'text', 'label' => 'Sort Label'],
+                    'filters.sort_default_label' => ['type' => 'text', 'label' => 'Default Sort Label'],
+                    'filters.sort_price_low_label' => ['type' => 'text', 'label' => 'Price Asc Label'],
+                    'filters.sort_price_high_label' => ['type' => 'text', 'label' => 'Price Desc Label'],
+                    'filters.sort_popular_label' => ['type' => 'text', 'label' => 'Popular Sort Label'],
+                    'filters.apply_label' => ['type' => 'text', 'label' => 'Apply Button Label'],
+                    'filters.reset_label' => ['type' => 'text', 'label' => 'Reset Button Label'],
+                ],
+            ],
+            'grid' => [
+                'label' => 'Grid',
+                'elements' => [
+                    'grid.button_label' => ['type' => 'text', 'label' => 'Detail Button Label'],
+                    'grid.empty_text' => ['type' => 'textarea', 'label' => 'Empty State Text'],
                 ],
             ],
         ],
@@ -177,6 +298,16 @@ return [
                     'hero.mask' => ['type' => 'checkbox', 'label' => 'Use Dark Overlay'],
                     'hero.image' => ['type' => 'image', 'label' => 'Background Image'],
                     'hero.title' => ['type' => 'text', 'label' => 'Breadcrumb Title'],
+                    'hero.description' => ['type' => 'textarea', 'label' => 'Description'],
+                ],
+            ],
+            'details' => [
+                'label' => 'Details',
+                'elements' => [
+                    'details.quantity_label' => ['type' => 'text', 'label' => 'Quantity Label'],
+                    'details.add_to_cart_label' => ['type' => 'text', 'label' => 'Add To Cart Label'],
+                    'details.added_feedback' => ['type' => 'textarea', 'label' => 'Success Feedback Message'],
+                    'details.error_feedback' => ['type' => 'textarea', 'label' => 'Error Feedback Message'],
                 ],
             ],
             'comments' => [
@@ -184,6 +315,7 @@ return [
                 'elements' => [
                     'comments.visible' => ['type' => 'checkbox', 'label' => 'Show Section'],
                     'comments.heading' => ['type' => 'text', 'label' => 'Heading'],
+                    'comments.empty_text' => ['type' => 'textarea', 'label' => 'Empty State Text'],
                 ],
             ],
             'recommendations' => [
@@ -191,6 +323,8 @@ return [
                 'elements' => [
                     'recommendations.visible' => ['type' => 'checkbox', 'label' => 'Show Section'],
                     'recommendations.heading' => ['type' => 'text', 'label' => 'Heading'],
+                    'recommendations.button_label' => ['type' => 'text', 'label' => 'Detail Button Label'],
+                    'recommendations.empty_text' => ['type' => 'textarea', 'label' => 'Empty State Text'],
                 ],
             ],
         ],
@@ -272,6 +406,31 @@ return [
             ],
         ],
     ],
+    'shipping' => [
+        'sections' => [
+            'form' => [
+                'label' => 'Form Pengiriman',
+                'elements' => [
+                    'form.heading' => ['type' => 'text', 'label' => 'Judul Form'],
+                    'form.button_label' => ['type' => 'text', 'label' => 'Label Tombol Lanjut'],
+                ],
+            ],
+            'methods' => [
+                'label' => 'Metode Pengiriman',
+                'elements' => [
+                    'methods.heading' => ['type' => 'text', 'label' => 'Judul Seksi'],
+                    'methods.fetch_label' => ['type' => 'text', 'label' => 'Label Tombol Cek Ongkir'],
+                ],
+            ],
+            'summary' => [
+                'label' => 'Ringkasan Pesanan',
+                'elements' => [
+                    'summary.heading' => ['type' => 'text', 'label' => 'Judul Ringkasan'],
+                    'summary.note' => ['type' => 'textarea', 'label' => 'Catatan Tambahan'],
+                ],
+            ],
+        ],
+    ],
     'gallery' => [
         'sections' => [
             'hero' => [
@@ -311,15 +470,38 @@ return [
                     'hero.background' => ['type' => 'image', 'label' => 'Gambar Latar'],
                     'hero.heading' => ['type' => 'text', 'label' => 'Judul'],
                     'hero.text' => ['type' => 'textarea', 'label' => 'Deskripsi Singkat'],
+                    'hero.breadcrumb' => [
+                        'type' => 'repeatable',
+                        'label' => 'Breadcrumb',
+                        'fields' => [
+                            ['name' => 'label', 'placeholder' => 'Nama Breadcrumb'],
+                            ['name' => 'link', 'placeholder' => 'Tautan (opsional)'],
+                        ],
+                    ],
                 ],
             ],
             'intro' => [
                 'label' => 'Tentang Kami',
                 'elements' => [
                     'intro.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
-                    'intro.image' => ['type' => 'image', 'label' => 'Gambar'],
                     'intro.heading' => ['type' => 'text', 'label' => 'Judul Seksi'],
                     'intro.description' => ['type' => 'textarea', 'label' => 'Deskripsi'],
+                    'intro.description_primary' => ['type' => 'textarea', 'label' => 'Deskripsi Utama'],
+                    'intro.description_secondary' => ['type' => 'textarea', 'label' => 'Deskripsi Tambahan'],
+                    'intro.image' => ['type' => 'image', 'label' => 'Gambar'],
+                    'intro.image_primary' => ['type' => 'image', 'label' => 'Gambar Utama'],
+                    'intro.image_secondary' => ['type' => 'image', 'label' => 'Gambar Kedua'],
+                    'intro.badge_text' => ['type' => 'text', 'label' => 'Teks Badge'],
+                    'intro.checklist' => [
+                        'type' => 'repeatable',
+                        'label' => 'Checklist',
+                        'fields' => [
+                            ['name' => 'text', 'placeholder' => 'Teks checklist'],
+                        ],
+                    ],
+                    'intro.button_label' => ['type' => 'text', 'label' => 'Label Tombol'],
+                    'intro.button_link' => ['type' => 'text', 'label' => 'Tautan Tombol'],
+                    'intro.social_links' => ['type' => 'textarea', 'label' => 'Tautan Sosial (pisahkan dengan koma)'],
                 ],
             ],
             'quote' => [
@@ -344,6 +526,7 @@ return [
                             ['name' => 'title', 'placeholder' => 'Jabatan'],
                             ['name' => 'photo', 'placeholder' => 'Path Foto'],
                             ['name' => 'description', 'placeholder' => 'Deskripsi', 'type' => 'textarea'],
+                            ['name' => 'social', 'placeholder' => 'Tautan Sosial (pisahkan dengan koma)'],
                         ],
                     ],
                 ],
@@ -388,6 +571,28 @@ return [
                 'elements' => [
                     'button.shipping' => ['type' => 'text', 'label' => 'Label Tombol Pengiriman'],
                     'button.payment' => ['type' => 'text', 'label' => 'Label Tombol Pembayaran'],
+                ],
+            ],
+        ],
+    ],
+    'order' => [
+        'sections' => [
+            'hero' => [
+                'label' => 'Hero',
+                'elements' => [
+                    'hero.visible' => ['type' => 'checkbox', 'label' => 'Tampilkan Seksi'],
+                    'hero.mask' => ['type' => 'checkbox', 'label' => 'Gunakan Overlay Gelap'],
+                    'hero.background' => ['type' => 'image', 'label' => 'Gambar Latar'],
+                    'hero.heading' => ['type' => 'text', 'label' => 'Judul'],
+                    'hero.description' => ['type' => 'textarea', 'label' => 'Deskripsi'],
+                ],
+            ],
+            'empty' => [
+                'label' => 'Pesanan Kosong',
+                'elements' => [
+                    'empty.title' => ['type' => 'text', 'label' => 'Judul Pesan'],
+                    'empty.description' => ['type' => 'textarea', 'label' => 'Deskripsi Pesan'],
+                    'empty.button' => ['type' => 'text', 'label' => 'Label Tombol'],
                 ],
             ],
         ],
