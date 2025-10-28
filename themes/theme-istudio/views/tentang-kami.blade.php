@@ -142,11 +142,11 @@
             ];
         }
     @endphp
-    <div class="container-fluid pb-5 bg-primary hero-header" style="background-image: linear-gradient(rgba(15, 23, 43, 0.65), rgba(15, 23, 43, 0.65)), url('{{ $heroBackground }}'); background-size: cover; background-position: center;">
+    <div class="container-fluid pb-5 bg-primary hero-header" style="background-image: url('{{ $heroBackground }}'); background-size: cover; background-position: center;">
         <div class="container py-5">
             <div class="row g-3 align-items-center">
                 <div class="col-lg-6 text-center text-lg-start">
-                    <h1 class="display-1 mb-0 text-white animated slideInLeft">{{ $heroHeading }}</h1>
+                    <h1 class="display-1 mb-0 animated slideInLeft">{{ $heroHeading }}</h1>
                 </div>
                 <div class="col-lg-6 animated slideInRight">
                     <nav aria-label="breadcrumb">
