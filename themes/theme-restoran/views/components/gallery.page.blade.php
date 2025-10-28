@@ -1,15 +1,13 @@
 @php
-    use App\Models\GalleryCategory;
-    use App\Models\GalleryItem;
     use App\Models\PageSetting;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
-    use App\Support\PageElements;
+    use App\Models\GalleryCategory;
+    use App\Models\GalleryItem;
 
     $themeName = $theme ?? 'theme-restoran';
-    $pageSettings = PageSetting::forPage('gallery');
-    $settings = array_merge($pageSettings, $settings ?? []);
+    $settings = PageSetting::forPage('gallery');
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
     $cartSummary = Cart::summary();
@@ -21,37 +19,32 @@
         ->orderBy('created_at', 'desc')
         ->get());
 
-    $activeSections = PageElements::activeSectionKeys('gallery', $themeName, $settings);
-    $heroActive = in_array('hero', $activeSections, true);
-    $filtersActive = in_array('filters', $activeSections, true);
-    $gridActive = in_array('grid', $activeSections, true);
-
     $hasUncategorized = $itemCollection->contains(fn ($item) => $item->category === null);
 
+    $heroVisible = ($settings['hero.visible'] ?? '1') === '1';
     $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
     $heroBackground = ThemeMedia::url($settings['hero.image'] ?? $settings['hero.background'] ?? null)
         ?? asset('storage/themes/theme-restoran/img/breadcrumb.jpg');
     $heroHeading = $settings['hero.heading'] ?? 'Galeri';
     $heroDescription = $settings['hero.description'] ?? null;
     $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
-
     if (! $heroMaskEnabled) {
         $heroClasses .= ' hero-no-mask';
     }
-
+    $heroStyle = '';
     if ($heroBackground) {
-        $heroStyle = $heroMaskEnabled
-            ? "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.85), rgba(var(--theme-accent-rgb), 0.85)), url('{$heroBackground}'); background-size: cover; background-position: center;"
-            : "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+        if ($heroMaskEnabled) {
+            $heroStyle = "background-image: linear-gradient(rgba(var(--theme-accent-rgb), 0.85), rgba(var(--theme-accent-rgb), 0.85)), url('{$heroBackground}'); background-size: cover; background-position: center;";
+        } else {
+            $heroStyle = "background-image: url('{$heroBackground}'); background-size: cover; background-position: center;";
+        }
     } else {
         $heroStyle = $heroMaskEnabled
             ? 'background: linear-gradient(rgba(var(--theme-accent-rgb), 0.85), rgba(var(--theme-accent-rgb), 0.85));'
             : 'background: var(--theme-accent);';
     }
 
-    $filterVisible = $filtersActive
-        && ($settings['filters.visible'] ?? '1') === '1'
-        && ($categoryCollection->isNotEmpty() || $hasUncategorized);
+    $filterVisible = ($settings['filters.visible'] ?? '1') === '1' && ($categoryCollection->isNotEmpty() || $hasUncategorized);
     $filterHeading = $settings['filters.heading'] ?? 'Kategori Galeri';
     $allLabel = $settings['filters.all_label'] ?? 'Semua Foto';
     $gridHeading = $settings['grid.heading'] ?? 'Galeri Kami';
@@ -85,30 +78,24 @@
         'showLogin' => $navigation['show_login'],
         'cart' => $cartSummary,
     ])
-
-    @if($heroActive && ($settings['hero.visible'] ?? '1') === '1')
-        @include('themeRestoran::components.gallery.sections.hero', [
-            'heroClasses' => $heroClasses,
-            'heroStyle' => $heroStyle,
-            'heroHeading' => $heroHeading,
-            'heroDescription' => $heroDescription,
-        ])
-    @endif
+    @includeWhen($heroVisible, 'themeRestoran::components.gallery.sections.hero', [
+        'heroClasses' => $heroClasses,
+        'heroStyle' => $heroStyle,
+        'heroHeading' => $heroHeading,
+        'heroDescription' => $heroDescription,
+    ])
 </div>
 
-@if($filtersActive || $gridActive)
-    @include('themeRestoran::components.gallery.sections.list', [
-        'filterVisible' => $filterVisible,
-        'filterHeading' => $filterHeading,
-        'allLabel' => $allLabel,
-        'gridHeading' => $gridActive ? $gridHeading : null,
-        'emptyText' => $gridActive ? $emptyText : null,
-        'categoryCollection' => $categoryCollection,
-        'itemCollection' => $gridActive ? $itemCollection : collect(),
-        'hasUncategorized' => $hasUncategorized,
-        'gridActive' => $gridActive,
-    ])
-@endif
+@include('themeRestoran::components.gallery.sections.list', [
+    'filterVisible' => $filterVisible,
+    'filterHeading' => $filterHeading,
+    'allLabel' => $allLabel,
+    'gridHeading' => $gridHeading,
+    'emptyText' => $emptyText,
+    'categoryCollection' => $categoryCollection,
+    'itemCollection' => $itemCollection,
+    'hasUncategorized' => $hasUncategorized,
+])
 
 @include('themeRestoran::components.footer', ['footer' => $footerConfig])
 
