@@ -7,7 +7,7 @@
     use Illuminate\Support\Carbon;
 
     $themeName = $theme ?? 'theme-second';
-    $detailSettings = array_merge(PageSetting::forPage('article-detail', $themeName), $settings ?? []);
+    $detailSettings = array_merge(PageSetting::forPage('article-detail'), $settings ?? []);
     $article = $article ?? [];
     $recommended = collect($recommended ?? []);
     $meta = $meta ?? [];

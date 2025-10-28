@@ -17,7 +17,7 @@ class CartController extends Controller
     public function index(ShippingGatewayManager $shipping)
     {
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
-        $settings = PageSetting::forPage('cart', $theme);
+        $settings = PageSetting::forPage('cart');
 
         $viewPath = base_path("themes/{$theme}/views/cart.blade.php");
         if (! File::exists($viewPath)) {

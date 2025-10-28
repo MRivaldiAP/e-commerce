@@ -1,6 +1,6 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = \App\Models\PageSetting::forPage('home', $themeName);
+    $settings = \App\Models\PageSetting::forPage('home');
     $activeSections = \App\Support\PageElements::activeSectionKeys('home', $themeName, $settings);
     $products = \App\Models\Product::where('is_featured', true)->latest()->take(5)->get();
     $testimonials = json_decode($settings['testimonials.items'] ?? '[]', true);

@@ -1,6 +1,6 @@
 @php
     $themeName = $theme ?? 'theme-herbalgreen';
-    $settings = \App\Models\PageSetting::forPage('product-detail', $themeName);
+    $settings = \App\Models\PageSetting::forPage('product-detail');
     $activeSections = \App\Support\PageElements::activeSectionKeys('product-detail', $themeName, $settings);
     $navigation = \App\Support\LayoutSettings::navigation($themeName);
     $footerConfig = \App\Support\LayoutSettings::footer($themeName);

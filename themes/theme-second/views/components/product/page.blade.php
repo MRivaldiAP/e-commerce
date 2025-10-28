@@ -8,7 +8,7 @@
     use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-second';
-    $settings = PageSetting::forPage('product', $themeName);
+    $settings = PageSetting::forPage('product');
     $activeSections = PageElements::activeSectionKeys('product', $themeName, $settings);
     $query = Product::query()->with(['images', 'promotions']);
 

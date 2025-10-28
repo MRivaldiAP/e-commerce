@@ -7,7 +7,7 @@
     use App\Support\PageElements;
 
     $themeName = $theme ?? 'theme-restoran';
-    $pageSettings = PageSetting::forPage('product-detail', $themeName);
+    $pageSettings = PageSetting::forPage('product-detail');
     $settings = array_merge($pageSettings, $settings ?? []);
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
