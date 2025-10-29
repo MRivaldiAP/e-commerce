@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\MediaAssetController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -311,6 +312,10 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::resource('gallery/items', GalleryItemController::class)
             ->except(['show'])
             ->names('admin.gallery.items');
+
+        Route::resource('media', MediaAssetController::class)
+            ->only(['index', 'store', 'destroy'])
+            ->names('admin.media');
 
         Route::get('payments', [PaymentController::class, 'index'])->name('admin.payments.index');
         Route::post('payments', [PaymentController::class, 'update'])->name('admin.payments.update');
