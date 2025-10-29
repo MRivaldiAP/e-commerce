@@ -95,6 +95,7 @@
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
+    $paymentEnabled = $navigation['payment_enabled'] ?? false;
     $promotion = $product->currentPromotion();
     $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
     $finalPrice = $product->final_price;
@@ -138,6 +139,16 @@
             ->get();
         $recommendations = $recommendations->concat($fallback);
     }
+    $whatsappNumberRaw = $settings['details.whatsapp_number'] ?? '';
+    $whatsappDigits = preg_replace('/\D+/', '', (string) $whatsappNumberRaw);
+    $whatsappMessage = 'Halo, saya tertarik dengan ' . $product->name;
+    $whatsappLink = $whatsappDigits !== ''
+        ? 'https://wa.me/' . $whatsappDigits . '?text=' . rawurlencode($whatsappMessage)
+        : null;
+    $whatsappButtonLabel = $settings['details.whatsapp_button_label'] ?? 'Pesan Sekarang';
+    $addToCartLabel = $settings['details.add_to_cart_label'] ?? 'Masukkan ke Keranjang';
+    $successFeedback = $settings['details.added_feedback'] ?? 'Produk ditambahkan ke keranjang.';
+    $errorFeedback = $settings['details.error_feedback'] ?? 'Gagal menambahkan produk ke keranjang.';
 @endphp
 <div class="container-xxl position-relative p-0">
     {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
@@ -189,18 +200,33 @@
                 </div>
             </div>
             <p class="mb-4">{{ $product->short_description ?? 'Nikmati cita rasa terbaik dari produk pilihan kami.' }}</p>
-            <div class="d-flex align-items-center mb-3" id="quantityControl">
-                <div class="input-group" style="width: 150px;">
-                    <button class="btn btn-outline-secondary" type="button" data-action="decrease">-</button>
-                    <input type="number" class="form-control text-center" value="1" min="1" id="quantityInput">
-                    <button class="btn btn-outline-secondary" type="button" data-action="increase">+</button>
+            @if($paymentEnabled)
+                <div class="d-flex align-items-center mb-3" id="quantityControl">
+                    <div class="input-group" style="width: 150px;">
+                        <button class="btn btn-outline-secondary" type="button" data-action="decrease">-</button>
+                        <input type="number" class="form-control text-center" value="1" min="1" id="quantityInput">
+                        <button class="btn btn-outline-secondary" type="button" data-action="increase">+</button>
+                    </div>
                 </div>
-            </div>
-            <div class="mb-4">
-                <button class="btn btn-primary py-2 px-4 me-2" id="addToCartButton" type="button"><i class="bi bi-cart"></i> Masukkan ke Keranjang</button>
-                <button class="btn btn-outline-primary py-2 px-4" type="button"><i class="bi bi-heart"></i></button>
-            </div>
-            <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
+                <div class="mb-4">
+                    <button class="btn btn-primary py-2 px-4 me-2" id="addToCartButton" type="button"><i class="bi bi-cart"></i> {{ $addToCartLabel }}</button>
+                    <button class="btn btn-outline-primary py-2 px-4" type="button"><i class="bi bi-heart"></i></button>
+                </div>
+                <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
+            @else
+                <div class="mb-4">
+                    @if($whatsappLink)
+                        <a href="{{ $whatsappLink }}" class="btn btn-success py-2 px-4" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> {{ $whatsappButtonLabel }}</a>
+                    @else
+                        <button class="btn btn-outline-secondary py-2 px-4" type="button" disabled><i class="bi bi-whatsapp"></i> {{ $whatsappButtonLabel }}</button>
+                    @endif
+                </div>
+                <div class="cart-feedback{{ $whatsappLink ? '' : ' error' }}" id="cartFeedback" role="status" aria-live="polite">
+                    @unless($whatsappLink)
+                        Nomor WhatsApp belum tersedia.
+                    @endunless
+                </div>
+            @endif
             <div class="mt-4">
                 <h5 class="mb-3">Deskripsi Produk</h5>
                 <p>{!! $product->description ? nl2br(e($product->description)) : 'Belum ada deskripsi produk.' !!}</p>
@@ -322,9 +348,6 @@
         const addToCart = document.getElementById('addToCartButton');
         const feedback = document.getElementById('cartFeedback');
         const quantityInput = document.getElementById('quantityInput');
-        const csrf = '{{ csrf_token() }}';
-        const productId = {{ $product->id }};
-        const endpoint = '{{ route('cart.items.store') }}';
         let feedbackTimer = null;
 
         function showFeedback(message, isError = false) {
@@ -348,6 +371,13 @@
             }
         }
 
+        @if($paymentEnabled)
+        const csrf = '{{ csrf_token() }}';
+        const productId = {{ $product->id }};
+        const endpoint = '{{ route('cart.items.store') }}';
+        const successMessage = @json($successFeedback);
+        const fallbackError = @json($errorFeedback);
+
         function handleResponse(response) {
             if (!response.ok) {
                 throw response;
@@ -358,13 +388,13 @@
         function parseError(error) {
             if (typeof error.json === 'function') {
                 return error.json().then(function(data){
-                    return data?.message || 'Gagal menambahkan produk ke keranjang.';
+                    return data?.message || fallbackError;
                 }).catch(function(){
-                    return 'Gagal menambahkan produk ke keranjang.';
+                    return fallbackError;
                 });
             }
 
-            return Promise.resolve('Gagal menambahkan produk ke keranjang.');
+            return Promise.resolve(fallbackError);
         }
 
         if(addToCart){
@@ -389,7 +419,7 @@
                 })
                 .then(handleResponse)
                 .then(function(data){
-                    showFeedback('Produk ditambahkan ke keranjang.');
+                    showFeedback(successMessage);
                     window.dispatchEvent(new CustomEvent('cart:updated', { detail: data.summary }));
                 })
                 .catch(function(error){
@@ -403,8 +433,9 @@
                 });
             });
         }
+        @endif
     });
-  </script>
+</script>
 
 {!! view()->file(base_path('themes/' . $themeName . '/views/components/floating-contact-buttons.blade.php'), [
     'theme' => $themeName,

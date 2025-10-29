@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\PageSetting;
+use App\Models\Setting;
 use function str_starts_with;
 
 class LayoutSettings
@@ -94,6 +95,8 @@ class LayoutSettings
             ],
         ];
 
+        $paymentEnabled = ! empty(Setting::getValue('payment.gateway'));
+
         return [
             'brand' => [
                 'visible' => $brandVisible,
@@ -103,8 +106,9 @@ class LayoutSettings
                 'url' => url('/'),
             ],
             'links' => $links,
-            'show_cart' => ($settings['navigation.icon.cart'] ?? '1') === '1',
+            'show_cart' => $paymentEnabled && ($settings['navigation.icon.cart'] ?? '1') === '1',
             'show_login' => ($settings['navigation.button.login'] ?? '1') === '1',
+            'payment_enabled' => $paymentEnabled,
         ];
     }
 
