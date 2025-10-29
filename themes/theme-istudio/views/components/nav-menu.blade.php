@@ -28,6 +28,8 @@
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav ms-auto align-items-lg-center">
                     @foreach ($links as $link)
+                        @continue(($link['key'] ?? null) === 'orders')
+
                         @if ($link['visible'] ?? false)
                             <a href="{{ $link['href'] }}" class="nav-item nav-link{{ url()->current() === $link['href'] ? ' active' : '' }}">{{ $link['label'] }}</a>
                         @endif

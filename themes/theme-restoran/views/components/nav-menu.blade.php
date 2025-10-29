@@ -28,6 +28,8 @@
     <div class="collapse navbar-collapse" id="navbarCollapse">
         <div class="navbar-nav ms-auto py-0 pe-4">
             @foreach($links as $link)
+                @continue(($link['key'] ?? null) === 'orders')
+
                 @if($link['visible'])
                     <a href="{{ $link['href'] }}" class="nav-item nav-link">{{ $link['label'] }}</a>
                 @endif

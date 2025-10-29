@@ -19,6 +19,8 @@
     <nav class="main-nav">
         <ul>
             @foreach ($links as $link)
+                @continue(($link['key'] ?? null) === 'orders')
+
                 @if ($link['visible'])
                     <li><a href="{{ $link['href'] }}">{{ $link['label'] }}</a></li>
                 @endif
