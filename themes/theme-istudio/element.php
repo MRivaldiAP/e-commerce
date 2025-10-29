@@ -130,6 +130,7 @@ return [
         'details' => [
             'details.quantity_label',
             'details.add_to_cart_label',
+            'details.whatsapp_number',
             'details.added_feedback',
             'details.error_feedback',
         ],

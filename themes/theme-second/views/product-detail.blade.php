@@ -55,6 +55,15 @@
             letter-spacing: .05em;
         }
 
+        .product__details__quantity .quantity-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: #111;
+        }
+
         .product__item__badge {
             position: absolute;
             top: 12px;
@@ -87,6 +96,7 @@
 @php
     use App\Models\PageSetting;
     use App\Models\Product;
+    use App\Models\Setting;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
 
@@ -95,6 +105,14 @@
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
+
+    $paymentActive = ! empty(Setting::getValue('payment.gateway'));
+    $quantityLabel = $settings['details.quantity_label'] ?? 'Jumlah';
+    $addToCartLabel = $settings['details.add_to_cart_label'] ?? 'Masukkan ke Keranjang';
+    $whatsappNumberRaw = trim((string) ($settings['details.whatsapp_number'] ?? ''));
+    $whatsappDigits = $whatsappNumberRaw !== '' ? preg_replace('/\D+/', '', $whatsappNumberRaw) : '';
+    $whatsappMessage = 'Halo, saya ingin memesan ' . $product->name . '.';
+    $whatsappUrl = $whatsappDigits !== '' ? 'https://wa.me/' . $whatsappDigits . '?text=' . rawurlencode($whatsappMessage) : null;
 
     $images = $product->images ?? collect();
     $imageSources = $images->pluck('path')->filter()->map(fn($path) => asset('storage/'.$path))->values();
@@ -173,16 +191,27 @@
                         @endif
                     </div>
                     <p>{{ $product->short_description ?? 'Produk pilihan terbaik untuk memenuhi kebutuhan Anda setiap hari.' }}</p>
-                    <div class="product__details__quantity">
-                        <div class="quantity">
-                            <div class="pro-qty">
-                                <input type="text" value="1" id="quantityInput">
+                    @if($paymentActive)
+                        <div class="product__details__quantity" aria-labelledby="quantityLabel">
+                            <span class="quantity-label" id="quantityLabel">{{ $quantityLabel }}</span>
+                            <div class="quantity">
+                                <div class="pro-qty">
+                                    <input type="text" value="1" id="quantityInput" aria-label="{{ $quantityLabel }}">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <a href="#" class="primary-btn" id="addToCartButton">MASUKKAN KE KERANJANG</a>
-                    <a href="#" class="heart-icon"><span class="icon_heart_alt"></span></a>
-                    <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
+                        <a href="#" class="primary-btn" id="addToCartButton">{{ strtoupper($addToCartLabel) }}</a>
+                        <a href="#" class="heart-icon"><span class="icon_heart_alt"></span></a>
+                        <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
+                    @else
+                        <a href="{{ $whatsappUrl ?? '#' }}" class="primary-btn{{ $whatsappUrl ? '' : ' disabled' }}" id="orderViaWhatsappButton" @if($whatsappUrl) target="_blank" rel="noopener noreferrer" @else aria-disabled="true" @endif>
+                            PESAN SEKARANG
+                        </a>
+                        <a href="#" class="heart-icon"><span class="icon_heart_alt"></span></a>
+                        @if(! $whatsappUrl)
+                            <div class="cart-feedback error" role="status">Silakan isi nomor WhatsApp di halaman kelola detail produk.</div>
+                        @endif
+                    @endif
                     <ul>
                         <li><b>Ketersediaan</b> <span>{{ $product->stock > 0 ? 'Stok Tersedia' : 'Stok Habis' }}</span></li>
                         <li><b>Berat</b> <span>{{ $product->weight ? $product->weight.' kg' : '-' }}</span></li>

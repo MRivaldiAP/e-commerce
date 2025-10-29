@@ -87,6 +87,7 @@
 @php
     use App\Models\PageSetting;
     use App\Models\Product;
+    use App\Models\Setting;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
     use App\Support\ThemeMedia;
@@ -98,6 +99,13 @@
     $promotion = $product->currentPromotion();
     $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
     $finalPrice = $product->final_price;
+    $paymentActive = ! empty(Setting::getValue('payment.gateway'));
+    $quantityLabel = $settings['details.quantity_label'] ?? 'Jumlah';
+    $addToCartLabel = $settings['details.add_to_cart_label'] ?? 'Masukkan ke Keranjang';
+    $whatsappNumberRaw = trim((string) ($settings['details.whatsapp_number'] ?? ''));
+    $whatsappDigits = $whatsappNumberRaw !== '' ? preg_replace('/\D+/', '', $whatsappNumberRaw) : '';
+    $whatsappMessage = 'Halo, saya ingin memesan ' . $product->name . '.';
+    $whatsappUrl = $whatsappDigits !== '' ? 'https://wa.me/' . $whatsappDigits . '?text=' . rawurlencode($whatsappMessage) : null;
     $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
     $heroBackground = ThemeMedia::url($settings['hero.image'] ?? null);
     $heroClasses = 'container-xxl py-5 hero-header mb-5' . ($heroMaskEnabled ? ' bg-dark' : '');
@@ -189,18 +197,32 @@
                 </div>
             </div>
             <p class="mb-4">{{ $product->short_description ?? 'Nikmati cita rasa terbaik dari produk pilihan kami.' }}</p>
-            <div class="d-flex align-items-center mb-3" id="quantityControl">
-                <div class="input-group" style="width: 150px;">
-                    <button class="btn btn-outline-secondary" type="button" data-action="decrease">-</button>
-                    <input type="number" class="form-control text-center" value="1" min="1" id="quantityInput">
-                    <button class="btn btn-outline-secondary" type="button" data-action="increase">+</button>
+            @if($paymentActive)
+                <div class="mb-3">
+                    <label for="quantityInput" class="form-label fw-semibold" id="quantityLabel">{{ $quantityLabel }}</label>
+                    <div class="d-flex align-items-center" id="quantityControl" aria-labelledby="quantityLabel">
+                        <div class="input-group" style="width: 150px;">
+                            <button class="btn btn-outline-secondary" type="button" data-action="decrease">-</button>
+                            <input type="number" class="form-control text-center" value="1" min="1" id="quantityInput" aria-label="{{ $quantityLabel }}">
+                            <button class="btn btn-outline-secondary" type="button" data-action="increase">+</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="mb-4">
-                <button class="btn btn-primary py-2 px-4 me-2" id="addToCartButton" type="button"><i class="bi bi-cart"></i> Masukkan ke Keranjang</button>
-                <button class="btn btn-outline-primary py-2 px-4" type="button"><i class="bi bi-heart"></i></button>
-            </div>
-            <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
+                <div class="mb-4">
+                    <button class="btn btn-primary py-2 px-4 me-2" id="addToCartButton" type="button"><i class="bi bi-cart"></i> {{ $addToCartLabel }}</button>
+                    <button class="btn btn-outline-primary py-2 px-4" type="button"><i class="bi bi-heart"></i></button>
+                </div>
+                <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
+            @else
+                <div class="mb-4">
+                    <a class="btn btn-primary py-2 px-4{{ $whatsappUrl ? '' : ' disabled' }}" id="orderViaWhatsappButton" href="{{ $whatsappUrl ?? '#' }}" @if($whatsappUrl) target="_blank" rel="noopener noreferrer" @else aria-disabled="true" @endif>
+                        <i class="bi bi-whatsapp"></i> Pesan Sekarang
+                    </a>
+                </div>
+                @if(! $whatsappUrl)
+                    <div class="cart-feedback error" role="status">Silakan isi nomor WhatsApp di halaman kelola detail produk.</div>
+                @endif
+            @endif
             <div class="mt-4">
                 <h5 class="mb-3">Deskripsi Produk</h5>
                 <p>{!! $product->description ? nl2br(e($product->description)) : 'Belum ada deskripsi produk.' !!}</p>
