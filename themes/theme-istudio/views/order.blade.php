@@ -33,10 +33,10 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: .08em;
-            color: #fff;
+            color: #0f172b;
         }
         .hero-header p {
-            color: rgba(255, 255, 255, 0.75);
+            color: rgba(15, 23, 43, 0.7);
             max-width: 540px;
         }
         .hero-breadcrumb {
@@ -45,10 +45,10 @@
             gap: 0.5rem;
             padding: 0.6rem 1.2rem;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(15, 23, 43, 0.08);
             letter-spacing: .08em;
             text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(15, 23, 43, 0.85);
         }
         .hero-breadcrumb a { color: inherit; text-decoration: none; }
         .orders-section { margin-top: -60px; position: relative; z-index: 5; }
@@ -221,9 +221,7 @@
     };
 
     $heroVisible = ($settings['hero.visible'] ?? '1') === '1';
-    $heroMask = ($settings['hero.mask'] ?? '1') === '1';
     $heroBackground = $resolveMedia($settings['hero.background'] ?? null, $assetBase('img/hero-slider-1.jpg'));
-    $heroOverlay = $heroMask ? 'linear-gradient(rgba(15,23,43,0.78), rgba(15,23,43,0.78)),' : '';
     $heroHeading = $settings['hero.heading'] ?? 'Pesanan Saya';
     $heroDescription = $settings['hero.description'] ?? 'Pantau status pembayaran dan pengiriman terbaru untuk pesanan Anda.';
 
@@ -243,7 +241,7 @@
 ])->render() !!}
 
 @if($heroVisible)
-    <section class="container-fluid hero-header" style="background-image: {{ $heroOverlay }} url('{{ $heroBackground }}');">
+    <section class="container-fluid hero-header" style="background-image: url('{{ $heroBackground }}');">
         <div class="container">
             <div class="row align-items-center g-4">
                 <div class="col-lg-7">
@@ -343,7 +341,7 @@
                                         $product = $item->product;
                                         $imagePath = optional($product?->images?->first())->path;
                                         $imageUrl = $imagePath ? asset('storage/' . $imagePath) : 'https://via.placeholder.com/160x160?text=Produk';
-                                        $productUrl = $product ? route('products.show', $product->id) : '#';
+                                        $productUrl = filled($product?->slug) ? route('products.show', $product) : '#';
                                         $subtotal = (int) $item->price * (int) $item->quantity;
                                     @endphp
                                     <tr>

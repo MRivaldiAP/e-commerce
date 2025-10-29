@@ -65,9 +65,7 @@
         return asset('storage/' . ltrim($path, '/'));
     };
 
-    $heroMaskEnabled = ($detailSettings['hero.mask'] ?? '1') === '1';
     $heroBackground = $resolveMedia($detailSettings['hero.image'] ?? null, $assetBase('img/hero-slider-2.jpg'));
-    $heroOverlay = $heroMaskEnabled ? 'linear-gradient(rgba(15, 23, 43, 0.75), rgba(15, 23, 43, 0.75)),' : '';
 
     $dateObject = $article['date_object'] ?? null;
     if (! $dateObject && ! empty($article['date'])) {
@@ -94,11 +92,11 @@
 ])->render() !!}
 
 @if(($detailSettings['hero.visible'] ?? '1') === '1')
-    <div id="hero" class="container-fluid pb-5 bg-primary hero-header" style="background-image: {{ $heroOverlay }} url('{{ $heroBackground }}'); background-size: cover; background-position: center;">
+    <div id="hero" class="container-fluid pb-5 bg-primary hero-header" style="background-image: url('{{ $heroBackground }}'); background-size: cover; background-position: center;">
         <div class="container py-5">
             <div class="row g-3 align-items-center">
                 <div class="col-lg-7 text-center text-lg-start">
-                    <h1 class="display-3 mb-0 text-white animated slideInLeft">{{ $article['title'] ?? ($detailSettings['hero.title'] ?? 'Artikel') }}</h1>
+                    <h1 class="display-3 mb-0 animated slideInLeft">{{ $article['title'] ?? ($detailSettings['hero.title'] ?? 'Artikel') }}</h1>
                 </div>
                 <div class="col-lg-5 animated slideInRight">
                     <nav aria-label="breadcrumb">

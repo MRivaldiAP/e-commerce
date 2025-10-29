@@ -93,7 +93,7 @@
                         </ul>
                     </div>
                     <div class="featured__item__text">
-                        <h6><a href="{{ route('products.show', $product->slug) }}">{{ $product->title }}</a></h6>
+                        <h6><a href="{{ route('products.show', $product) }}">{{ $product->title }}</a></h6>
                         <h5>{{ $product->price_formatted ?? number_format($product->price, 0, ',', '.') }}</h5>
                     </div>
                 </div>

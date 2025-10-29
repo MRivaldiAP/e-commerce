@@ -14,6 +14,7 @@
     use App\Models\Product;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
+    use App\Support\ThemeMedia;
     use Illuminate\Support\Str;
 
     $themeName = $theme ?? 'theme-istudio';
@@ -28,11 +29,8 @@
         if (empty($path)) {
             return $fallback;
         }
-        if (filter_var($path, FILTER_VALIDATE_URL)) {
-            return $path;
-        }
 
-        return asset('storage/' . ltrim($path, '/'));
+        return ThemeMedia::url($path) ?? $fallback;
     };
 
     $normalizeChecklist = function ($items) {
@@ -445,7 +443,7 @@
                                             <span class="price-current text-primary">Rp {{ $formatPrice($finalPrice) }}</span>
                                         @endif
                                     </div>
-                                    <a href="{{ route('products.show', $product->slug) }}" class="btn btn-outline-primary">Detail</a>
+                                    <a href="{{ route('products.show', $product) }}" class="btn btn-outline-primary">Detail</a>
                                 </div>
                             </div>
                         </div>
