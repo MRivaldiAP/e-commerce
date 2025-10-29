@@ -79,6 +79,14 @@ return [
             'hero.image',
             'hero.title',
         ],
+        'details' => [
+            'details.quantity_label',
+            'details.add_to_cart_label',
+            'details.added_feedback',
+            'details.error_feedback',
+            'details.whatsapp_number',
+            'details.whatsapp_button_label',
+        ],
         'comments' => [
             'comments.visible',
             'comments.heading',
