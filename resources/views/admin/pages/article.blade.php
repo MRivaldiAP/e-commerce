@@ -27,8 +27,11 @@
                   <label>{{ $element['label'] }}</label>
                   <textarea class="form-control" data-key="{{ $element['id'] }}">{{ $settings[$element['id']] ?? '' }}</textarea>
                 @elseif ($element['type'] === 'image')
-                  <label>{{ $element['label'] }}</label>
-                  <input type="file" class="form-control-file" data-key="{{ $element['id'] }}">
+                  @include('admin.pages.partials.media-select', [
+                    'element' => $element,
+                    'settings' => $settings,
+                    'mediaAssets' => $mediaAssets,
+                  ])
                 @elseif ($element['type'] === 'repeatable')
                   @php
                     $items = json_decode($settings[$element['id']] ?? '[]', true);
@@ -99,6 +102,12 @@
 @section('script')
 <script>
 const csrf = '{{ csrf_token() }}';
+const mediaOptions = @json($mediaAssets->map(function ($asset) {
+  return [
+    'value' => $asset->file_path,
+    'label' => $asset->name,
+  ];
+})->values());
 
 function updateSetting(input){
   const key = input.getAttribute('data-key');
@@ -106,8 +115,6 @@ function updateSetting(input){
   formData.append('key', key);
   if(input.type === 'checkbox'){
     formData.append('value', input.checked ? 1 : 0);
-  }else if(input.type === 'file'){
-    if(input.files[0]){ formData.append('value', input.files[0]); }
   }else{
     formData.append('value', input.value);
   }
@@ -128,11 +135,6 @@ document.querySelectorAll('#elements [data-key]').forEach(function(input){
   input.addEventListener('change', function(){
     updateSetting(this);
   });
-  if(input.type === 'file'){
-    input.addEventListener('input', function(){
-      updateSetting(this);
-    });
-  }
 });
 
 document.querySelectorAll('[data-repeatable]').forEach(function(wrapper){
@@ -145,8 +147,22 @@ document.querySelectorAll('[data-repeatable]').forEach(function(wrapper){
     div.className = 'repeatable-item mb-2 border rounded p-2';
     let html = '';
     fields.forEach(function(field){
-      if((field.type || 'text') === 'textarea'){
+      const fieldType = field.type || 'text';
+      if(fieldType === 'textarea'){
         html += `<textarea class="form-control mb-1" data-field="${field.name}" placeholder="${field.placeholder}">${data[field.name] || ''}</textarea>`;
+      }else if(fieldType === 'image'){
+        const value = data[field.name] || '';
+        let optionsHtml = `<option value="">${field.placeholder || 'Pilih media'}</option>`;
+        let hasSelected = value === '';
+        mediaOptions.forEach(function(option){
+          const selected = option.value === value;
+          if(selected){ hasSelected = true; }
+          optionsHtml += `<option value="${option.value}"${selected ? ' selected' : ''}>${option.label}</option>`;
+        });
+        if(value && !hasSelected){
+          optionsHtml += `<option value="${value}" selected>${value}</option>`;
+        }
+        html += `<select class="form-control mb-1" data-field="${field.name}">${optionsHtml}</select>`;
       }else{
         html += `<input type="text" class="form-control mb-1" data-field="${field.name}" placeholder="${field.placeholder}" value="${data[field.name] || ''}">`;
       }
@@ -174,6 +190,7 @@ document.querySelectorAll('[data-repeatable]').forEach(function(wrapper){
   });
 
   itemsContainer.addEventListener('input', sync);
+  itemsContainer.addEventListener('change', sync);
   itemsContainer.addEventListener('click', function(e){
     if(e.target.classList.contains('remove-item')){
       e.target.closest('.repeatable-item').remove();

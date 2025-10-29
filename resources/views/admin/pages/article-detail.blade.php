@@ -27,8 +27,11 @@
                   <label>{{ $element['label'] }}</label>
                   <textarea class="form-control" data-key="{{ $element['id'] }}">{{ $settings[$element['id']] ?? '' }}</textarea>
                 @elseif ($element['type'] === 'image')
-                  <label>{{ $element['label'] }}</label>
-                  <input type="file" class="form-control-file" data-key="{{ $element['id'] }}">
+                  @include('admin.pages.partials.media-select', [
+                    'element' => $element,
+                    'settings' => $settings,
+                    'mediaAssets' => $mediaAssets,
+                  ])
                 @else
                   <p class="text-muted mb-0">{{ $element['label'] }}</p>
                 @endif
@@ -103,8 +106,6 @@ document.querySelectorAll('#elements [data-key]').forEach(function(input){
     formData.append('key', key);
     if(this.type === 'checkbox'){
       formData.append('value', this.checked ? 1 : 0);
-    }else if(this.type === 'file'){
-      if(this.files[0]){ formData.append('value', this.files[0]); }
     }else{
       formData.append('value', this.value);
     }
@@ -121,12 +122,6 @@ document.querySelectorAll('#elements [data-key]').forEach(function(input){
     });
   });
 
-  if(input.type === 'file'){
-    input.addEventListener('input', function(){
-      const event = new Event('change');
-      this.dispatchEvent(event);
-    });
-  }
 });
 
 document.querySelectorAll('#elements .card').forEach(function(card){

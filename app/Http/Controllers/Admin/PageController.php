@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\MediaAsset;
 use App\Models\PageSetting;
 use App\Models\Setting;
 use App\Models\Comment;
@@ -18,8 +19,9 @@ class PageController extends Controller
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('home'));
         $sections = PageElements::sections('home', $theme);
+        $mediaAssets = $this->mediaAssets();
 
-        return view('admin.pages.home', compact('sections', 'settings'));
+        return view('admin.pages.home', compact('sections', 'settings', 'mediaAssets'));
     }
 
     public function updateHome(Request $request)
@@ -48,8 +50,9 @@ class PageController extends Controller
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('product'));
         $sections = PageElements::sections('product', $theme);
+        $mediaAssets = $this->mediaAssets();
 
-        return view('admin.pages.product', compact('sections', 'settings'));
+        return view('admin.pages.product', compact('sections', 'settings', 'mediaAssets'));
     }
 
     public function updateProduct(Request $request)
@@ -78,12 +81,13 @@ class PageController extends Controller
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('product-detail'));
         $sections = PageElements::sections('product-detail', $theme);
+        $mediaAssets = $this->mediaAssets();
 
         $previewProduct = Product::first();
         $previewUrl = $previewProduct ? route('products.show', $previewProduct) : null;
         $comments = Comment::with(['product', 'user'])->latest()->get();
 
-        return view('admin.pages.product-detail', compact('sections', 'settings', 'comments', 'previewUrl'));
+        return view('admin.pages.product-detail', compact('sections', 'settings', 'comments', 'previewUrl', 'mediaAssets'));
     }
 
     public function updateProductDetail(Request $request)
@@ -113,10 +117,11 @@ class PageController extends Controller
         $settings = collect(PageSetting::forPage('article'));
         $articles = collect(json_decode($settings->get('articles.items', '[]'), true));
         $sections = PageElements::sections('article', $theme);
+        $mediaAssets = $this->mediaAssets();
 
         $previewUrl = route('articles.index');
 
-        return view('admin.pages.article', compact('sections', 'settings', 'previewUrl', 'articles'));
+        return view('admin.pages.article', compact('sections', 'settings', 'previewUrl', 'articles', 'mediaAssets'));
     }
 
     public function updateArticle(Request $request)
@@ -151,8 +156,9 @@ class PageController extends Controller
         });
         $previewUrl = $previewArticle ? route('articles.show', ['slug' => $previewArticle['slug']]) : null;
         $sections = PageElements::sections('article-detail', $theme);
+        $mediaAssets = $this->mediaAssets();
 
-        return view('admin.pages.article-detail', compact('sections', 'settings', 'previewUrl', 'articles'));
+        return view('admin.pages.article-detail', compact('sections', 'settings', 'previewUrl', 'articles', 'mediaAssets'));
     }
 
     public function updateArticleDetail(Request $request)
@@ -181,9 +187,10 @@ class PageController extends Controller
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('gallery'));
         $sections = PageElements::sections('gallery', $theme);
+        $mediaAssets = $this->mediaAssets();
         $previewUrl = route('gallery.index');
 
-        return view('admin.pages.gallery', compact('sections', 'settings', 'previewUrl'));
+        return view('admin.pages.gallery', compact('sections', 'settings', 'previewUrl', 'mediaAssets'));
     }
 
     public function updateGallery(Request $request)
@@ -212,9 +219,10 @@ class PageController extends Controller
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('contact'));
         $sections = PageElements::sections('contact', $theme);
+        $mediaAssets = $this->mediaAssets();
         $previewUrl = route('contact');
 
-        return view('admin.pages.contact', compact('sections', 'settings', 'previewUrl'));
+        return view('admin.pages.contact', compact('sections', 'settings', 'previewUrl', 'mediaAssets'));
     }
 
     public function updateContact(Request $request)
@@ -243,10 +251,11 @@ class PageController extends Controller
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('about'));
         $sections = PageElements::sections('about', $theme);
+        $mediaAssets = $this->mediaAssets();
 
         $previewUrl = route('about');
 
-        return view('admin.pages.about', compact('sections', 'settings', 'previewUrl'));
+        return view('admin.pages.about', compact('sections', 'settings', 'previewUrl', 'mediaAssets'));
     }
 
     public function updateAbout(Request $request)
@@ -275,10 +284,11 @@ class PageController extends Controller
         $theme = Setting::getValue('active_theme', 'theme-herbalgreen');
         $settings = collect(PageSetting::forPage('cart'));
         $sections = PageElements::sections('cart', $theme);
+        $mediaAssets = $this->mediaAssets();
 
         $previewUrl = route('cart.index');
 
-        return view('admin.pages.cart', compact('sections', 'settings', 'previewUrl'));
+        return view('admin.pages.cart', compact('sections', 'settings', 'previewUrl', 'mediaAssets'));
     }
 
     public function updateCart(Request $request)
@@ -319,10 +329,11 @@ class PageController extends Controller
             $settings->put('navigation.link.contact', '1');
         }
         $sections = PageElements::sections('layout', $theme);
+        $mediaAssets = $this->mediaAssets();
 
         $previewUrl = url('/');
 
-        return view('admin.pages.layout', compact('sections', 'settings', 'previewUrl', 'theme'));
+        return view('admin.pages.layout', compact('sections', 'settings', 'previewUrl', 'theme', 'mediaAssets'));
     }
 
     public function updateLayout(Request $request)
@@ -354,5 +365,10 @@ class PageController extends Controller
         $comment->save();
 
         return back()->with('success', 'Status komentar diperbarui.');
+    }
+
+    protected function mediaAssets()
+    {
+        return MediaAsset::orderBy('name')->get(['id', 'name', 'file_path']);
     }
 }
