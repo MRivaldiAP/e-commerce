@@ -25,6 +25,7 @@
         #product-detail .quantity-control { display: inline-flex; align-items: center; border: 1px solid var(--color-secondary); border-radius: 30px; overflow: hidden; }
         #product-detail .quantity-control button { background: transparent; border: none; padding: 0.5rem 1rem; font-size: 1.1rem; cursor: pointer; }
         #product-detail .quantity-control input { width: 60px; text-align: center; border: none; font-size: 1rem; }
+        #product-detail .quantity-label { display: block; font-weight: 600; margin-bottom: 0.75rem; }
         #product-detail .description { margin-top: 1.5rem; line-height: 1.6; }
         #comments { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         #comments .comment { padding: 1.5rem; border-bottom: 1px solid #e0f2f1; }
@@ -38,6 +39,7 @@
 <body>
 @php
     use App\Models\PageSetting;
+    use App\Models\Setting;
     use App\Models\Product;
     use App\Support\Cart;
     use App\Support\LayoutSettings;
@@ -47,6 +49,14 @@
     $navigation = LayoutSettings::navigation($theme);
     $footerConfig = LayoutSettings::footer($theme);
     $cartSummary = Cart::summary();
+
+    $paymentActive = ! empty(Setting::getValue('payment.gateway'));
+    $quantityLabel = $settings['details.quantity_label'] ?? 'Jumlah';
+    $addToCartLabel = $settings['details.add_to_cart_label'] ?? 'Masukkan ke Keranjang';
+    $whatsappNumberRaw = trim((string) ($settings['details.whatsapp_number'] ?? ''));
+    $whatsappDigits = $whatsappNumberRaw !== '' ? preg_replace('/\D+/', '', $whatsappNumberRaw) : '';
+    $whatsappMessage = 'Halo, saya ingin memesan ' . $product->name . '.';
+    $whatsappUrl = $whatsappDigits !== '' ? 'https://wa.me/' . $whatsappDigits . '?text=' . rawurlencode($whatsappMessage) : null;
 
     $images = $product->images ?? collect();
     $primaryImage = optional($images->first())->path;
@@ -116,13 +126,23 @@
                     <span class="price-current">Rp {{ number_format($productFinalPrice, 0, ',', '.') }}</span>
                 @endif
             </div>
-            <div class="quantity-control" id="quantityControl">
-                <button type="button" data-action="decrease">-</button>
-                <input type="number" value="1" min="1" id="quantityInput">
-                <button type="button" data-action="increase">+</button>
-            </div>
-            <button class="cta" id="addToCartButton">Masukkan ke Keranjang</button>
-            <p class="cart-feedback" id="cartFeedback" role="status"></p>
+            @if($paymentActive)
+                <label for="quantityInput" class="quantity-label" id="quantityLabel">{{ $quantityLabel }}</label>
+                <div class="quantity-control" id="quantityControl" aria-labelledby="quantityLabel">
+                    <button type="button" data-action="decrease">-</button>
+                    <input type="number" value="1" min="1" id="quantityInput" aria-label="{{ $quantityLabel }}">
+                    <button type="button" data-action="increase">+</button>
+                </div>
+                <button class="cta" id="addToCartButton">{{ $addToCartLabel }}</button>
+                <p class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></p>
+            @else
+                <a class="cta{{ $whatsappUrl ? '' : ' disabled' }}" id="orderViaWhatsappButton" href="{{ $whatsappUrl ?? '#' }}" @if($whatsappUrl) target="_blank" rel="noopener noreferrer" @else aria-disabled="true" @endif>
+                    Pesan Sekarang
+                </a>
+                @if(! $whatsappUrl)
+                    <p class="cart-feedback error" role="status">Silakan isi nomor WhatsApp di halaman kelola detail produk.</p>
+                @endif
+            @endif
             <div class="description">
                 {!! $product->description ? nl2br(e($product->description)) : '<p>Belum ada deskripsi produk.</p>' !!}
             </div>

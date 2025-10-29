@@ -306,6 +306,7 @@ return [
                 'elements' => [
                     'details.quantity_label' => ['type' => 'text', 'label' => 'Quantity Label'],
                     'details.add_to_cart_label' => ['type' => 'text', 'label' => 'Add To Cart Label'],
+                    'details.whatsapp_number' => ['type' => 'text', 'label' => 'WhatsApp Number'],
                     'details.added_feedback' => ['type' => 'textarea', 'label' => 'Success Feedback Message'],
                     'details.error_feedback' => ['type' => 'textarea', 'label' => 'Error Feedback Message'],
                 ],
