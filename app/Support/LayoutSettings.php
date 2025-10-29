@@ -76,7 +76,7 @@ class LayoutSettings
             ],
             [
                 'key' => 'articles',
-                'label' => 'Artikel',
+                'label' => 'Blog',
                 'href' => route('articles.index'),
                 'visible' => ($settings['navigation.link.articles'] ?? '1') === '1',
             ],
