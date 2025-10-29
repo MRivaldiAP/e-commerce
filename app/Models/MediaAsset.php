@@ -26,6 +26,6 @@ class MediaAsset extends Model
         $appUrl = rtrim(config('app.url') ?? url('/'), '/');
         $storageUrl = ltrim(Storage::disk('public')->url($this->file_path), '/');
 
-        return $appUrl . '/' . $storageUrl;
+        return $storageUrl;
     }
 }

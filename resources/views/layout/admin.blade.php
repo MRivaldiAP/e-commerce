@@ -133,6 +133,9 @@
             </a>
             <div class="collapse" id="pages-menu">
               <ul class="nav flex-column sub-menu">
+                <li class="nav-item nav-category">Kelola Media</li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('admin.media.index') }}">Media</a></li>
+                <li class="nav-item nav-category">Kelola Element</li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/layout')}}">Navigasi & Footer</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/home')}}">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/about')}}">Tentang Kami</a></li>
@@ -145,12 +148,6 @@
                 <li class="nav-item"><a class="nav-link" href="{{url('/admin/pages/cart')}}">Keranjang</a></li>
               </ul>
             </div>
-          </li>
-          <li class="nav-item {{ request()->routeIs('admin.media.*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('admin.media.index') }}">
-              <i class="mdi mdi-folder-image menu-icon"></i>
-              <span class="menu-title">Media</span>
-            </a>
           </li>
           <li class="nav-item">
             @php
