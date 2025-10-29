@@ -17,6 +17,7 @@
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
     $cartSummary = Cart::summary();
+    $paymentEnabled = $navigation['payment_enabled'] ?? false;
 
     $resolveMedia = function ($path, $fallback = null) {
         if (empty($path)) {
@@ -62,6 +63,13 @@
     $addToCartLabel = $settings['details.add_to_cart_label'] ?? 'Masukkan ke Keranjang';
     $successFeedback = $settings['details.added_feedback'] ?? 'Produk ditambahkan ke keranjang.';
     $errorFeedback = $settings['details.error_feedback'] ?? 'Gagal menambahkan produk ke keranjang.';
+    $whatsappNumberRaw = $settings['details.whatsapp_number'] ?? '';
+    $whatsappDigits = preg_replace('/\D+/', '', (string) $whatsappNumberRaw);
+    $whatsappMessage = 'Halo, saya tertarik dengan ' . $product->name;
+    $whatsappLink = $whatsappDigits !== ''
+        ? 'https://wa.me/' . $whatsappDigits . '?text=' . rawurlencode($whatsappMessage)
+        : null;
+    $whatsappButtonLabel = $settings['details.whatsapp_button_label'] ?? 'Pesan Sekarang';
 
     $commentsCollection = $comments ?? ($product->comments ?? collect());
     if (! $commentsCollection instanceof \Illuminate\Support\Collection) {
@@ -400,20 +408,39 @@
                     @endif
                 </div>
                 <div class="mt-4">
-                    <label for="quantityInput" class="form-label text-uppercase small fw-semibold text-muted">{{ $quantityLabel }}</label>
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="quantity-control" id="quantityControl">
-                            <button type="button" data-action="decrease" aria-label="Kurangi jumlah"><i class="bi bi-dash"></i></button>
-                            <input type="number" id="quantityInput" value="1" min="1">
-                            <button type="button" data-action="increase" aria-label="Tambah jumlah"><i class="bi bi-plus"></i></button>
+                    @if($paymentEnabled)
+                        <label for="quantityInput" class="form-label text-uppercase small fw-semibold text-muted">{{ $quantityLabel }}</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="quantity-control" id="quantityControl">
+                                <button type="button" data-action="decrease" aria-label="Kurangi jumlah"><i class="bi bi-dash"></i></button>
+                                <input type="number" id="quantityInput" value="1" min="1">
+                                <button type="button" data-action="increase" aria-label="Tambah jumlah"><i class="bi bi-plus"></i></button>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" id="addToCartButton" type="button">
+                                    <i class="bi bi-cart me-2"></i>{{ $addToCartLabel }}
+                                </button>
+                            </div>
                         </div>
+                        <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
+                    @else
                         <div class="action-buttons">
-                            <button class="btn btn-primary" id="addToCartButton" type="button">
-                                <i class="bi bi-cart me-2"></i>{{ $addToCartLabel }}
-                            </button>
+                            @if($whatsappLink)
+                                <a href="{{ $whatsappLink }}" class="btn btn-success" target="_blank" rel="noopener">
+                                    <i class="bi bi-whatsapp me-2"></i>{{ $whatsappButtonLabel }}
+                                </a>
+                            @else
+                                <button class="btn btn-outline-secondary" type="button" disabled>
+                                    <i class="bi bi-whatsapp me-2"></i>{{ $whatsappButtonLabel }}
+                                </button>
+                            @endif
                         </div>
-                    </div>
-                    <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
+                        <div class="cart-feedback{{ $whatsappLink ? '' : ' error' }}" id="cartFeedback" role="status" aria-live="polite">
+                            @unless($whatsappLink)
+                                Nomor WhatsApp belum tersedia.
+                            @endunless
+                        </div>
+                    @endif
                 </div>
                 <div class="description">
                     {!! $product->description ? nl2br(e($product->description)) : '<p>Belum ada deskripsi produk.</p>' !!}
