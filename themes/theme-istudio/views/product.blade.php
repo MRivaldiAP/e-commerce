@@ -260,7 +260,7 @@
                                     @endif
                                     <span class="price-current">Rp {{ number_format($finalPrice, 0, ',', '.') }}</span>
                                 </div>
-                                <a href="{{ route('products.show', $product->slug ?? $product->id) }}" class="btn btn-outline-primary px-4">{{ $detailButtonLabel }}</a>
+                                <a href="{{ route('products.show', $product) }}" class="btn btn-outline-primary px-4">{{ $detailButtonLabel }}</a>
                             </div>
                         </div>
                     </div>

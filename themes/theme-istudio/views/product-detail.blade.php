@@ -486,7 +486,7 @@
                                         @endif
                                         <span class="price-current">Rp {{ number_format($itemFinalPrice, 0, ',', '.') }}</span>
                                     </div>
-                                    <a href="{{ route('products.show', $item->slug ?? $item->id) }}" class="btn btn-outline-primary">{{ $recommendationButtonLabel }}</a>
+                                    <a href="{{ route('products.show', $item) }}" class="btn btn-outline-primary">{{ $recommendationButtonLabel }}</a>
                                 </div>
                             </div>
                         </div>

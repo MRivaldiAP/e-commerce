@@ -78,7 +78,7 @@ Route::get('/kontak', function () {
     abort(404);
 })->name('contact')->middleware('track.landing.page');
 
-Route::get('/produk/{product}', function (Product $product) {
+Route::get('/produk/{product:slug}', function (Product $product) {
     $activeTheme = Setting::getValue('active_theme', 'theme-herbalgreen');
     $viewPath = base_path("themes/{$activeTheme}/views/product-detail.blade.php");
         if (File::exists($viewPath)) {

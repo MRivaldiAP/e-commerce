@@ -22,6 +22,11 @@ class Product extends Model
 
     protected $guarded = [];
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function images(): HasMany {
         return $this->hasMany(ProductImage::class);
     }

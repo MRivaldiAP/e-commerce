@@ -263,7 +263,7 @@
                                     $product = $item->product;
                                     $imagePath = optional($product?->images?->first())->path;
                                     $imageUrl = $imagePath ? asset('storage/' . $imagePath) : 'https://via.placeholder.com/120x120?text=No+Image';
-                                    $productUrl = $product ? route('products.show', $product->id) : '#';
+                                    $productUrl = filled($product?->slug) ? route('products.show', $product) : '#';
                                     $subtotal = (int) $item->price * (int) $item->quantity;
                                 @endphp
                                 <tr>

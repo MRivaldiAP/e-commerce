@@ -443,7 +443,7 @@
                                             <span class="price-current text-primary">Rp {{ $formatPrice($finalPrice) }}</span>
                                         @endif
                                     </div>
-                                    <a href="{{ route('products.show', $product->slug) }}" class="btn btn-outline-primary">Detail</a>
+                                    <a href="{{ route('products.show', $product) }}" class="btn btn-outline-primary">Detail</a>
                                 </div>
                             </div>
                         </div>

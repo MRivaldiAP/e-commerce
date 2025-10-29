@@ -232,6 +232,13 @@ class Cart
             $originalTotal += $originalSubtotal;
             $discountTotal += $discountAmount * $quantity;
 
+            $productUrl = '#';
+            if ($product) {
+                $productUrl = route('products.show', $product);
+            } elseif (! empty($item['slug'])) {
+                $productUrl = route('products.show', $item['slug']);
+            }
+
             return [
                 'product_id' => $productId,
                 'name' => $product?->name ?? ($item['name'] ?? 'Produk'),
@@ -256,7 +263,7 @@ class Cart
                 'promo_expires_at' => optional($promotion?->ends_at)->toIso8601String(),
                 'image' => $imagePath,
                 'image_url' => $imageUrl,
-                'product_url' => route('products.show', $productId),
+                'product_url' => $productUrl,
             ];
         })->values()->toArray();
 
