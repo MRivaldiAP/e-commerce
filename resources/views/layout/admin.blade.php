@@ -146,6 +146,12 @@
               </ul>
             </div>
           </li>
+          <li class="nav-item {{ request()->routeIs('admin.media.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.media.index') }}">
+              <i class="mdi mdi-folder-image menu-icon"></i>
+              <span class="menu-title">Media</span>
+            </a>
+          </li>
           <li class="nav-item">
             @php
               $isGalleryMenu = request()->routeIs('admin.gallery.categories.*') || request()->routeIs('admin.gallery.items.*');
