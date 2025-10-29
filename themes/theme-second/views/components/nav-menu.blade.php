@@ -39,18 +39,30 @@
                         @if ($showLogin)
                             <div class="header__cart__login">
                                 @auth
-                                    <a href="{{ route('orders.index') }}" class="text-decoration-none fw-semibold">Akun Saya</a>
+                                    <span class="fw-semibold" data-user-name>{{ auth()->user()->name ?? 'Akun Saya' }}</span>
                                 @else
                                     <a href="{{ route('login') }}" class="text-decoration-none fw-semibold">Login</a>
                                 @endauth
                             </div>
                         @endif
                         @if ($showCart)
-                            <div>
-                                <a href="{{ route('cart.index') }}" class="cart-indicator d-inline-flex align-items-center text-decoration-none">
-                                    <i class="fa fa-shopping-bag me-1"></i>
-                                    <span class="cart-count" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">{{ $cartSummary['total_quantity'] ?? 0 }}</span>
-                                </a>
+                            <div class="header__cart__summary">
+                                <div class="header__cart__dropdown" data-cart-dropdown>
+                                    <button type="button" class="cart-indicator d-inline-flex align-items-center text-decoration-none" data-cart-toggle aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-shopping-bag me-1"></i>
+                                        <span class="cart-count" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">{{ $cartSummary['total_quantity'] ?? 0 }}</span>
+                                    </button>
+                                    <div class="header__cart__menu" data-cart-menu>
+                                        <a href="{{ route('cart.index') }}" class="header__cart__menu-item">
+                                            <i class="fa fa-shopping-cart"></i>
+                                            <span>Keranjang</span>
+                                        </a>
+                                        <a href="{{ route('orders.index') }}" class="header__cart__menu-item">
+                                            <i class="fa fa-receipt"></i>
+                                            <span>Pesanan Saya</span>
+                                        </a>
+                                    </div>
+                                </div>
                                 <div class="header__cart__price">item: <span data-cart-total>{{ $cartSummary['total_price_formatted'] ?? '0' }}</span></div>
                             </div>
                         @endif
@@ -124,6 +136,64 @@
                 transform: scale(0.92);
             }
         }
+
+        .header__cart__summary {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.35rem;
+        }
+
+        .header__cart__dropdown {
+            position: relative;
+        }
+
+        .header__cart__dropdown button.cart-indicator {
+            background: none;
+            border: none;
+            padding: 0;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .header__cart__dropdown button.cart-indicator:focus {
+            outline: 2px solid #7fad39;
+            outline-offset: 2px;
+        }
+
+        .header__cart__menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            background: #fff;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: none;
+            min-width: 12rem;
+            padding: 0.5rem 0;
+            z-index: 30;
+        }
+
+        .header__cart__menu.show {
+            display: block;
+        }
+
+        .header__cart__menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            color: inherit;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .header__cart__menu-item:hover,
+        .header__cart__menu-item:focus {
+            background: rgba(127, 173, 57, 0.1);
+            color: #7fad39;
+        }
     </style>
     <script>
         (function () {
@@ -156,6 +226,59 @@
 
             window.addEventListener('cart:updated', function (event) {
                 updateCartIndicator(event.detail || {}, true);
+            });
+
+            document.querySelectorAll('[data-cart-dropdown]').forEach(function (dropdown) {
+                const toggle = dropdown.querySelector('[data-cart-toggle]');
+                const menu = dropdown.querySelector('[data-cart-menu]');
+
+                if (!toggle || !menu) {
+                    return;
+                }
+
+                function closeMenu() {
+                    menu.classList.remove('show');
+                    menu.setAttribute('aria-hidden', 'true');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+
+                function openMenu() {
+                    menu.classList.add('show');
+                    menu.setAttribute('aria-hidden', 'false');
+                    toggle.setAttribute('aria-expanded', 'true');
+                }
+
+                toggle.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (menu.classList.contains('show')) {
+                        closeMenu();
+                    } else {
+                        document.querySelectorAll('[data-cart-menu].show').forEach(function (openMenuEl) {
+                            openMenuEl.classList.remove('show');
+                            openMenuEl.setAttribute('aria-hidden', 'true');
+                            const relatedToggle = openMenuEl.closest('[data-cart-dropdown]')?.querySelector('[data-cart-toggle]');
+                            if (relatedToggle) {
+                                relatedToggle.setAttribute('aria-expanded', 'false');
+                            }
+                        });
+                        openMenu();
+                    }
+                });
+
+                document.addEventListener('click', function (event) {
+                    if (!dropdown.contains(event.target)) {
+                        closeMenu();
+                    }
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        closeMenu();
+                    }
+                });
+
+                closeMenu();
             });
         })();
     </script>

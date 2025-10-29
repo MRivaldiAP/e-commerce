@@ -39,19 +39,31 @@
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fa fa-user text-primary"></i>
                                 @auth
-                                    <a href="{{ route('orders.index') }}" class="fw-semibold text-decoration-none">Akun Saya</a>
+                                    <span class="fw-semibold" data-user-name>{{ auth()->user()->name ?? 'Akun Saya' }}</span>
                                 @else
                                     <a href="{{ route('login') }}" class="fw-semibold text-decoration-none">Login</a>
                                 @endauth
                             </div>
                         @endif
                         @if ($showCart)
-                            <a href="{{ route('cart.index') }}" class="d-inline-flex align-items-center gap-2 text-decoration-none position-relative">
-                                <i class="fa fa-shopping-bag text-primary"></i>
-                                <span class="badge rounded-pill bg-primary" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">
-                                    {{ $cartSummary['total_quantity'] ?? 0 }}
-                                </span>
-                            </a>
+                            <div class="cart-dropdown position-relative" data-cart-dropdown>
+                                <button type="button" class="d-inline-flex align-items-center gap-2 text-decoration-none position-relative cart-toggle" data-cart-toggle aria-haspopup="true" aria-expanded="false">
+                                    <i class="fa fa-shopping-bag text-primary"></i>
+                                    <span class="badge rounded-pill bg-primary" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">
+                                        {{ $cartSummary['total_quantity'] ?? 0 }}
+                                    </span>
+                                </button>
+                                <div class="cart-dropdown-menu shadow" data-cart-menu>
+                                    <a href="{{ route('cart.index') }}" class="dropdown-item d-flex align-items-center gap-2">
+                                        <i class="fa fa-shopping-cart text-primary"></i>
+                                        <span>Keranjang</span>
+                                    </a>
+                                    <a href="{{ route('orders.index') }}" class="dropdown-item d-flex align-items-center gap-2">
+                                        <i class="fa fa-receipt text-primary"></i>
+                                        <span>Pesanan Saya</span>
+                                    </a>
+                                </div>
+                            </div>
                         @endif
                     </div>
                 @endif
@@ -85,6 +97,35 @@
 
         .navbar .badge.cart-bounce {
             animation: cartBounce 0.6s ease;
+        }
+
+        .cart-dropdown .cart-toggle {
+            background: transparent;
+            border: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .cart-dropdown .cart-toggle:focus {
+            outline: 2px solid var(--bs-primary);
+            outline-offset: 3px;
+        }
+
+        .cart-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.75rem);
+            min-width: 13rem;
+            background: #fff;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            padding: 0.5rem 0;
+            display: none;
+            z-index: 1050;
+        }
+
+        .cart-dropdown-menu.show {
+            display: block;
         }
 
         @keyframes cartBounce {
@@ -126,6 +167,59 @@
 
             window.addEventListener('cart:updated', function (event) {
                 updateCart(event.detail || {}, true);
+            });
+
+            document.querySelectorAll('[data-cart-dropdown]').forEach(function (dropdown) {
+                const toggle = dropdown.querySelector('[data-cart-toggle]');
+                const menu = dropdown.querySelector('[data-cart-menu]');
+
+                if (!toggle || !menu) {
+                    return;
+                }
+
+                function closeMenu() {
+                    menu.classList.remove('show');
+                    menu.setAttribute('aria-hidden', 'true');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+
+                function openMenu() {
+                    menu.classList.add('show');
+                    menu.setAttribute('aria-hidden', 'false');
+                    toggle.setAttribute('aria-expanded', 'true');
+                }
+
+                toggle.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (menu.classList.contains('show')) {
+                        closeMenu();
+                    } else {
+                        document.querySelectorAll('[data-cart-menu].show').forEach(function (openMenuEl) {
+                            openMenuEl.classList.remove('show');
+                            openMenuEl.setAttribute('aria-hidden', 'true');
+                            const relatedToggle = openMenuEl.closest('[data-cart-dropdown]')?.querySelector('[data-cart-toggle]');
+                            if (relatedToggle) {
+                                relatedToggle.setAttribute('aria-expanded', 'false');
+                            }
+                        });
+                        openMenu();
+                    }
+                });
+
+                document.addEventListener('click', function (event) {
+                    if (!dropdown.contains(event.target)) {
+                        closeMenu();
+                    }
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        closeMenu();
+                    }
+                });
+
+                closeMenu();
             });
         })();
     </script>
