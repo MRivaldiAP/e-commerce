@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class MediaAsset extends Model
 {
@@ -22,6 +23,9 @@ class MediaAsset extends Model
 
     public function getPublicUrlAttribute(): string
     {
-        return asset('storage/' . ltrim($this->file_path, '/'));
+        $appUrl = rtrim(config('app.url') ?? url('/'), '/');
+        $storageUrl = ltrim(Storage::disk('public')->url($this->file_path), '/');
+
+        return $appUrl . '/' . $storageUrl;
     }
 }

@@ -66,9 +66,9 @@
                   <tr>
                     <th>Preview</th>
                     <th>Nama</th>
-                    <th>Path</th>
                     <th>Ukuran</th>
                     <th>Dibuat</th>
+                    <th>Salin</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
@@ -79,15 +79,14 @@
                         <img src="{{ $asset->public_url }}" alt="{{ $asset->name }}" class="img-fluid rounded">
                       </td>
                       <td>{{ $asset->name }}</td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <code class="mr-2">storage/{{ $asset->file_path }}</code>
-                          <button class="btn btn-sm btn-outline-secondary copy-path" data-path="{{ $asset->public_url }}">Salin URL</button>
-                          <button class="btn btn-sm btn-outline-info ml-2 copy-path" data-path="storage/{{ $asset->file_path }}">Salin Path</button>
-                        </div>
-                      </td>
                       <td>{{ $asset->file_size ? number_format($asset->file_size / 1024, 2) . ' KB' : '-' }}</td>
                       <td>{{ $asset->created_at->format('d M Y H:i') }}</td>
+                      <td>
+                        <div class="btn-group" role="group" aria-label="Salin media">
+                          <button class="btn btn-sm btn-outline-secondary copy-path" data-path="{{ $asset->public_url }}">Salin URL</button>
+                          <button class="btn btn-sm btn-outline-info copy-path" data-path="storage/{{ $asset->file_path }}">Salin Path</button>
+                        </div>
+                      </td>
                       <td>
                         <form action="{{ route('admin.media.destroy', $asset) }}" method="POST" onsubmit="return confirm('Hapus media ini?')">
                           @csrf
