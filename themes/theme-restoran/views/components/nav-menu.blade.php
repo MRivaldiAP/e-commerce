@@ -37,16 +37,28 @@
             <div class="d-flex align-items-center gap-2">
                 @if ($showLogin)
                     @auth
-                        <a href="{{ route('orders.index') }}" class="btn btn-outline-light">Akun Saya</a>
+                        <span class="text-white fw-semibold" data-user-name>{{ auth()->user()->name ?? 'Akun Saya' }}</span>
                     @else
                         <a href="{{ route('login') }}" class="btn btn-primary">Login</a>
                     @endauth
                 @endif
                 @if ($showCart)
-                    <a href="{{ route('cart.index') }}" class="btn btn-outline-light cart-indicator position-relative">
-                        <i class="bi bi-cart"></i>
-                        <span class="badge bg-primary rounded-pill cart-count" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">{{ $cartSummary['total_quantity'] ?? 0 }}</span>
-                    </a>
+                    <div class="dropdown cart-dropdown" data-cart-dropdown>
+                        <button type="button" class="btn btn-outline-light cart-indicator position-relative" data-cart-toggle aria-haspopup="true" aria-expanded="false">
+                            <i class="bi bi-cart"></i>
+                            <span class="badge bg-primary rounded-pill cart-count" data-cart-count data-count="{{ $cartSummary['total_quantity'] ?? 0 }}">{{ $cartSummary['total_quantity'] ?? 0 }}</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow cart-dropdown-menu" data-cart-menu>
+                            <a href="{{ route('cart.index') }}" class="dropdown-item d-flex align-items-center gap-2">
+                                <i class="bi bi-bag"></i>
+                                <span>Keranjang</span>
+                            </a>
+                            <a href="{{ route('orders.index') }}" class="dropdown-item d-flex align-items-center gap-2">
+                                <i class="bi bi-receipt"></i>
+                                <span>Pesanan Saya</span>
+                            </a>
+                        </div>
+                    </div>
                 @endif
             </div>
         @endif
@@ -77,6 +89,14 @@
             50% {
                 transform: scale(0.92);
             }
+        }
+
+        .cart-dropdown {
+            position: relative;
+        }
+
+        .cart-dropdown-menu {
+            min-width: 12rem;
         }
     </style>
     <script>
@@ -110,6 +130,61 @@
 
             window.addEventListener('cart:updated', function (event) {
                 updateCartIndicator(event.detail || {}, true);
+            });
+
+            document.querySelectorAll('[data-cart-dropdown]').forEach(function (dropdown) {
+                const toggle = dropdown.querySelector('[data-cart-toggle]');
+                const menu = dropdown.querySelector('[data-cart-menu]');
+
+                if (!toggle || !menu) {
+                    return;
+                }
+
+                function closeMenu() {
+                    if (menu.classList.contains('show')) {
+                        menu.classList.remove('show');
+                    }
+                    menu.setAttribute('aria-hidden', 'true');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+
+                function openMenu() {
+                    menu.classList.add('show');
+                    menu.setAttribute('aria-hidden', 'false');
+                    toggle.setAttribute('aria-expanded', 'true');
+                }
+
+                toggle.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (menu.classList.contains('show')) {
+                        closeMenu();
+                    } else {
+                        document.querySelectorAll('[data-cart-menu].show').forEach(function (openMenuEl) {
+                            openMenuEl.classList.remove('show');
+                            openMenuEl.setAttribute('aria-hidden', 'true');
+                            const relatedToggle = openMenuEl.closest('[data-cart-dropdown]')?.querySelector('[data-cart-toggle]');
+                            if (relatedToggle) {
+                                relatedToggle.setAttribute('aria-expanded', 'false');
+                            }
+                        });
+                        openMenu();
+                    }
+                });
+
+                document.addEventListener('click', function (event) {
+                    if (!dropdown.contains(event.target)) {
+                        closeMenu();
+                    }
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        closeMenu();
+                    }
+                });
+
+                closeMenu();
             });
         })();
     </script>
