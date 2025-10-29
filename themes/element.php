@@ -308,6 +308,8 @@ return [
                     'details.add_to_cart_label' => ['type' => 'text', 'label' => 'Add To Cart Label'],
                     'details.added_feedback' => ['type' => 'textarea', 'label' => 'Success Feedback Message'],
                     'details.error_feedback' => ['type' => 'textarea', 'label' => 'Error Feedback Message'],
+                    'details.whatsapp_number' => ['type' => 'text', 'label' => 'Nomor WhatsApp'],
+                    'details.whatsapp_button_label' => ['type' => 'text', 'label' => 'Label Tombol WhatsApp'],
                 ],
             ],
             'comments' => [

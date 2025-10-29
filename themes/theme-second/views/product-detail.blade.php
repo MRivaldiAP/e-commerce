@@ -95,6 +95,7 @@
     $cartSummary = Cart::summary();
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
+    $paymentEnabled = $navigation['payment_enabled'] ?? false;
 
     $images = $product->images ?? collect();
     $imageSources = $images->pluck('path')->filter()->map(fn($path) => asset('storage/'.$path))->values();
@@ -103,6 +104,17 @@
     }
 
     $comments = $product->comments ?? collect();
+
+    $whatsappNumberRaw = $settings['details.whatsapp_number'] ?? '';
+    $whatsappDigits = preg_replace('/\D+/', '', (string) $whatsappNumberRaw);
+    $whatsappMessage = 'Halo, saya tertarik dengan ' . $product->name;
+    $whatsappLink = $whatsappDigits !== ''
+        ? 'https://wa.me/' . $whatsappDigits . '?text=' . rawurlencode($whatsappMessage)
+        : null;
+    $whatsappButtonLabel = $settings['details.whatsapp_button_label'] ?? 'Pesan Sekarang';
+    $addToCartLabel = $settings['details.add_to_cart_label'] ?? 'Masukkan ke Keranjang';
+    $cartSuccessFeedback = $settings['details.added_feedback'] ?? 'Produk ditambahkan ke keranjang.';
+    $cartErrorFeedback = $settings['details.error_feedback'] ?? 'Gagal menambahkan produk ke keranjang.';
 
     $recommendationsQuery = Product::query()->where('id', '!=', $product->id);
     if ($product->categories && $product->categories->count()) {
@@ -173,16 +185,29 @@
                         @endif
                     </div>
                     <p>{{ $product->short_description ?? 'Produk pilihan terbaik untuk memenuhi kebutuhan Anda setiap hari.' }}</p>
-                    <div class="product__details__quantity">
-                        <div class="quantity">
-                            <div class="pro-qty">
-                                <input type="text" value="1" id="quantityInput">
+                    @if($paymentEnabled)
+                        <div class="product__details__quantity">
+                            <div class="quantity">
+                                <div class="pro-qty">
+                                    <input type="text" value="1" id="quantityInput">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <a href="#" class="primary-btn" id="addToCartButton">MASUKKAN KE KERANJANG</a>
-                    <a href="#" class="heart-icon"><span class="icon_heart_alt"></span></a>
-                    <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
+                        <a href="#" class="primary-btn" id="addToCartButton">{{ $addToCartLabel }}</a>
+                        <a href="#" class="heart-icon"><span class="icon_heart_alt"></span></a>
+                        <div class="cart-feedback" id="cartFeedback" role="status" aria-live="polite"></div>
+                    @else
+                        @if($whatsappLink)
+                            <a href="{{ $whatsappLink }}" class="primary-btn" target="_blank" rel="noopener">{{ $whatsappButtonLabel }}</a>
+                        @else
+                            <button type="button" class="primary-btn disabled" disabled>{{ $whatsappButtonLabel }}</button>
+                        @endif
+                        <div class="cart-feedback{{ $whatsappLink ? '' : ' error' }}" id="cartFeedback" role="status" aria-live="polite">
+                            @unless($whatsappLink)
+                                Nomor WhatsApp belum tersedia.
+                            @endunless
+                        </div>
+                    @endif
                     <ul>
                         <li><b>Ketersediaan</b> <span>{{ $product->stock > 0 ? 'Stok Tersedia' : 'Stok Habis' }}</span></li>
                         <li><b>Berat</b> <span>{{ $product->weight ? $product->weight.' kg' : '-' }}</span></li>
@@ -311,94 +336,98 @@
 <script src="{{ asset('storage/themes/theme-second/js/mixitup.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/owl.carousel.min.js') }}"></script>
 <script src="{{ asset('storage/themes/theme-second/js/main.js') }}"></script>
-  <script>
-      document.addEventListener('DOMContentLoaded', function(){
-          const addToCart = document.getElementById('addToCartButton');
-          const feedback = document.getElementById('cartFeedback');
-          const quantityInput = document.getElementById('quantityInput');
-          const csrf = '{{ csrf_token() }}';
-          const productId = {{ $product->id }};
-          const endpoint = '{{ route('cart.items.store') }}';
-          let feedbackTimer = null;
+@if($paymentEnabled)
+<script>
+    document.addEventListener('DOMContentLoaded', function(){
+        const addToCart = document.getElementById('addToCartButton');
+        const feedback = document.getElementById('cartFeedback');
+        const quantityInput = document.getElementById('quantityInput');
+        const csrf = '{{ csrf_token() }}';
+        const productId = {{ $product->id }};
+        const endpoint = '{{ route('cart.items.store') }}';
+        const successMessage = @json($cartSuccessFeedback);
+        const fallbackError = @json($cartErrorFeedback);
+        let feedbackTimer = null;
 
-          function showFeedback(message, isError = false) {
-              if (!feedback) {
-                  return;
-              }
+        function showFeedback(message, isError = false) {
+            if (!feedback) {
+                return;
+            }
 
-              if (feedbackTimer) {
-                  clearTimeout(feedbackTimer);
-                  feedbackTimer = null;
-              }
+            if (feedbackTimer) {
+                clearTimeout(feedbackTimer);
+                feedbackTimer = null;
+            }
 
-              feedback.textContent = message;
-              feedback.classList.toggle('error', Boolean(isError));
+            feedback.textContent = message;
+            feedback.classList.toggle('error', Boolean(isError));
 
-              if (message) {
-                  feedbackTimer = setTimeout(function(){
-                      feedback.textContent = '';
-                      feedback.classList.remove('error');
-                  }, 2600);
-              }
-          }
+            if (message) {
+                feedbackTimer = setTimeout(function(){
+                    feedback.textContent = '';
+                    feedback.classList.remove('error');
+                }, 2600);
+            }
+        }
 
-          function handleResponse(response) {
-              if (!response.ok) {
-                  throw response;
-              }
-              return response.json();
-          }
+        function handleResponse(response) {
+            if (!response.ok) {
+                throw response;
+            }
+            return response.json();
+        }
 
-          function parseError(error) {
-              if (typeof error.json === 'function') {
-                  return error.json().then(function(data){
-                      return data?.message || 'Gagal menambahkan produk ke keranjang.';
-                  }).catch(function(){
-                      return 'Gagal menambahkan produk ke keranjang.';
-                  });
-              }
+        function parseError(error) {
+            if (typeof error.json === 'function') {
+                return error.json().then(function(data){
+                    return data?.message || fallbackError;
+                }).catch(function(){
+                    return fallbackError;
+                });
+            }
 
-              return Promise.resolve('Gagal menambahkan produk ke keranjang.');
-          }
+            return Promise.resolve(fallbackError);
+        }
 
-          if(addToCart){
-              addToCart.addEventListener('click', function(event){
-                  event.preventDefault();
+        if(addToCart){
+            addToCart.addEventListener('click', function(event){
+                event.preventDefault();
 
-                  const quantity = Math.max(1, parseInt(quantityInput?.value || '1', 10));
-                  addToCart.classList.add('disabled');
-                  addToCart.setAttribute('aria-busy', 'true');
+                const quantity = Math.max(1, parseInt(quantityInput?.value || '1', 10));
+                addToCart.classList.add('disabled');
+                addToCart.setAttribute('aria-busy', 'true');
 
-                  fetch(endpoint, {
-                      method: 'POST',
-                      headers: {
-                          'Content-Type': 'application/json',
-                          'Accept': 'application/json',
-                          'X-CSRF-TOKEN': csrf,
-                      },
-                      body: JSON.stringify({
-                          product_id: productId,
-                          quantity: quantity,
-                      })
-                  })
-                  .then(handleResponse)
-                  .then(function(data){
-                      showFeedback('Produk ditambahkan ke keranjang.');
-                      window.dispatchEvent(new CustomEvent('cart:updated', { detail: data.summary }));
-                  })
-                  .catch(function(error){
-                      parseError(error).then(function(message){
-                          showFeedback(message, true);
-                      });
-                  })
-                  .finally(function(){
-                      addToCart.classList.remove('disabled');
-                      addToCart.removeAttribute('aria-busy');
-                  });
-              });
-          }
-      });
-  </script>
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: quantity,
+                    })
+                })
+                .then(handleResponse)
+                .then(function(data){
+                    showFeedback(successMessage);
+                    window.dispatchEvent(new CustomEvent('cart:updated', { detail: data.summary }));
+                })
+                .catch(function(error){
+                    parseError(error).then(function(message){
+                        showFeedback(message, true);
+                    });
+                })
+                .finally(function(){
+                    addToCart.classList.remove('disabled');
+                    addToCart.removeAttribute('aria-busy');
+                });
+            });
+        }
+    });
+</script>
+@endif
 
 {!! view()->file(base_path('themes/' . $themeName . '/views/components/floating-contact-buttons.blade.php'), [
     'theme' => $themeName,
