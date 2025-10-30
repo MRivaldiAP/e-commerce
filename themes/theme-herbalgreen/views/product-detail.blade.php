@@ -72,8 +72,11 @@
             ->get();
         $recommendations = $recommendations->concat($fallback);
     }
-    $productPromotion = $product->currentPromotion();
-    $productHasPromo = $productPromotion && $product->promo_price !== null && $product->promo_price < $product->price;
+    $productEligiblePromotion = $product->currentPromotion();
+    $productDisplayPromotion = $product->currentPromotion(null, null, false);
+    $productPromoLabel = $productDisplayPromotion?->label;
+    $productAudienceLabel = $productDisplayPromotion?->audience_label;
+    $productHasPromo = $productEligiblePromotion && $product->promo_price !== null && $product->promo_price < $product->price;
     $productFinalPrice = $product->final_price;
     $whatsappNumberRaw = $settings['details.whatsapp_number'] ?? '';
     $whatsappDigits = preg_replace('/\D+/', '', (string) $whatsappNumberRaw);
@@ -122,9 +125,14 @@
             <div class="price">
                 @if($productHasPromo)
                     <span class="price-original">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
-                    <span class="price-current">Rp {{ number_format($productFinalPrice, 0, ',', '.') }}<span class="promo-pill">{{ $productPromotion->label }}</span></span>
-                @else
-                    <span class="price-current">Rp {{ number_format($productFinalPrice, 0, ',', '.') }}</span>
+                @endif
+                <span class="price-current">Rp {{ number_format($productFinalPrice, 0, ',', '.') }}
+                    @if($productPromoLabel)
+                        <span class="promo-pill">{{ $productPromoLabel }}</span>
+                    @endif
+                </span>
+                @if($productAudienceLabel)
+                    <span class="promo-pill">{{ $productAudienceLabel }}</span>
                 @endif
             </div>
             @if($paymentEnabled)
@@ -178,14 +186,20 @@
         @foreach($recommendations as $item)
             @php
                 $img = optional($item->images->first())->path;
-                $itemPromotion = $item->currentPromotion();
-                $itemHasPromo = $itemPromotion && $item->promo_price !== null && $item->promo_price < $item->price;
+                $itemEligiblePromotion = $item->currentPromotion();
+                $itemDisplayPromotion = $item->currentPromotion(null, null, false);
+                $itemHasPromo = $itemEligiblePromotion && $item->promo_price !== null && $item->promo_price < $item->price;
                 $itemFinalPrice = $item->final_price;
+                $itemPromoLabel = $itemDisplayPromotion?->label;
+                $itemAudienceLabel = $itemDisplayPromotion?->audience_label;
             @endphp
             <div class="product-card">
                 <img src="{{ $img ? asset('storage/'.$img) : 'https://via.placeholder.com/150' }}" alt="{{ $item->name }}">
-                @if($itemHasPromo)
-                    <span class="promo-label">{{ $itemPromotion->label }}</span>
+                @if($itemPromoLabel)
+                    <span class="promo-label">{{ $itemPromoLabel }}</span>
+                @endif
+                @if($itemAudienceLabel)
+                    <span class="promo-label">{{ $itemAudienceLabel }}</span>
                 @endif
                 <h3>{{ $item->name }}</h3>
                 @if($itemHasPromo)

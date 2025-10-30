@@ -4,6 +4,8 @@
     $startsAt = $startsAt !== null ? $startsAt : optional($promotion->starts_at)->format('Y-m-d\TH:i');
     $endsAt = $endsAt !== null ? $endsAt : optional($promotion->ends_at)->format('Y-m-d\TH:i');
     $selected = collect(old('product_ids', $selectedProducts ?? []))->map(fn ($id) => (int) $id)->all();
+    $selectedAudience = old('audience_type', $promotion->audience_type ?? \App\Models\Promotion::AUDIENCE_ALL);
+    $selectedUsers = collect(old('user_ids', $selectedUsers ?? []))->map(fn ($id) => (int) $id)->all();
 @endphp
 
 @csrf
@@ -39,6 +41,33 @@
       </div>
       <small class="form-text text-muted">Untuk persentase, isi 0-100. Untuk potongan nominal gunakan nilai rupiah.</small>
       @error('discount_value')<small class="text-danger d-block">{{ $message }}</small>@enderror
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    <div class="form-group">
+      <label for="promotion-audience">Target Pengguna</label>
+      <select class="form-control" id="promotion-audience" name="audience_type" required>
+        <option value="{{ \App\Models\Promotion::AUDIENCE_ALL }}" @selected($selectedAudience === \App\Models\Promotion::AUDIENCE_ALL)>Semua Pengguna</option>
+        <option value="{{ \App\Models\Promotion::AUDIENCE_REGISTERED }}" @selected($selectedAudience === \App\Models\Promotion::AUDIENCE_REGISTERED)>Pengguna Terdaftar</option>
+        <option value="{{ \App\Models\Promotion::AUDIENCE_SELECTED }}" @selected($selectedAudience === \App\Models\Promotion::AUDIENCE_SELECTED)>Pengguna Tertentu</option>
+      </select>
+      <small class="form-text text-muted">Pilih "Pengguna Terdaftar" untuk promo khusus member atau "Pengguna Tertentu" untuk memilih user tertentu.</small>
+      @error('audience_type')<small class="text-danger d-block">{{ $message }}</small>@enderror
+    </div>
+  </div>
+  <div class="col-md-6" id="promotion-users-group" style="{{ $selectedAudience === \App\Models\Promotion::AUDIENCE_SELECTED ? '' : 'display: none;' }}">
+    <div class="form-group">
+      <label for="promotion-users">Pengguna yang Mendapat Promo</label>
+      <select multiple size="8" class="form-control" id="promotion-users" name="user_ids[]">
+        @foreach($users as $user)
+          <option value="{{ $user->id }}" @selected(in_array($user->id, $selectedUsers, true))>{{ $user->name }} ({{ $user->email }})</option>
+        @endforeach
+      </select>
+      <small class="form-text text-muted">Promo hanya berlaku untuk pengguna yang dipilih ketika opsi "Pengguna Tertentu" digunakan.</small>
+      @error('user_ids')<small class="text-danger d-block">{{ $message }}</small>@enderror
+      @error('user_ids.*')<small class="text-danger d-block">{{ $message }}</small>@enderror
     </div>
   </div>
 </div>

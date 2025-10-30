@@ -7,6 +7,7 @@ use App\Http\Requests\StorePromotionRequest;
 use App\Http\Requests\UpdatePromotionRequest;
 use App\Models\Product;
 use App\Models\Promotion;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -28,11 +29,13 @@ class PromotionController extends Controller
     public function create(): View
     {
         $products = Product::where('status', true)->orderBy('name')->get();
+        $users = User::orderBy('name')->get();
         $defaultStart = Carbon::now()->startOfDay();
         $defaultEnd = $defaultStart->copy()->addWeek()->endOfDay();
 
         $promotion = new Promotion([
             'discount_type' => Promotion::TYPE_PERCENTAGE,
+            'audience_type' => Promotion::AUDIENCE_ALL,
             'starts_at' => $defaultStart,
             'ends_at' => $defaultEnd,
         ]);
@@ -41,6 +44,8 @@ class PromotionController extends Controller
             'promotion' => $promotion,
             'products' => $products,
             'selectedProducts' => $products->pluck('id')->all(),
+            'users' => $users,
+            'selectedUsers' => [],
         ]);
     }
 
@@ -48,13 +53,16 @@ class PromotionController extends Controller
     {
         $data = $request->validated();
         $productIds = collect($data['product_ids'] ?? [])->unique()->values()->all();
+        $userIds = collect($data['user_ids'] ?? [])->unique()->values()->all();
         unset($data['product_ids']);
+        unset($data['user_ids']);
         $payload = $this->normalizeDates($data);
 
         try {
-            DB::transaction(function () use ($payload, $productIds) {
+            DB::transaction(function () use ($payload, $productIds, $userIds) {
                 $promotion = Promotion::create($payload);
                 $promotion->products()->sync($productIds);
+                $promotion->users()->sync($userIds);
             });
 
             return redirect()->route('promotions.index')
@@ -68,13 +76,16 @@ class PromotionController extends Controller
 
     public function edit(Promotion $promotion): View
     {
-        $promotion->load('products');
+        $promotion->load(['products', 'users']);
         $products = Product::where('status', true)->orderBy('name')->get();
+        $users = User::orderBy('name')->get();
 
         return view('admin.promotions.edit', [
             'promotion' => $promotion,
             'products' => $products,
             'selectedProducts' => $promotion->products->pluck('id')->all(),
+            'users' => $users,
+            'selectedUsers' => $promotion->users->pluck('id')->all(),
         ]);
     }
 
@@ -82,13 +93,16 @@ class PromotionController extends Controller
     {
         $data = $request->validated();
         $productIds = collect($data['product_ids'] ?? [])->unique()->values()->all();
+        $userIds = collect($data['user_ids'] ?? [])->unique()->values()->all();
         unset($data['product_ids']);
+        unset($data['user_ids']);
         $payload = $this->normalizeDates($data);
 
         try {
-            DB::transaction(function () use ($promotion, $payload, $productIds) {
+            DB::transaction(function () use ($promotion, $payload, $productIds, $userIds) {
                 $promotion->update($payload);
                 $promotion->products()->sync($productIds);
+                $promotion->users()->sync($userIds);
             });
 
             return redirect()->route('promotions.index')

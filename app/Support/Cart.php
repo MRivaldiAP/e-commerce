@@ -173,6 +173,7 @@ class Cart
     public static function summary(): array
     {
         $rawItems = collect(self::items());
+        $currentUser = Auth::user();
 
         if ($rawItems->isEmpty()) {
             return [
@@ -205,7 +206,7 @@ class Cart
         $originalTotal = 0.0;
         $discountTotal = 0.0;
 
-        $items = $rawItems->map(function ($item, $key) use ($products, &$totalPrice, &$originalTotal, &$discountTotal) {
+        $items = $rawItems->map(function ($item, $key) use ($products, &$totalPrice, &$originalTotal, &$discountTotal, $currentUser) {
             $productId = (int) ($item['product_id'] ?? $key);
             $product = $products->get($productId);
             $basePrice = (float) ($item['base_price'] ?? $item['price'] ?? $product?->price ?? 0);
@@ -218,12 +219,14 @@ class Cart
                     : asset('storage/' . ltrim($imagePath, '/')))
                 : 'https://via.placeholder.com/120x120?text=No+Image';
 
-            $promotion = $product?->currentPromotion();
-            if ($promotion && ! $promotion->isActive()) {
-                $promotion = null;
+            $eligiblePromotion = $product?->currentPromotion(null, $currentUser);
+            $displayPromotion = $product?->currentPromotion(null, $currentUser, false);
+
+            if ($eligiblePromotion && ! $eligiblePromotion->isActive()) {
+                $eligiblePromotion = null;
             }
 
-            $finalPrice = $promotion ? $promotion->applyDiscount($basePrice) : $basePrice;
+            $finalPrice = $eligiblePromotion ? $eligiblePromotion->applyDiscount($basePrice) : $basePrice;
             $discountAmount = max(0, $basePrice - $finalPrice);
             $subtotal = $finalPrice * $quantity;
             $originalSubtotal = $basePrice * $quantity;
@@ -257,10 +260,11 @@ class Cart
                 'discount_amount_formatted' => number_format($discountAmount, 0, ',', '.'),
                 'total_discount' => $discountAmount * $quantity,
                 'total_discount_formatted' => number_format($discountAmount * $quantity, 0, ',', '.'),
-                'has_promo' => $promotion && $discountAmount > 0,
-                'promo_label' => $promotion?->label,
-                'promo_type' => $promotion?->discount_type,
-                'promo_expires_at' => optional($promotion?->ends_at)->toIso8601String(),
+                'has_promo' => $eligiblePromotion && $discountAmount > 0,
+                'promo_label' => $eligiblePromotion?->label,
+                'promo_audience_label' => $displayPromotion?->audience_label,
+                'promo_type' => $eligiblePromotion?->discount_type,
+                'promo_expires_at' => optional($eligiblePromotion?->ends_at)->toIso8601String(),
                 'image' => $imagePath,
                 'image_url' => $imageUrl,
                 'product_url' => $productUrl,

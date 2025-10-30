@@ -303,6 +303,9 @@
                                                     @if($hasPromo && !empty($item['promo_label']))
                                                         <span class="promo-label mt-2">{{ $item['promo_label'] }}</span>
                                                     @endif
+                                                    @if(!empty($item['promo_audience_label']))
+                                                        <span class="promo-label mt-2">{{ $item['promo_audience_label'] }}</span>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </td>
@@ -450,6 +453,12 @@
                 badge.className = 'promo-label mt-2';
                 badge.textContent = item.promo_label;
                 info.appendChild(badge);
+            }
+            if (item.promo_audience_label) {
+                const audienceBadge = document.createElement('span');
+                audienceBadge.className = 'promo-label mt-2';
+                audienceBadge.textContent = item.promo_audience_label;
+                info.appendChild(audienceBadge);
             }
             productWrapper.append(img, info);
             productCell.appendChild(productWrapper);

@@ -239,6 +239,9 @@
                                                 @if($hasPromo && !empty($item['promo_label']))
                                                     <span class="promo-label">{{ $item['promo_label'] }}</span>
                                                 @endif
+                                                @if(!empty($item['promo_audience_label']))
+                                                    <span class="promo-label">{{ $item['promo_audience_label'] }}</span>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>
@@ -379,6 +382,12 @@
                 promoBadge.className = 'promo-label';
                 promoBadge.textContent = item.promo_label;
                 info.appendChild(promoBadge);
+            }
+            if (item.promo_audience_label) {
+                const audienceBadge = document.createElement('span');
+                audienceBadge.className = 'promo-label';
+                audienceBadge.textContent = item.promo_audience_label;
+                info.appendChild(audienceBadge);
             }
             wrapper.appendChild(img);
             wrapper.appendChild(info);

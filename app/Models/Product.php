@@ -9,12 +9,14 @@ use App\Models\ProductImage;
 use App\Models\Brand;
 use App\Models\Comment;
 use App\Models\Promotion;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 
 class Product extends Model
 {
@@ -56,28 +58,40 @@ class Product extends Model
         return $this->belongsToMany(Promotion::class, 'promotion_product')->withTimestamps();
     }
 
-    public function activePromotions(?Carbon $at = null)
+    public function activePromotions(?Carbon $at = null, ?User $user = null, bool $respectEligibility = true)
     {
         $at = $at ?: Carbon::now();
 
-        if ($this->relationLoaded('promotions')) {
-            return $this->promotions
-                ->filter(fn (Promotion $promotion) => $promotion->isActive($at));
+        if ($respectEligibility) {
+            $user = $user ?: Auth::user();
         }
 
-        return $this->promotions()
-            ->where(function ($query) use ($at) {
-                $query->whereNull('starts_at')->orWhere('starts_at', '<=', $at);
-            })
-            ->where(function ($query) use ($at) {
-                $query->whereNull('ends_at')->orWhere('ends_at', '>=', $at);
-            })
-            ->get();
+        if ($this->relationLoaded('promotions')) {
+            $promotions = $this->promotions
+                ->loadMissing('users')
+                ->filter(fn (Promotion $promotion) => $promotion->isActive($at));
+        } else {
+            $promotions = $this->promotions()
+                ->where(function ($query) use ($at) {
+                    $query->whereNull('starts_at')->orWhere('starts_at', '<=', $at);
+                })
+                ->where(function ($query) use ($at) {
+                    $query->whereNull('ends_at')->orWhere('ends_at', '>=', $at);
+                })
+                ->get()
+                ->load('users');
+        }
+
+        if ($respectEligibility) {
+            return $promotions->filter(fn (Promotion $promotion) => $promotion->isEligibleFor($user));
+        }
+
+        return $promotions;
     }
 
-    public function currentPromotion(?Carbon $at = null): ?Promotion
+    public function currentPromotion(?Carbon $at = null, ?User $user = null, bool $respectEligibility = true): ?Promotion
     {
-        $promotions = $this->activePromotions($at);
+        $promotions = $this->activePromotions($at, $user, $respectEligibility);
 
         if ($promotions instanceof \Illuminate\Database\Eloquent\Collection) {
             return $promotions
@@ -109,5 +123,12 @@ class Product extends Model
         $promotion = $this->currentPromotion();
 
         return $promotion?->label;
+    }
+
+    public function getPromoAudienceLabelAttribute(): ?string
+    {
+        $promotion = $this->currentPromotion(null, null, false);
+
+        return $promotion?->audience_label;
     }
 }

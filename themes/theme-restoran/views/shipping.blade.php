@@ -244,6 +244,9 @@
                                     @if(!empty($item['has_promo']) && !empty($item['promo_label']))
                                         <span class="promo-label">{{ $item['promo_label'] }}</span>
                                     @endif
+                                    @if(!empty($item['promo_audience_label']))
+                                        <span class="promo-label">{{ $item['promo_audience_label'] }}</span>
+                                    @endif
                                 </div>
                                 <div class="price-stack">
                                     @if(!empty($item['has_promo']))

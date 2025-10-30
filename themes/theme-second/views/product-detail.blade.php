@@ -129,8 +129,11 @@
             ->get();
         $recommendations = $recommendations->concat($fallback);
     }
-    $productPromotion = $product->currentPromotion();
-    $productHasPromo = $productPromotion && $product->promo_price !== null && $product->promo_price < $product->price;
+    $productEligiblePromotion = $product->currentPromotion();
+    $productDisplayPromotion = $product->currentPromotion(null, null, false);
+    $productPromoLabel = $productDisplayPromotion?->label;
+    $productAudienceLabel = $productDisplayPromotion?->audience_label;
+    $productHasPromo = $productEligiblePromotion && $product->promo_price !== null && $product->promo_price < $product->price;
     $productFinalPrice = $product->final_price;
 @endphp
 {!! view()->file(base_path('themes/' . $themeName . '/views/components/nav-menu.blade.php'), [
@@ -179,9 +182,14 @@
                     <div class="product__details__price">
                         @if($productHasPromo)
                             <span class="price-original">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
-                            <span class="price-current">Rp {{ number_format($productFinalPrice, 0, ',', '.') }}<span class="promo-pill">{{ $productPromotion->label }}</span></span>
-                        @else
-                            <span class="price-current">Rp {{ number_format($productFinalPrice, 0, ',', '.') }}</span>
+                        @endif
+                        <span class="price-current">Rp {{ number_format($productFinalPrice, 0, ',', '.') }}
+                            @if($productPromoLabel)
+                                <span class="promo-pill">{{ $productPromoLabel }}</span>
+                            @endif
+                        </span>
+                        @if($productAudienceLabel)
+                            <span class="promo-pill">{{ $productAudienceLabel }}</span>
                         @endif
                     </div>
                     <p>{{ $product->short_description ?? 'Produk pilihan terbaik untuk memenuhi kebutuhan Anda setiap hari.' }}</p>
@@ -291,15 +299,21 @@
             @foreach($recommendations as $item)
                 @php
                     $img = optional($item->images->first())->path;
-                    $recommendationPromotion = $item->currentPromotion();
-                    $recommendationHasPromo = $recommendationPromotion && $item->promo_price !== null && $item->promo_price < $item->price;
+                    $recommendationEligiblePromotion = $item->currentPromotion();
+                    $recommendationDisplayPromotion = $item->currentPromotion(null, null, false);
+                    $recommendationHasPromo = $recommendationEligiblePromotion && $item->promo_price !== null && $item->promo_price < $item->price;
                     $recommendationFinalPrice = $item->final_price;
+                    $recommendationPromoLabel = $recommendationDisplayPromotion?->label;
+                    $recommendationAudienceLabel = $recommendationDisplayPromotion?->audience_label;
                 @endphp
                 <div class="col-lg-3 col-md-4 col-sm-6">
                     <div class="product__item">
                         <div class="product__item__pic set-bg" data-setbg="{{ $img ? asset('storage/'.$img) : asset('storage/themes/theme-second/img/product/product-1.jpg') }}">
-                            @if($recommendationHasPromo)
-                                <span class="product__item__badge">{{ $recommendationPromotion->label }}</span>
+                            @if($recommendationPromoLabel)
+                                <span class="product__item__badge">{{ $recommendationPromoLabel }}</span>
+                            @endif
+                            @if($recommendationAudienceLabel)
+                                <span class="product__item__badge">{{ $recommendationAudienceLabel }}</span>
                             @endif
                             <ul class="product__item__pic__hover">
                                 <li><a href="#"><i class="fa fa-heart"></i></a></li>

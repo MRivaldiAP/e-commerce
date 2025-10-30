@@ -170,15 +170,21 @@
                     @foreach($products as $product)
                         @php
                             $imagePath = $product->image_url ?? optional($product->images->first())->path;
-                            $promotion = $product->currentPromotion();
-                            $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
+                            $eligiblePromotion = $product->currentPromotion();
+                            $displayPromotion = $product->currentPromotion(null, null, false);
+                            $hasPromo = $eligiblePromotion && $product->promo_price !== null && $product->promo_price < $product->price;
                             $finalPrice = $product->final_price;
+                            $promoLabel = $displayPromotion?->label;
+                            $audienceLabel = $displayPromotion?->audience_label;
                         @endphp
                         <div class="col-lg-4 col-md-6 col-sm-6">
                             <div class="product__item">
                                 <div class="product__item__pic set-bg" data-setbg="{{ $imagePath ? asset('storage/'.$imagePath) : asset('storage/themes/theme-second/img/product/product-1.jpg') }}">
-                                    @if($hasPromo)
-                                        <span class="product__item__badge">{{ $promotion->label }}</span>
+                                    @if($promoLabel)
+                                        <span class="product__item__badge">{{ $promoLabel }}</span>
+                                    @endif
+                                    @if($audienceLabel)
+                                        <span class="product__item__badge">{{ $audienceLabel }}</span>
                                     @endif
                                     <ul class="product__item__pic__hover">
                                         <li><a href="#"><i class="fa fa-heart"></i></a></li>
