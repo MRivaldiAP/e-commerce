@@ -55,8 +55,11 @@
         $imageSources->push($assetBase('img/project-1.jpg'));
     }
 
-    $promotion = $product->currentPromotion();
-    $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
+    $eligiblePromotion = $product->currentPromotion();
+    $displayPromotion = $product->currentPromotion(null, null, false);
+    $promoLabel = $displayPromotion?->label;
+    $audienceLabel = $displayPromotion?->audience_label;
+    $hasPromo = $eligiblePromotion && $product->promo_price !== null && $product->promo_price < $product->price;
     $finalPrice = $product->final_price;
 
     $quantityLabel = $settings['details.quantity_label'] ?? 'Jumlah';
@@ -389,10 +392,13 @@
                         <span class="price-original">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
                     @endif
                     <span class="price-current">Rp {{ number_format($finalPrice, 0, ',', '.') }}
-                        @if($hasPromo && $promotion?->label)
-                            <span class="promo-pill">{{ $promotion->label }}</span>
+                        @if($promoLabel)
+                            <span class="promo-pill">{{ $promoLabel }}</span>
                         @endif
                     </span>
+                    @if($audienceLabel)
+                        <span class="promo-pill">{{ $audienceLabel }}</span>
+                    @endif
                 </div>
                 @if(!empty($product->short_description))
                     <p class="text-muted">{{ $product->short_description }}</p>
@@ -491,16 +497,22 @@
                     @php
                         $itemImagePath = $item->image_url ?? optional($item->images->first())->path;
                         $itemImageUrl = $resolveMedia($itemImagePath, $assetBase('img/project-2.jpg'));
-                        $itemPromotion = $item->currentPromotion();
-                        $itemHasPromo = $itemPromotion && $item->promo_price !== null && $item->promo_price < $item->price;
+                        $itemEligiblePromotion = $item->currentPromotion();
+                        $itemDisplayPromotion = $item->currentPromotion(null, null, false);
+                        $itemHasPromo = $itemEligiblePromotion && $item->promo_price !== null && $item->promo_price < $item->price;
                         $itemFinalPrice = $item->final_price;
+                        $itemPromoLabel = $itemDisplayPromotion?->label;
+                        $itemAudienceLabel = $itemDisplayPromotion?->audience_label;
                     @endphp
                     <div class="col-md-6 col-lg-4">
                         <div class="card product-card h-100 shadow-sm">
                             <div class="position-relative">
                                 <img src="{{ $itemImageUrl }}" alt="{{ $item->name }}">
-                                @if($itemHasPromo && $itemPromotion?->label)
-                                    <span class="promo-label">{{ $itemPromotion->label }}</span>
+                                @if($itemPromoLabel)
+                                    <span class="promo-label">{{ $itemPromoLabel }}</span>
+                                @endif
+                                @if($itemAudienceLabel)
+                                    <span class="promo-label">{{ $itemAudienceLabel }}</span>
                                 @endif
                             </div>
                             <div class="card-body p-4 d-flex flex-column">

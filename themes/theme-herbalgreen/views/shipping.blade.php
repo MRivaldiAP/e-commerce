@@ -241,6 +241,9 @@
                             @if($hasPromo && !empty($item['promo_label']))
                                 <span class="promo-label">{{ $item['promo_label'] }}</span>
                             @endif
+                            @if(!empty($item['promo_audience_label']))
+                                <span class="promo-label">{{ $item['promo_audience_label'] }}</span>
+                            @endif
                         </div>
                         <div style="text-align:right;">
                             @if($hasPromo && !empty($item['original_subtotal_formatted']))

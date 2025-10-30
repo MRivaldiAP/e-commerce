@@ -420,15 +420,21 @@
                         $promoPrice = $product->promo_price;
                         $finalPrice = $product->final_price;
                         $basePrice = $product->price;
-                        $promoLabel = $product->promo_label;
-                        $hasPromo = $promoPrice !== null && $promoLabel;
+                        $displayPromotion = $product->currentPromotion(null, null, false);
+                        $promoLabel = $displayPromotion?->label;
+                        $audienceLabel = $displayPromotion?->audience_label;
+                        $eligiblePromoLabel = $product->promo_label;
+                        $hasPromo = $promoPrice !== null && $eligiblePromoLabel;
                     @endphp
                     <div class="col-md-6 col-lg-4">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="position-relative">
                                 <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $product->name }}">
-                                @if($hasPromo)
+                                @if($promoLabel)
                                     <span class="promo-label position-absolute top-0 start-0 m-3">{{ $promoLabel }}</span>
+                                @endif
+                                @if($audienceLabel)
+                                    <span class="promo-label position-absolute top-0 end-0 m-3">{{ $audienceLabel }}</span>
                                 @endif
                             </div>
                             <div class="card-body d-flex flex-column">

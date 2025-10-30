@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,10 +15,15 @@ class Promotion extends Model
     public const TYPE_PERCENTAGE = 'percentage';
     public const TYPE_FIXED = 'fixed';
 
+    public const AUDIENCE_ALL = 'all';
+    public const AUDIENCE_REGISTERED = 'registered';
+    public const AUDIENCE_SELECTED = 'selected';
+
     protected $fillable = [
         'name',
         'discount_type',
         'discount_value',
+        'audience_type',
         'starts_at',
         'ends_at',
     ];
@@ -28,9 +34,18 @@ class Promotion extends Model
         'discount_value' => 'float',
     ];
 
+    protected $attributes = [
+        'audience_type' => self::AUDIENCE_ALL,
+    ];
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'promotion_product')->withTimestamps();
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'promotion_user')->withTimestamps();
     }
 
     public function scopeActive($query)
@@ -89,5 +104,40 @@ class Promotion extends Model
         }
 
         return sprintf('Potongan Rp %s', number_format($this->discount_value, 0, ',', '.'));
+    }
+
+    public function requiresRegistration(): bool
+    {
+        return in_array($this->audience_type, [self::AUDIENCE_REGISTERED, self::AUDIENCE_SELECTED], true);
+    }
+
+    public function isEligibleFor(?User $user): bool
+    {
+        if ($this->audience_type === self::AUDIENCE_ALL) {
+            return true;
+        }
+
+        if (! $user) {
+            return false;
+        }
+
+        if ($this->audience_type === self::AUDIENCE_REGISTERED) {
+            return true;
+        }
+
+        if (! $this->relationLoaded('users')) {
+            $this->load('users');
+        }
+
+        return $this->users->contains(fn (User $promotionUser) => $promotionUser->is($user));
+    }
+
+    public function getAudienceLabelAttribute(): ?string
+    {
+        return match ($this->audience_type) {
+            self::AUDIENCE_REGISTERED => 'Promo Khusus Member',
+            self::AUDIENCE_SELECTED => 'Khusus Pengguna Terpilih',
+            default => null,
+        };
     }
 }
