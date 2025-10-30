@@ -135,8 +135,8 @@ class Promotion extends Model
     public function getAudienceLabelAttribute(): ?string
     {
         return match ($this->audience_type) {
-            self::AUDIENCE_REGISTERED => 'Khusus Member',
-            self::AUDIENCE_SELECTED => 'Khusus Pengguna Terpilih',
+            self::AUDIENCE_REGISTERED => 'Promo Khusus Member',
+            self::AUDIENCE_SELECTED => 'Promo Khusus Pengguna Terpilih',
             default => null,
         };
     }
