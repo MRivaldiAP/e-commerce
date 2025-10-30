@@ -329,6 +329,17 @@
             }
         }
 
+        function refreshSelectUI(select) {
+            if (!select || !window.jQuery) return;
+            const $ = window.jQuery;
+            if (typeof $.fn.niceSelect === 'function') {
+                const instance = $(select);
+                if (instance.next('.nice-select').length) {
+                    instance.niceSelect('update');
+                }
+            }
+        }
+
         function clearSelect(select, placeholder) {
             if (!select) return;
             select.innerHTML = '';
@@ -336,6 +347,7 @@
             option.value = '';
             option.textContent = placeholder;
             select.appendChild(option);
+            refreshSelectUI(select);
         }
 
         function populateSelect(select, items, selectedValue) {
@@ -352,6 +364,7 @@
                 }
                 select.appendChild(option);
             });
+            refreshSelectUI(select);
             select.dispatchEvent(new Event('change'));
         }
 
