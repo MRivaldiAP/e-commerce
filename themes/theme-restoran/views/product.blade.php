@@ -143,9 +143,12 @@
         @foreach($products as $product)
         @php
             $img = $product->image_url ?? optional($product->images->first())->path;
-            $promotion = $product->currentPromotion();
-            $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
+            $eligiblePromotion = $product->currentPromotion();
+            $displayPromotion = $product->currentPromotion(null, null, false);
+            $hasPromo = $eligiblePromotion && $product->promo_price !== null && $product->promo_price < $product->price;
             $finalPrice = $product->final_price;
+            $promoLabel = $displayPromotion?->label;
+            $audienceLabel = $displayPromotion?->audience_label;
         @endphp
         <div class="col-lg-6">
             <div class="d-flex align-items-center">
@@ -154,8 +157,11 @@
                     <div class="d-flex justify-content-between align-items-start border-bottom pb-2 gap-2">
                         <div class="d-flex flex-column gap-1">
                             <span class="fw-semibold">{{ $product->name }}</span>
-                            @if($hasPromo)
-                                <span class="promo-badge">{{ $promotion->label }}</span>
+                            @if($promoLabel)
+                                <span class="promo-badge">{{ $promoLabel }}</span>
+                            @endif
+                            @if($audienceLabel)
+                                <span class="promo-badge">{{ $audienceLabel }}</span>
                             @endif
                         </div>
                         <div class="price-stack text-end">

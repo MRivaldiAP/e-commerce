@@ -96,8 +96,11 @@
     $navigation = LayoutSettings::navigation($themeName);
     $footerConfig = LayoutSettings::footer($themeName);
     $paymentEnabled = $navigation['payment_enabled'] ?? false;
-    $promotion = $product->currentPromotion();
-    $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
+    $eligiblePromotion = $product->currentPromotion();
+    $displayPromotion = $product->currentPromotion(null, null, false);
+    $promoLabel = $displayPromotion?->label;
+    $audienceLabel = $displayPromotion?->audience_label;
+    $hasPromo = $eligiblePromotion && $product->promo_price !== null && $product->promo_price < $product->price;
     $finalPrice = $product->final_price;
     $heroMaskEnabled = ($settings['hero.mask'] ?? '1') === '1';
     $heroBackground = ThemeMedia::url($settings['hero.image'] ?? null);
@@ -189,8 +192,11 @@
         <div class="col-lg-6">
             <h2 class="mb-3">{{ $product->name }}</h2>
             <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
-                @if($hasPromo)
-                    <span class="promo-badge">{{ $promotion->label }}</span>
+                @if($promoLabel)
+                    <span class="promo-badge">{{ $promoLabel }}</span>
+                @endif
+                @if($audienceLabel)
+                    <span class="promo-badge">{{ $audienceLabel }}</span>
                 @endif
                 <div class="price-display">
                     @if($hasPromo)
@@ -269,9 +275,12 @@
         @foreach($recommendations as $item)
             @php
                 $img = optional($item->images->first())->path;
-                $itemPromotion = $item->currentPromotion();
-                $itemHasPromo = $itemPromotion && $item->promo_price !== null && $item->promo_price < $item->price;
+                $itemEligiblePromotion = $item->currentPromotion();
+                $itemDisplayPromotion = $item->currentPromotion(null, null, false);
+                $itemHasPromo = $itemEligiblePromotion && $item->promo_price !== null && $item->promo_price < $item->price;
                 $itemFinalPrice = $item->final_price;
+                $itemPromoLabel = $itemDisplayPromotion?->label;
+                $itemAudienceLabel = $itemDisplayPromotion?->audience_label;
             @endphp
             <div class="col-lg-6">
                 <div class="d-flex align-items-center recommendation-card">
@@ -280,8 +289,11 @@
                         <div class="d-flex justify-content-between align-items-start border-bottom pb-2 gap-2">
                             <div class="d-flex flex-column gap-1">
                                 <span>{{ $item->name }}</span>
-                                @if($itemHasPromo)
-                                    <span class="promo-badge">{{ $itemPromotion->label }}</span>
+                                @if($itemPromoLabel)
+                                    <span class="promo-badge">{{ $itemPromoLabel }}</span>
+                                @endif
+                                @if($itemAudienceLabel)
+                                    <span class="promo-badge">{{ $itemAudienceLabel }}</span>
                                 @endif
                             </div>
                             <div class="price-stack text-end">

@@ -100,14 +100,20 @@
         @foreach($products as $product)
             @php
                 $imagePath = optional($product->images->first())->path;
-                $promotion = $product->currentPromotion();
-                $hasPromo = $promotion && $product->promo_price !== null && $product->promo_price < $product->price;
+                $eligiblePromotion = $product->currentPromotion();
+                $displayPromotion = $product->currentPromotion(null, null, false);
+                $hasPromo = $eligiblePromotion && $product->promo_price !== null && $product->promo_price < $product->price;
                 $finalPrice = $product->final_price;
+                $promoLabel = $displayPromotion?->label;
+                $audienceLabel = $displayPromotion?->audience_label;
             @endphp
             <div class="product-card">
                 <img src="{{ $imagePath ? asset('storage/'.$imagePath) : 'https://via.placeholder.com/150' }}" alt="{{ $product->name }}">
-                @if($hasPromo)
-                    <span class="promo-label">{{ $promotion->label }}</span>
+                @if($promoLabel)
+                    <span class="promo-label">{{ $promoLabel }}</span>
+                @endif
+                @if($audienceLabel)
+                    <span class="promo-label">{{ $audienceLabel }}</span>
                 @endif
                 <h3>{{ $product->name }}</h3>
                 @if($hasPromo)
