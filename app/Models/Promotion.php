@@ -136,7 +136,7 @@ class Promotion extends Model
     {
         return match ($this->audience_type) {
             self::AUDIENCE_REGISTERED => 'Promo Khusus Member',
-            self::AUDIENCE_SELECTED => 'Khusus Pengguna Terpilih',
+            self::AUDIENCE_SELECTED => 'Promo Khusus Pengguna Terpilih',
             default => null,
         };
     }
