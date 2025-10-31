@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class Theme extends Model
+class Theme extends TenantModel
 {
     use HasFactory;
 

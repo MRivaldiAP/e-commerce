@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
 use App\Models\Product;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class ProductImage extends Model
+class ProductImage extends TenantModel
 {
     use HasFactory;
 

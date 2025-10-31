@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
 use App\Models\Order;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Payment extends Model
+class Payment extends TenantModel
 {
     use HasFactory;
 

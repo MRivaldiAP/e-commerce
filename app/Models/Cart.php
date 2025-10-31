@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
 use App\Models\User;
 use App\Models\CartItem;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Cart extends Model
+class Cart extends TenantModel
 {
     use HasFactory;
 
