@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-class MediaAsset extends TenantModel
+class MediaAsset extends Model
 {
     use HasFactory;
 

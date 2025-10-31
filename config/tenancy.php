@@ -16,11 +16,10 @@ return [
      *
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
-    'central_domains' => array_filter([
-        env('CENTRAL_DOMAIN'),
+    'central_domains' => [
         '127.0.0.1',
         'localhost',
-    ]),
+    ],
 
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.
@@ -40,7 +39,7 @@ return [
      * Database tenancy config. Used by DatabaseTenancyBootstrapper.
      */
     'database' => [
-        'central_connection' => env('TENANCY_CENTRAL_CONNECTION', env('DB_CONNECTION', 'mysql')),
+        'central_connection' => env('DB_CONNECTION', 'central'),
 
         /**
          * Connection used as a "template" for the dynamically created tenant database connection.
