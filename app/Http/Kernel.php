@@ -65,5 +65,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'role' => \App\Http\Middleware\EnsureUserHasRole::class,
         'track.landing.page' => \App\Http\Middleware\TrackLandingPageVisit::class,
+        'central.domain' => \App\Http\Middleware\EnsureCentralDomain::class,
     ];
 }
