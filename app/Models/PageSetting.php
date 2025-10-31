@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
 
-use App\Models\TenantModel;
-class PageSetting extends TenantModel
+class PageSetting extends Model
 {
     protected $fillable = ['page', 'key', 'value'];
 
