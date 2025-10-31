@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
 use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\OrderItem;
@@ -11,14 +12,13 @@ use App\Models\Comment;
 use App\Models\Promotion;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 
-class Product extends Model
+class Product extends TenantModel
 {
     use HasFactory;
 

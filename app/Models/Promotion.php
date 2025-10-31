@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\TenantModel;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Promotion extends Model
+class Promotion extends TenantModel
 {
     use HasFactory;
 
