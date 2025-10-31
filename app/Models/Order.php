@@ -7,13 +7,14 @@ use App\Models\Address;
 use App\Models\Payment;
 use App\Models\Shipping;
 use App\Models\OrderItem;
+use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Order extends Model
+class Order extends TenantModel
 {
     use HasFactory;
 

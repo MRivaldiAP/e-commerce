@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Models\Cart;
 use App\Models\Product;
+use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class CartItem extends Model
+class CartItem extends TenantModel
 {
     use HasFactory;
 

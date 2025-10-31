@@ -2,23 +2,24 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use App\Models\User;
+use App\Models\Brand;
+use App\Models\Comment;
 use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\OrderItem;
-use App\Models\ProductImage;
-use App\Models\Brand;
-use App\Models\Comment;
 use App\Models\Promotion;
-use App\Models\User;
-use Carbon\Carbon;
+use App\Models\TenantModel;
+use App\Models\ProductImage;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Auth;
 
-class Product extends Model
+class Product extends TenantModel
 {
     use HasFactory;
 
