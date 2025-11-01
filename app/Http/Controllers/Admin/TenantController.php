@@ -45,9 +45,7 @@ class TenantController extends Controller
             'domain' => ['required', 'string', 'max:255', Rule::unique('domains', 'domain')],
         ]);
 
-        $connection = config('tenancy.database.central_connection', config('database.default'));
-
-        DB::connection($connection)->transaction(function () use ($validated): void {
+        DB::transaction(function () use ($validated): void {
             $tenant = Tenant::create([
                 'id' => $validated['id'],
                 'data' => [
@@ -96,9 +94,7 @@ class TenantController extends Controller
             ],
         ]);
 
-        $connection = config('tenancy.database.central_connection', config('database.default'));
-
-        DB::connection($connection)->transaction(function () use ($tenant, $primaryDomain, $validated): void {
+        DB::transaction(function () use ($tenant, $primaryDomain, $validated): void {
             $tenantData = $tenant->data ?? [];
             $tenant->update([
                 'data' => array_merge($tenantData, [
