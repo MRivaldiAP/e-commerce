@@ -33,6 +33,7 @@
         $isUsersRoute = request()->routeIs('admin.users.*');
         $isCustomersView = $isUsersRoute && $usersView === 'customers';
         $isTeamView = $isUsersRoute && ! $isCustomersView;
+        $isCentralDomain = in_array(request()->getHost(), config('tenancy.central_domains', []), true);
     @endphp
     <div class="container-scroller">
       <nav class="sidebar sidebar-offcanvas" id="sidebar" style="overflow-y: auto;">
@@ -113,18 +114,26 @@
               </ul>
             </div>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/themes')}}">
+          @if($isCentralDomain)
+          <li class="nav-item {{ request()->routeIs('admin.tenants.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.tenants.index') }}">
+              <i class="mdi mdi-domain menu-icon"></i>
+              <span class="menu-title">Tenant</span>
+            </a>
+          </li>
+          <li class="nav-item {{ request()->routeIs('admin.themes.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.themes.index') }}">
               <i class="mdi mdi-palette menu-icon"></i>
               <span class="menu-title">Tema</span>
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/tags')}}">
+          <li class="nav-item {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.tags.index') }}">
               <i class="mdi mdi-tag-multiple menu-icon"></i>
               <span class="menu-title">Tag Tema</span>
             </a>
           </li>
+          @endif
           <li class="nav-item">
             <a class="nav-link" data-toggle="collapse" href="#pages-menu" aria-expanded="false" aria-controls="pages-menu">
               <i class="mdi mdi-arrange-bring-forward menu-icon"></i>
