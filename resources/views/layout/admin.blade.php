@@ -114,17 +114,17 @@
               </ul>
             </div>
           </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{{ url('admin/themes') }}">
+              <i class="mdi mdi-palette menu-icon"></i>
+              <span class="menu-title">Tema</span>
+            </a>
+          </li>
           @if($isCentralDomain)
           <li class="nav-item {{ request()->routeIs('admin.tenants.*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.tenants.index') }}">
               <i class="mdi mdi-domain menu-icon"></i>
               <span class="menu-title">Tenant</span>
-            </a>
-          </li>
-          <li class="nav-item {{ request()->routeIs('admin.themes.*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('admin.themes.index') }}">
-              <i class="mdi mdi-palette menu-icon"></i>
-              <span class="menu-title">Tema</span>
             </a>
           </li>
           <li class="nav-item {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}">

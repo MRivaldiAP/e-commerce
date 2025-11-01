@@ -276,11 +276,11 @@ return static function (): void {
         });
     
         Route::middleware('role:' . User::ROLE_ADMINISTRATOR)->group(function () {
-            Route::middleware('central.domain')->group(function (): void {
-                Route::get('themes', [ThemeController::class, 'index'])->name('admin.themes.index');
-                Route::post('themes', [ThemeController::class, 'update'])->name('admin.themes.update');
-                Route::get('themes/preview/{theme}', [ThemeController::class, 'preview'])->name('admin.themes.preview');
+            Route::get('themes', [ThemeController::class, 'index'])->name('admin.themes.index');
+            Route::post('themes', [ThemeController::class, 'update'])->name('admin.themes.update');
+            Route::get('themes/preview/{theme}', [ThemeController::class, 'preview'])->name('admin.themes.preview');
 
+            Route::middleware('central.domain')->group(function (): void {
                 Route::resource('tags', TagController::class)->except(['show'])->names('admin.tags');
                 Route::resource('tenants', TenantController::class)->except(['show'])->names('admin.tenants');
             });
