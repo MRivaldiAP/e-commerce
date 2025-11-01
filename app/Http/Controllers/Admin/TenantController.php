@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class TenantController extends Controller
 {
@@ -43,6 +46,10 @@ class TenantController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'domain' => ['required', 'string', 'max:255', Rule::unique('domains', 'domain')],
+            'admin_name' => ['required', 'string', 'max:255'],
+            'admin_email' => ['required', 'email', 'max:255'],
+            'admin_password' => ['required', 'string', Password::min(8), 'confirmed'],
+            'admin_password_confirmation' => ['required', 'string'],
         ]);
 
         $tenant = null;
@@ -59,6 +66,21 @@ class TenantController extends Controller
             $tenant->domains()->create([
                 'domain' => $validated['domain'],
             ]);
+
+            /** @var \Stancl\Tenancy\Tenancy $tenancy */
+            $tenancy = app(\Stancl\Tenancy\Tenancy::class);
+            $tenancy->initialize($tenant);
+
+            try {
+                User::create([
+                    'name' => $validated['admin_name'],
+                    'email' => $validated['admin_email'],
+                    'password' => Hash::make($validated['admin_password']),
+                    'role' => User::ROLE_ADMINISTRATOR,
+                ]);
+            } finally {
+                $tenancy->end();
+            }
         } catch (\Throwable $e) {
             if ($tenant) {
                 $tenant->delete();

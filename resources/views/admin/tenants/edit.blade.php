@@ -17,7 +17,7 @@
                 </div>
                 <div class="form-group">
                   <label for="tenant-name">Nama Tenant</label>
-                  <input type="text" id="tenant-name" name="name" value="{{ old('name', $tenant->data['name'] ?? '') }}" class="form-control @error('name') is-invalid @enderror" required>
+                  <input type="text" id="tenant-name" name="name" value="{{ old('name', $tenant->data['name'] ?? $tenant->id) }}" class="form-control @error('name') is-invalid @enderror" required>
                   @error('name')
                     <span class="invalid-feedback">{{ $message }}</span>
                   @enderror
