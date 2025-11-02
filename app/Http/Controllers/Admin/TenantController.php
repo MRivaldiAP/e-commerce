@@ -57,6 +57,7 @@ class TenantController extends Controller
         try {
             $tenant = Tenant::create([
                 'id' => $validated['id'],
+                'name' => $validated['name'],
                 'data' => [
                     'name' => $validated['name'],
                     'email' => $validated['email'] ?? null,
@@ -128,11 +129,12 @@ class TenantController extends Controller
 
         DB::connection($connection)->transaction(function () use ($tenant, $primaryDomain, $validated): void {
             $tenantData = $tenant->data ?? [];
+            $tenantData['name'] = $validated['name'];
+            $tenantData['email'] = $validated['email'] ?? null;
+
             $tenant->update([
-                'data' => array_merge($tenantData, [
-                    'name' => $validated['name'],
-                    'email' => $validated['email'] ?? null,
-                ]),
+                'name' => $validated['name'],
+                'data' => $tenantData,
             ]);
 
             if ($primaryDomain) {

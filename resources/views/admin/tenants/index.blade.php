@@ -28,7 +28,7 @@
                       @php($primaryDomain = $tenant->domains->first())
                       <tr>
                         <td>{{ $tenant->id }}</td>
-                        <td>{{ $tenant->data['name'] ?? '-' }}</td>
+                        <td>{{ $tenant->name ?? '-' }}</td>
                         <td>{{ $primaryDomain?->domain ?? '-' }}</td>
                         <td>{{ $tenant->created_at?->format('d M Y H:i') ?? '-' }}</td>
                         <td>
